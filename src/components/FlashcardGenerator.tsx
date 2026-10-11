@@ -69,7 +69,7 @@ export default function Flashcards({ onBack }: { onBack: () => void }) {
         return;
       }
       console.error("Error generating flashcards:", error);
-      alert("There was an error generating flashcards. Please try again.");
+      setStatusMessage("There was an error generating flashcards. Please try again.");
     } finally {
       setLoading(false);
       abortControllerRef.current = null;

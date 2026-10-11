@@ -169,6 +169,7 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
   const [editFormData, setEditFormData] = useState({ front: '', back: '', explanation: '' });
   const [savingCardEdit, setSavingCardEdit] = useState(false);
   const [deletingDeck, setDeletingDeck] = useState(false);
+  const [cardEditError, setCardEditError] = useState<string | null>(null);
 
   // Fetch all user flashcards and structure them into decks
   const fetchFlashcards = useCallback(async () => {
@@ -704,11 +705,12 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
 
   const handleSaveCardEdit = async (cardId: string) => {
     if (!editFormData.front.trim() || !editFormData.back.trim()) {
-      alert("Question and Answer cannot be empty.");
+      setCardEditError("Question and Answer cannot be empty.");
       return;
     }
 
     setSavingCardEdit(true);
+    setCardEditError(null);
     try {
       const cardRef = doc(db, 'flashcards', cardId);
       await updateDoc(cardRef, {
@@ -742,7 +744,7 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
       setEditingCardId(null);
     } catch (err) {
       console.error("Failed to update card:", err);
-      alert("Failed to save changes to card.");
+      setCardEditError("Failed to save changes to card.");
     } finally {
       setSavingCardEdit(false);
     }
@@ -1052,6 +1054,10 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
                         Cancel
                       </button>
                     </div>
+
+                    {cardEditError && (
+                      <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold">{cardEditError}</p>
+                    )}
 
                     <div className="space-y-1">
                       <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Question</label>

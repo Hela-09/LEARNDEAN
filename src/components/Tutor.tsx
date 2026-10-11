@@ -235,7 +235,7 @@ export default function Tutor({ setCurrentView }: TutorProps = {}) {
       }
       
       if (file.size > maxSize) {
-        alert(`${file.name} is too large. Maximum size for ${typeName} is ${maxSize / (1024 * 1024)}MB.`);
+        setChatError(`${file.name} is too large. Maximum size for ${typeName} is ${maxSize / (1024 * 1024)}MB.`);
         continue;
       }
       validFiles.push(file);
@@ -578,7 +578,7 @@ export default function Tutor({ setCurrentView }: TutorProps = {}) {
       }
     } catch(err) {
        console.error("Upload error", err);
-       alert("Failed to upload files. Please try again.");
+       setChatError("Failed to upload files. Please try again.");
        setIsUploading(false);
        return;
     }

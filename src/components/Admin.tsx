@@ -78,6 +78,7 @@ function UsersTab({ activeTab }: { activeTab: string }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'disabled'>('all');
   const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
+  const [adminNotice, setAdminNotice] = useState<string | null>(null);
   
   // User Report Modal
   const [reportUser, setReportUser] = useState<any | null>(null);
@@ -131,9 +132,10 @@ function UsersTab({ activeTab }: { activeTab: string }) {
         approvedBy: user?.uid
       });
       fetchUsers();
+      setAdminNotice("User payment approved successfully.");
     } catch (err) {
       console.error(err);
-      alert("Failed to approve user");
+      setAdminNotice("Failed to approve user payment.");
     }
   };
 
@@ -145,9 +147,10 @@ function UsersTab({ activeTab }: { activeTab: string }) {
         receiptUrl: null
       });
       fetchUsers();
+      setAdminNotice("Payment rejected.");
     } catch (err) {
       console.error(err);
-      alert("Failed to reject user");
+      setAdminNotice("Failed to reject user.");
     }
   };
 
@@ -170,9 +173,10 @@ function UsersTab({ activeTab }: { activeTab: string }) {
         })
       ));
       fetchUsers();
+      setAdminNotice(`Approved all ${pending.length} pending payments.`);
     } catch (err) {
       console.error(err);
-      alert("Failed to approve all");
+      setAdminNotice("Failed to approve all pending payments.");
     }
   };
 
@@ -278,6 +282,14 @@ function UsersTab({ activeTab }: { activeTab: string }) {
 
   return (
     <div className="space-y-6 bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
+      {adminNotice && (
+        <div className="p-3.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-100 text-xs font-semibold flex items-center justify-between">
+          <span>{adminNotice}</span>
+          <button type="button" onClick={() => setAdminNotice(null)} className="text-blue-500 hover:text-blue-700 ml-2 cursor-pointer">
+            ✕
+          </button>
+        </div>
+      )}
       
       {/* Top Filter & Search Controls */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

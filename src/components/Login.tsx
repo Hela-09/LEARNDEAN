@@ -69,6 +69,7 @@ export default function Login({ forceCreatePassword = false }: LoginProps) {
   
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [resetSuccessMessage, setResetSuccessMessage] = useState<string | null>(null);
 
   // Synchronize view when forceCreatePassword or needsPasswordCreation toggles
   useEffect(() => {
@@ -309,7 +310,7 @@ export default function Login({ forceCreatePassword = false }: LoginProps) {
       clearError();
       setLoading(true);
       await sendPasswordResetEmail(auth, email.trim().toLowerCase());
-      alert('Password reset email sent! Check your inbox.');
+      setResetSuccessMessage('Password reset email sent! Please check your inbox.');
       changeView('login');
     } catch (err: any) {
       console.error(err);
@@ -360,6 +361,13 @@ export default function Login({ forceCreatePassword = false }: LoginProps) {
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm flex items-start gap-3">
             <span className="shrink-0 mt-0.5">⚠️</span>
             <span>{contextError}</span>
+          </div>
+        )}
+
+        {resetSuccessMessage && (
+          <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-700 dark:text-emerald-300 text-sm flex items-start gap-3">
+            <span className="shrink-0 mt-0.5">✅</span>
+            <span>{resetSuccessMessage}</span>
           </div>
         )}
 

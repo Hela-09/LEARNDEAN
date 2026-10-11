@@ -87,6 +87,7 @@ export default function JambCbtSection({
   const [isUntimed, setIsUntimed] = useState<boolean>(false);
   const [subjectSearch, setSubjectSearch] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<JambCategory>('All');
+  const [validationNotice, setValidationNotice] = useState<string | null>(null);
 
   // Sync if initialSubjects changes
   useEffect(() => {
@@ -98,16 +99,17 @@ export default function JambCbtSection({
 
   const toggleElective = (subjectName: string) => {
     if (subjectName === 'English Language') return; // Cannot deselect English
+    setValidationNotice(null);
 
     if (selectedElectives.includes(subjectName)) {
       if (selectedElectives.length <= 1) {
-        alert('You must select at least 1 elective subject (up to 3 for standard 4-subject UTME combination).');
+        setValidationNotice('You must select at least 1 elective subject (up to 3 for standard 4-subject UTME combination).');
         return;
       }
       setSelectedElectives(prev => prev.filter(s => s !== subjectName));
     } else {
       if (selectedElectives.length >= 3) {
-        alert('JAMB UTME combination allows a maximum of 4 subjects total (English + 3 electives). Remove one to add this.');
+        setValidationNotice('JAMB UTME combination allows a maximum of 4 subjects total (English + 3 electives). Remove one to add this.');
         return;
       }
       setSelectedElectives(prev => [...prev, subjectName]);
@@ -298,6 +300,15 @@ export default function JambCbtSection({
               </span>
             </div>
           </div>
+
+          {validationNotice && (
+            <div className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center justify-between">
+              <span>{validationNotice}</span>
+              <button type="button" onClick={() => setValidationNotice(null)} className="text-amber-500 hover:text-amber-700 ml-2 cursor-pointer">
+                ✕
+              </button>
+            </div>
+          )}
 
           {/* ACTIVE COMBINATION SUMMARY CHIPS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5 mb-6 w-full min-w-0">

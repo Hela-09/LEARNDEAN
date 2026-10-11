@@ -150,7 +150,7 @@ export default function DailyChallenge({ setView }: { setView: (view: any) => vo
         return;
       }
       console.error(err);
-      alert("Failed to start daily challenge. Please try again.");
+      setStopNotice("Failed to start daily challenge. Please check connection and try again.");
     } finally {
       abortControllerRef.current = null;
       setIsGenerating(false);

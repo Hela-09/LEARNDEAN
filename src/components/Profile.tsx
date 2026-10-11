@@ -389,11 +389,14 @@ export default function Profile({ setView, initialSection }: ProfileProps) {
 
   const SettingsView = () => {
     const { settings, updateSettings, userProfile, user, refreshProfile } = useAuth();
+    const [cacheCleared, setCacheCleared] = useState(false);
     
     const handleClearCache = () => {
       localStorage.clear();
-      alert("Local cache cleared successfully.");
-      window.location.reload();
+      setCacheCleared(true);
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
     };
 
     const handleProfileUpdate = async (field: string, value: string) => {

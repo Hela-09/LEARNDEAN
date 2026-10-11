@@ -300,6 +300,7 @@ export default function Quiz({
   const [unansweredPoolCount, setUnansweredPoolCount] = useState<number>(0);
   const [isDownloadingMore, setIsDownloadingMore] = useState<boolean>(false);
   const [downloadFeedback, setDownloadFeedback] = useState<string | null>(null);
+  const [generationErrorNotice, setGenerationErrorNotice] = useState<string | null>(null);
 
   // Monitor online status and auto-sync pending offline data
   useEffect(() => {
@@ -1119,15 +1120,27 @@ export default function Quiz({
     }
   };
 
+  const handleStopQuestionGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setLoading(false);
+    setIsGeneratingShortfall(false);
+    setGenerationErrorNotice("Question generation was stopped by user.");
+  };
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    abortControllerRef.current = new AbortController();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     setLoading(true);
+    setGenerationErrorNotice(null);
     try {
       let loadedQuestions: Question[] = [];
       let poolIsLow = false;
@@ -1293,10 +1306,15 @@ export default function Quiz({
         }
       }
     } catch (err: any) {
+      if (err?.name === 'AbortError' || abortControllerRef.current?.signal.aborted) {
+        setGenerationErrorNotice("Question generation was stopped by user.");
+        return;
+      }
       console.warn("Question generation error:", err);
-      alert(err.message || 'An error occurred while generating questions. Please try again.');
+      setGenerationErrorNotice(err.message || 'An error occurred while generating questions. Please try again.');
     } finally {
       setLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -1305,8 +1323,10 @@ export default function Quiz({
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    abortControllerRef.current = new AbortController();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     setIsGeneratingShortfall(true);
+    setGenerationErrorNotice(null);
     try {
       const { shortfall, subjects, requested } = poolShortfallState;
       const targetSubs = subjects.length > 0 ? subjects : [subjectId || subject || 'English Language'];
@@ -1345,9 +1365,14 @@ export default function Quiz({
         } : null);
       }
     } catch (e: any) {
-      alert(e?.message || "Failed to generate missing questions. Ensure you have an active internet connection.");
+      if (e?.name === 'AbortError' || abortControllerRef.current?.signal.aborted) {
+        setGenerationErrorNotice("Question generation was stopped by user.");
+        return;
+      }
+      setGenerationErrorNotice(e?.message || "Failed to generate missing questions. Ensure you have an active internet connection.");
     } finally {
       setIsGeneratingShortfall(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -1999,14 +2024,40 @@ export default function Quiz({
             </div>
           </div>
           
-          <button 
-            type="submit" 
-            disabled={loading} 
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm text-base"
-          >
-            {loading ? <Loader2 className="animate-spin" size={20} /> : <Settings size={20} />}
-            {loading ? 'Generating Questions...' : 'Start Practice Session'}
-          </button>
+          {generationErrorNotice && (
+            <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center justify-between mb-4">
+              <span>{generationErrorNotice}</span>
+              <button type="button" onClick={() => setGenerationErrorNotice(null)} className="text-rose-500 hover:text-rose-700 ml-2 cursor-pointer">
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex gap-3">
+              <div className="flex-1 bg-blue-600/70 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-sm text-base select-none">
+                <Loader2 className="animate-spin" size={20} />
+                <span>Generating Questions...</span>
+              </div>
+              <button 
+                type="button" 
+                onClick={handleStopQuestionGeneration}
+                className="px-6 py-4 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 text-base cursor-pointer shrink-0"
+                title="Stop question generation"
+              >
+                <Square size={16} className="fill-current" />
+                <span>Stop / Cancel</span>
+              </button>
+            </div>
+          ) : (
+            <button 
+              type="submit" 
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm text-base"
+            >
+              <Settings size={20} />
+              <span>Start Practice Session</span>
+            </button>
+          )}
         </form>
       </div>
     );
@@ -2031,6 +2082,15 @@ export default function Quiz({
           <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">
             You requested <span className="font-bold text-slate-900 dark:text-white">{poolShortfallState.requested} questions</span>, but only <span className="font-bold text-blue-600 dark:text-blue-400">{poolShortfallState.available} authentic questions</span> are currently available in the question bank for this selection ({poolShortfallState.subjects.join(', ')}). {poolShortfallState.requested} questions are not currently available.
           </p>
+
+          {generationErrorNotice && (
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-semibold mb-4 text-left flex items-center justify-between">
+              <span>{generationErrorNotice}</span>
+              <button type="button" onClick={() => setGenerationErrorNotice(null)} className="text-rose-500 hover:text-rose-700 ml-2 cursor-pointer">
+                <X size={14} />
+              </button>
+            </div>
+          )}
 
           <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-4 mb-6 text-left border border-slate-200 dark:border-slate-800 space-y-2 text-xs text-slate-600 dark:text-slate-400">
             <div className="flex justify-between font-medium">

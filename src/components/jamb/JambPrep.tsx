@@ -205,7 +205,7 @@ export default function JambPrep({ onBack, setView, initialTab }: JambPrepProps)
 
   const handleManualSync = async () => {
     if (!isOnline) {
-      alert('You are currently offline. Please connect to the internet to sync offline records.');
+      setSyncToastMessage('You are currently offline. Please connect to the internet to sync offline records.');
       return;
     }
     setIsSyncing(true);
@@ -248,7 +248,7 @@ export default function JambPrep({ onBack, setView, initialTab }: JambPrepProps)
       setSyncToastMessage(`${subjectMeta?.name || subjectId} downloaded and available offline.`);
     } catch (err: any) {
       console.error('Failed to download subject:', err);
-      alert(`Could not download ${subjectMeta?.name}: ${err?.message || 'Please check your connection.'}`);
+      setSyncToastMessage(`Could not download ${subjectMeta?.name}: ${err?.message || 'Please check your connection.'}`);
     } finally {
       setTimeout(() => {
         setDownloadProgress(prev => {
@@ -282,7 +282,7 @@ export default function JambPrep({ onBack, setView, initialTab }: JambPrepProps)
       await loadDownloadedSubjects();
     } catch (err: any) {
       console.error('Failed to download offline pack:', err);
-      alert('Failed to download JAMB offline pack. Please check your internet connection.');
+      setSyncToastMessage('Failed to download JAMB offline pack. Please check your internet connection.');
     } finally {
       setIsDownloadingPack(false);
       setPackProgress(null);
@@ -291,7 +291,7 @@ export default function JambPrep({ onBack, setView, initialTab }: JambPrepProps)
 
   const handleCheckPackUpdates = async () => {
     if (!isOnline) {
-      alert('Please connect to the internet to check for pack updates.');
+      setSyncToastMessage('Please connect to the internet to check for pack updates.');
       return;
     }
     setIsSyncing(true);
