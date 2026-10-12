@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   Layers, Plus, Sparkles, BookOpen, Clock, Bookmark, Search, 
-  ChevronRight, CheckCircle2, Play, X, Eye, EyeOff, ArrowLeft
+  ChevronRight, CheckCircle2, Play, X, Eye, EyeOff, ArrowLeft, RotateCw
 } from 'lucide-react';
 import { Flashcard, FlashcardDeck } from '../../types';
 
@@ -22,6 +22,8 @@ interface FlashcardDeckListProps {
   onStudyCards?: (cards: Flashcard[], title: string) => void;
   onCreateCard: () => void;
   onGenerateAI: () => void;
+  activeDeck?: FlashcardDeck | null;
+  onReturnToStudy?: () => void;
 }
 
 export default function FlashcardDeckList({
@@ -40,7 +42,9 @@ export default function FlashcardDeckList({
   onToggleBookmark,
   onStudyCards,
   onCreateCard,
-  onGenerateAI
+  onGenerateAI,
+  activeDeck,
+  onReturnToStudy
 }: FlashcardDeckListProps) {
   // Support both controlled and uncontrolled states so interaction is guaranteed
   const [internalActiveView, setInternalActiveView] = useState<'decks' | 'all-cards' | 'due-cards' | 'bookmarked-cards'>('decks');
@@ -187,6 +191,18 @@ export default function FlashcardDeckList({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          {onReturnToStudy && (
+            <button
+              type="button"
+              onClick={onReturnToStudy}
+              className="cursor-pointer flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-sm"
+              title="Return to interactive study mode"
+            >
+              <Play size={15} fill="currentColor" />
+              <span>Study Mode</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onGenerateAI}
@@ -810,133 +826,138 @@ export default function FlashcardDeckList({
                   <div
                     key={card.id}
                     id={`flashcard-item-${card.id}`}
-                    className="group bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/90 dark:border-slate-700/80 shadow-xs hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 transition-all p-5 flex flex-col justify-between"
+                    className="perspective-1000 w-full min-h-[300px] sm:min-h-[320px] h-[320px]"
                   >
-                    <div>
-                      {/* Top Badges: Deck, Subject, Topic & Bookmark */}
-                      <div className="flex items-start justify-between gap-2 mb-3">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          {/* Subject Badge */}
-                          <span className="px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40">
-                            {card.subject || 'General'}
-                          </span>
-
-                          {/* Topic Badge */}
-                          {card.topic && (
-                            <span className="px-2 py-0.5 rounded-md text-[11px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700/60 line-clamp-1 max-w-[140px]">
-                              {card.topic}
+                    <div
+                      onClick={() => toggleCardAnswer(card.id)}
+                      className={`card-flip-container relative w-full h-full cursor-pointer rounded-2xl select-none ${
+                        isExpanded ? 'flipped' : ''
+                      }`}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={isExpanded ? `Card back for ${card.front}. Tap to flip back.` : `Card front: ${card.front}. Tap to reveal answer.`}
+                    >
+                      {/* FRONT FACE (MATCHING STUDY JOURNEY CARD DESIGN) */}
+                      <div className="card-face card-face-front absolute inset-0 w-full h-full bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/90 dark:border-slate-700/80 shadow-md hover:shadow-lg transition-shadow p-5 flex flex-col justify-between text-center overflow-hidden">
+                        {/* Top Badges */}
+                        <div className="flex items-start justify-between gap-2 w-full">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/40">
+                              Question
                             </span>
-                          )}
-
-                          {/* Deck Badge */}
-                          {card.deckName && card.deckName !== card.subject && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 line-clamp-1 max-w-[120px]">
-                              {card.deckName}
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300">
+                              {card.subject || 'General'}
                             </span>
-                          )}
-                        </div>
-
-                        {/* Bookmark Button */}
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onToggleBookmark) onToggleBookmark(card.id);
-                          }}
-                          aria-label={card.bookmarked ? 'Remove bookmark' : 'Bookmark flashcard'}
-                          className={`cursor-pointer p-1.5 rounded-lg transition-colors ${
-                            card.bookmarked
-                              ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40'
-                              : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50/50 dark:hover:bg-rose-950/30'
-                          }`}
-                        >
-                          <Bookmark size={15} fill={card.bookmarked ? 'currentColor' : 'none'} />
-                        </button>
-                      </div>
-
-                      {/* Card Front (Question / Prompt) */}
-                      <div className="mb-3">
-                        <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 mb-1">
-                          Question / Front
-                        </div>
-                        <h4 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-white leading-relaxed">
-                          {card.front}
-                        </h4>
-                      </div>
-
-                      {/* Toggle Answer Button */}
-                      <button
-                        type="button"
-                        onClick={() => toggleCardAnswer(card.id)}
-                        className="cursor-pointer inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 py-1 transition-colors select-none"
-                      >
-                        {isExpanded ? <EyeOff size={13} /> : <Eye size={13} />}
-                        <span>{isExpanded ? 'Hide Answer' : 'Show Answer'}</span>
-                      </button>
-
-                      {/* Card Back (Answer & Explanation) */}
-                      {isExpanded && (
-                        <div className="mt-2.5 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 space-y-2 text-xs">
-                          <div>
-                            <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">
-                              Answer / Back
-                            </div>
-                            <p className="text-sm font-medium text-slate-800 dark:text-slate-100 leading-relaxed">
-                              {card.back}
-                            </p>
+                            {card.difficulty && (
+                              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
+                                {card.difficulty}
+                              </span>
+                            )}
                           </div>
 
+                          {/* Bookmark */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (onToggleBookmark) onToggleBookmark(card.id);
+                            }}
+                            aria-label={card.bookmarked ? 'Remove bookmark' : 'Bookmark flashcard'}
+                            className={`cursor-pointer p-1.5 rounded-lg transition-colors ${
+                              card.bookmarked
+                                ? 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40'
+                                : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50/50'
+                            }`}
+                          >
+                            <Bookmark size={15} fill={card.bookmarked ? 'currentColor' : 'none'} />
+                          </button>
+                        </div>
+
+                        {/* Front Text */}
+                        <div className="my-auto py-2 px-1 flex-1 flex items-center justify-center">
+                          <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-white leading-relaxed line-clamp-5 break-words">
+                            {card.front}
+                          </p>
+                        </div>
+
+                        {/* Subtle flip prompt & Action */}
+                        <div className="pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-400 shrink-0">
+                          <span className="text-[11px] flex items-center gap-1.5 font-medium text-slate-500 dark:text-slate-400">
+                            <RotateCw size={13} className="text-blue-500 animate-pulse" />
+                            Tap card to reveal answer
+                          </span>
+                          {onStudyCards && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onStudyCards([card], card.topic || card.subject || 'Study Card');
+                              }}
+                              className="cursor-pointer text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 px-2 py-1 rounded-lg transition-colors flex items-center gap-1"
+                            >
+                              <span>Study</span>
+                              <Play size={10} fill="currentColor" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* BACK FACE (MATCHING STUDY JOURNEY CARD DESIGN) */}
+                      <div className="card-face card-face-back absolute inset-0 w-full h-full bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/90 dark:border-slate-700/80 shadow-md hover:shadow-lg transition-shadow p-5 flex flex-col justify-between text-left overflow-hidden">
+                        {/* Top Badges */}
+                        <div className="flex items-start justify-between gap-2 w-full shrink-0 mb-1">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40">
+                            Correct Answer
+                          </span>
+                          <span className="text-[10px] text-slate-400">Tap to flip back</span>
+                        </div>
+
+                        {/* Back Text, Explanation & Example */}
+                        <div 
+                          className="my-auto py-1.5 overflow-y-auto space-y-2.5 max-h-[190px] pr-1.5 flex-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white leading-snug break-words">
+                            {card.back}
+                          </p>
                           {card.explanation && (
-                            <div className="pt-2 border-t border-slate-200/50 dark:border-slate-800/80">
-                              <span className="font-semibold text-slate-600 dark:text-slate-300">Explanation: </span>
-                              <span className="text-slate-500 dark:text-slate-400 leading-relaxed">{card.explanation}</span>
+                            <div className="pt-2 border-t border-slate-100 dark:border-slate-700/60">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                Explanation
+                              </span>
+                              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed break-words">
+                                {card.explanation}
+                              </p>
                             </div>
                           )}
-
                           {card.example && (
-                            <div className="pt-1 text-slate-500 dark:text-slate-400">
-                              <span className="font-semibold text-slate-600 dark:text-slate-300">Example: </span>
-                              <span>{card.example}</span>
+                            <div className="pt-1.5 text-xs text-slate-600 dark:text-slate-300 bg-blue-50/50 dark:bg-blue-950/20 p-2 rounded-lg">
+                              <span className="font-semibold text-blue-600 dark:text-blue-400">Example: </span>
+                              <span className="italic">{card.example}</span>
                             </div>
                           )}
                         </div>
-                      )}
-                    </div>
 
-                    {/* Card Status Footer */}
-                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-2 text-xs">
-                      <div className="flex items-center gap-1.5">
-                        {/* Due Status */}
-                        {isDue ? (
-                          <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-900/40">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                            Due Today
+                        {/* Footer */}
+                        <div className="pt-2.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs text-slate-400 shrink-0">
+                          <span className="text-[11px] truncate max-w-[160px] font-medium text-slate-500 dark:text-slate-400">
+                            {card.topic || card.subject}
                           </span>
-                        ) : (
-                          <span className="text-[11px] text-slate-400 dark:text-slate-500">
-                            {formatNextReview(card.nextReview)}
-                          </span>
-                        )}
-
-                        {/* Rating tag if available */}
-                        {card.rating && (
-                          <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700/60">
-                            {card.rating}
-                          </span>
-                        )}
+                          {onStudyCards && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onStudyCards([card], card.topic || card.subject || 'Study Card');
+                              }}
+                              className="cursor-pointer text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 px-2 py-1 rounded-lg transition-colors flex items-center gap-1"
+                            >
+                              <span>Study</span>
+                              <Play size={10} fill="currentColor" />
+                            </button>
+                          )}
+                        </div>
                       </div>
-
-                      {/* Study Individual Card */}
-                      {onStudyCards && (
-                        <button
-                          type="button"
-                          onClick={() => onStudyCards([card], card.topic || card.subject || 'Single Card')}
-                          className="cursor-pointer flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 px-2.5 py-1 rounded-lg transition-colors"
-                        >
-                          <span>Study</span>
-                          <Play size={10} fill="currentColor" />
-                        </button>
-                      )}
                     </div>
                   </div>
                 );

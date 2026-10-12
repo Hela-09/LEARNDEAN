@@ -16,6 +16,9 @@ interface FlashcardStudyScreenProps {
   onRateCard: (cardId: string, rating: 'Again' | 'Hard' | 'Good' | 'Easy') => Promise<void>;
   onToggleBookmark: (cardId: string) => Promise<void>;
   onContinueToPractice?: () => void;
+  extraActions?: React.ReactNode;
+  embedded?: boolean;
+  deckSelector?: React.ReactNode;
 }
 
 export default function FlashcardStudyScreen({
@@ -27,7 +30,10 @@ export default function FlashcardStudyScreen({
   onExit,
   onRateCard,
   onToggleBookmark,
-  onContinueToPractice
+  onContinueToPractice,
+  extraActions,
+  embedded = false,
+  deckSelector
 }: FlashcardStudyScreenProps) {
   const [cards, setCards] = useState<Flashcard[]>(initialCards);
   const [currentIndex, setCurrentIndex] = useState(initialCardIndex);
@@ -191,7 +197,7 @@ export default function FlashcardStudyScreen({
     const hasDifficult = counts.Again > 0 || counts.Hard > 0;
 
     return (
-      <div className="fixed inset-0 z-[60] bg-slate-50 dark:bg-slate-900 overflow-y-auto flex flex-col justify-between p-4 sm:p-6 md:p-8 pb-[calc(2rem+env(safe-area-inset-bottom))]">
+      <div className={embedded ? "w-full max-w-2xl mx-auto flex flex-col justify-between py-6 min-h-[500px] pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-8" : "fixed inset-0 z-[60] bg-slate-50 dark:bg-slate-900 overflow-y-auto flex flex-col justify-between p-4 sm:p-6 md:p-8 pb-[calc(2rem+env(safe-area-inset-bottom))]"}>
         {/* Top bar */}
         <div className="w-full max-w-2xl mx-auto flex items-center justify-between pb-6">
           <div>
@@ -289,12 +295,12 @@ export default function FlashcardStudyScreen({
 
   if (!currentCard) {
     return (
-      <div className="fixed inset-0 z-[60] bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-6">
+      <div className={embedded ? "w-full py-16 flex items-center justify-center p-6" : "fixed inset-0 z-[60] bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-6"}>
         <div className="text-center">
           <p className="text-slate-600 dark:text-slate-400 mb-4">No cards found in this study deck.</p>
           <button
             onClick={onExit}
-            className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-semibold"
+            className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-semibold cursor-pointer"
           >
             Return to Decks
           </button>
@@ -304,7 +310,7 @@ export default function FlashcardStudyScreen({
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-slate-50 dark:bg-slate-900 overflow-y-auto flex flex-col justify-between select-none">
+    <div className={embedded ? "w-full max-w-3xl mx-auto flex flex-col justify-between select-none py-2 min-h-[calc(100vh-140px)]" : "fixed inset-0 z-[60] bg-slate-50 dark:bg-slate-900 overflow-y-auto flex flex-col justify-between select-none"}>
       {/* Toast for Shuffle */}
       <AnimatePresence>
         {shuffleToast && (
@@ -324,9 +330,12 @@ export default function FlashcardStudyScreen({
         <div className="flex items-center justify-between gap-3 mb-3">
           {/* Subject & Topic */}
           <div className="flex flex-col min-w-0">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate">
-              {subject || currentCard.subject || 'Biology'}
-            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 truncate">
+                {subject || currentCard.subject || 'Biology'}
+              </span>
+              {deckSelector}
+            </div>
             <h1 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white truncate">
               {topic || currentCard.topic || deckName || 'Cell Structure'}
             </h1>
@@ -355,6 +364,8 @@ export default function FlashcardStudyScreen({
             >
               <Shuffle size={20} />
             </button>
+
+            {extraActions}
 
             <button
               onClick={() => setShowExitModal(true)}
@@ -490,50 +501,50 @@ export default function FlashcardStudyScreen({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.2 }}
-                className="grid grid-cols-4 gap-2 sm:gap-3 w-full"
+                className="grid grid-cols-4 gap-1.5 sm:gap-3 w-full"
               >
                 {/* Again Button */}
                 <button
                   onClick={(e) => { e.stopPropagation(); handleRatingSelect('Again'); }}
                   disabled={savingRating}
-                  className="py-3 px-2 rounded-2xl font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 dark:bg-red-950/30 dark:border-red-900/50 dark:text-red-300 transition-all flex flex-col items-center justify-center touch-manipulation active:scale-95 disabled:opacity-50"
+                  className="py-2.5 sm:py-3 px-1 sm:px-2 rounded-xl sm:rounded-2xl font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 dark:bg-red-950/30 dark:border-red-900/50 dark:text-red-300 transition-all flex flex-col items-center justify-center touch-manipulation active:scale-95 disabled:opacity-50"
                   aria-label="Rate Again - repeat within 1 minute"
                 >
-                  <span className="text-sm sm:text-base">Again</span>
-                  <span className="text-[10px] text-red-500/80 font-medium">&lt; 1m</span>
+                  <span className="text-xs sm:text-sm md:text-base">Again</span>
+                  <span className="text-[9px] sm:text-[10px] text-red-500/80 font-medium">&lt; 1m</span>
                 </button>
 
                 {/* Hard Button */}
                 <button
                   onClick={(e) => { e.stopPropagation(); handleRatingSelect('Hard'); }}
                   disabled={savingRating}
-                  className="py-3 px-2 rounded-2xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-900/50 dark:text-amber-300 transition-all flex flex-col items-center justify-center touch-manipulation active:scale-95 disabled:opacity-50"
+                  className="py-2.5 sm:py-3 px-1 sm:px-2 rounded-xl sm:rounded-2xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 dark:bg-amber-950/30 dark:border-amber-900/50 dark:text-amber-300 transition-all flex flex-col items-center justify-center touch-manipulation active:scale-95 disabled:opacity-50"
                   aria-label="Rate Hard - review in 10 minutes"
                 >
-                  <span className="text-sm sm:text-base">Hard</span>
-                  <span className="text-[10px] text-amber-500/80 font-medium">10m</span>
+                  <span className="text-xs sm:text-sm md:text-base">Hard</span>
+                  <span className="text-[9px] sm:text-[10px] text-amber-500/80 font-medium">10m</span>
                 </button>
 
                 {/* Good Button */}
                 <button
                   onClick={(e) => { e.stopPropagation(); handleRatingSelect('Good'); }}
                   disabled={savingRating}
-                  className="py-3 px-2 rounded-2xl font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-300 transition-all flex flex-col items-center justify-center touch-manipulation active:scale-95 disabled:opacity-50"
+                  className="py-2.5 sm:py-3 px-1 sm:px-2 rounded-xl sm:rounded-2xl font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-300 transition-all flex flex-col items-center justify-center touch-manipulation active:scale-95 disabled:opacity-50"
                   aria-label="Rate Good - review in 1 day"
                 >
-                  <span className="text-sm sm:text-base">Good</span>
-                  <span className="text-[10px] text-emerald-500/80 font-medium">1d</span>
+                  <span className="text-xs sm:text-sm md:text-base">Good</span>
+                  <span className="text-[9px] sm:text-[10px] text-emerald-500/80 font-medium">1d</span>
                 </button>
 
                 {/* Easy Button */}
                 <button
                   onClick={(e) => { e.stopPropagation(); handleRatingSelect('Easy'); }}
                   disabled={savingRating}
-                  className="py-3 px-2 rounded-2xl font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-900/50 dark:text-blue-300 transition-all flex flex-col items-center justify-center touch-manipulation active:scale-95 disabled:opacity-50"
+                  className="py-2.5 sm:py-3 px-1 sm:px-2 rounded-xl sm:rounded-2xl font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-900/50 dark:text-blue-300 transition-all flex flex-col items-center justify-center touch-manipulation active:scale-95 disabled:opacity-50"
                   aria-label="Rate Easy - review in 4 days"
                 >
-                  <span className="text-sm sm:text-base">Easy</span>
-                  <span className="text-[10px] text-blue-500/80 font-medium">4d</span>
+                  <span className="text-xs sm:text-sm md:text-base">Easy</span>
+                  <span className="text-[9px] sm:text-[10px] text-blue-500/80 font-medium">4d</span>
                 </button>
               </motion.div>
             ) : (
@@ -552,19 +563,24 @@ export default function FlashcardStudyScreen({
       </main>
 
       {/* BOTTOM NAVIGATION: PREVIOUS & NEXT CARD */}
-      <footer className="w-full max-w-3xl mx-auto px-4 sm:px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-2 shrink-0">
+      <footer className={`w-full max-w-3xl mx-auto px-4 sm:px-6 pt-2 shrink-0 ${
+        embedded 
+          ? 'pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-[calc(1.5rem+env(safe-area-inset-bottom))]' 
+          : 'pb-[calc(1.5rem+env(safe-area-inset-bottom))]'
+      }`}>
         <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 pt-4">
           <button
             onClick={handlePrev}
             disabled={currentIndex === 0}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors ${
+            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-colors ${
               currentIndex === 0
                 ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
                 : 'text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800'
             }`}
           >
-            <ArrowLeft size={18} />
-            <span>Previous Card</span>
+            <ArrowLeft size={16} />
+            <span>Previous</span>
+            <span className="hidden sm:inline">Card</span>
           </button>
 
           <div className="text-xs font-semibold text-slate-400">
@@ -573,10 +589,11 @@ export default function FlashcardStudyScreen({
 
           <button
             onClick={handleNext}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
-            <span>{currentIndex === cards.length - 1 ? 'Finish' : 'Next Card'}</span>
-            <ArrowRight size={18} />
+            <span>{currentIndex === cards.length - 1 ? 'Finish' : 'Next'}</span>
+            <span className="hidden sm:inline">{currentIndex === cards.length - 1 ? '' : 'Card'}</span>
+            <ArrowRight size={16} />
           </button>
         </div>
       </footer>

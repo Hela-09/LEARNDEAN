@@ -429,6 +429,24 @@
         "updatedAt": { "type": "number" }
       },
       "required": ["bankId", "totalQuestions", "updatedAt"]
+    },
+    "AuthEvent": {
+      "title": "AuthEvent",
+      "description": "Authentication event tracking log (logins, failed attempts, logouts)",
+      "type": "object",
+      "properties": {
+        "eventType": { "type": "string" },
+        "loginMethod": { "type": "string" },
+        "email": { "type": "string" },
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "errorCode": { "type": "string" },
+        "errorMessage": { "type": "string" },
+        "userAgent": { "type": "string" },
+        "platform": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["eventType", "loginMethod", "email", "timestamp"]
     }
   },
   "firestore": {
@@ -535,6 +553,10 @@
     "subject_history/{docId}": {
       "schema": { "$ref": "#/entities/SubjectHistory" },
       "description": "Subject History."
+    },
+    "auth_events/{docId}": {
+      "schema": { "$ref": "#/entities/AuthEvent" },
+      "description": "Authentication event tracking logs for logins, failures, and logouts."
     }
   }
 }

@@ -143,6 +143,12 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
     }
 
+    match /auth_events/{docId} {
+      allow read: if isSuperAdmin();
+      allow create: if true;
+      allow update, delete: if isSuperAdmin();
+    }
+
     match /user_jamb_profile/{docId} {
       allow get: if isAuthenticated() && (request.auth.uid == docId || isSuperAdmin());
       allow list: if isAuthenticated() && (request.auth.uid == docId || isSuperAdmin());

@@ -26,10 +26,11 @@ import {
   Upload,
   File
 } from 'lucide-react';
-import { StudyNote, NoteAttachment, NoteFlashcard, NotePracticeQuestion } from '../../types';
+import { StudyNote, NoteAttachment, NoteFlashcard, NotePracticeQuestion, Flashcard } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
-import { saveUserNote, saveNoteFlashcardsToDeck, SAMPLE_NOTES } from '../../utils/notesService';
+import { saveUserNote, saveNoteFlashcardsToDeck } from '../../utils/notesService';
 import { useNavigate } from 'react-router-dom';
+import FlashcardStudyScreen from '../flashcards/FlashcardStudyScreen';
 
 export interface CombineFileItem {
   id: string;
@@ -92,6 +93,7 @@ export default function CombineNotes({
   // Combined Result Study Set
   const [combinedResult, setCombinedResult] = useState<StudyNote | null>(null);
   const [activeResultTab, setActiveResultTab] = useState<'content' | 'summary' | 'flashcards' | 'practice'>('content');
+  const [isStudyingFlashcards, setIsStudyingFlashcards] = useState(false);
 
   // AI Generation on Combined Result
   const [aiGenerating, setAiGenerating] = useState<'summary' | 'flashcards' | 'practice' | null>(null);
@@ -198,21 +200,6 @@ export default function CombineNotes({
         });
       }
     });
-
-    // E. If no notes exist yet, add sample curriculum study notes so user can immediately combine
-    if (list.length === 0) {
-      SAMPLE_NOTES.forEach((s, idx) => {
-        addUnique({
-          id: `sample_note_${idx}`,
-          name: s.title,
-          subject: s.subject,
-          topic: s.topic,
-          content: s.content,
-          uploadedAt: Date.now() - (idx + 1) * 86400000,
-          sourceType: 'sample'
-        });
-      });
-    }
 
     return list;
   }, [savedNotes, currentEditorAttachments, currentEditorContent, currentEditorTitle, currentEditorSubject, directUploadedFiles]);
@@ -576,6 +563,46 @@ export default function CombineNotes({
     }
   };
 
+  if (isStudyingFlashcards && combinedResult?.flashcards && combinedResult.flashcards.length > 0) {
+    const studyCards: Flashcard[] = combinedResult.flashcards.map((c, idx) => ({
+      id: `combined_fc_${idx}`,
+      uid: user?.uid || 'guest',
+      subject: combinedResult.subject || 'General',
+      topic: combinedResult.title,
+      front: c.front,
+      back: c.back,
+      explanation: c.explanation || '',
+      difficulty: 'Medium',
+      reviews: 0
+    }));
+
+    return (
+      <FlashcardStudyScreen
+        deckName={combinedResult.title}
+        subject={combinedResult.subject || 'General'}
+        topic={combinedResult.title}
+        cards={studyCards}
+        onExit={() => setIsStudyingFlashcards(false)}
+        onRateCard={async () => {}}
+        onToggleBookmark={async () => {}}
+        onContinueToPractice={() => {
+          setIsStudyingFlashcards(false);
+          setActiveResultTab('practice');
+        }}
+        extraActions={
+          <button
+            type="button"
+            onClick={handleSaveFlashcards}
+            className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-sm flex items-center gap-1"
+          >
+            <Bookmark size={13} />
+            <span>Save Deck</span>
+          </button>
+        }
+      />
+    );
+  }
+
   return (
     <div className="w-full flex flex-col gap-6 animate-in fade-in duration-200">
       {/* HEADER BANNER */}
@@ -891,6 +918,14 @@ export default function CombineNotes({
                   {combinedResult.flashcards.length} Cards Generated from Combined Files
                 </span>
                 <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsStudyingFlashcards(true)}
+                    className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+                  >
+                    <Layers size={14} />
+                    <span>Study Flashcards</span>
+                  </button>
                   <button
                     type="button"
                     onClick={handleSaveFlashcards}

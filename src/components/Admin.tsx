@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
 import { collection, query, orderBy, limit, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { 
-  Users, BookOpen, BrainCircuit, Settings, ShieldAlert, 
+  Users, BookOpen, BrainCircuit, Settings, ShieldAlert, ShieldCheck, 
   BarChart3, Search, CheckCircle2, ChevronRight, X, Clock, CreditCard, ExternalLink, Activity,
   Ban, FileText, Filter, AlertTriangle, RefreshCw
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import AiUsageAdminTab from './AiUsageAdminTab';
+import AuthTrackingAdminTab from './AuthTrackingAdminTab';
 import UserReportModal from './UserReportModal';
 
 export default function Admin() {
@@ -44,6 +45,7 @@ export default function Admin() {
         <TabButton active={activeTab === 'new'} onClick={() => setActiveTab('new')} icon={Users} label="New Users" />
         <TabButton active={activeTab === 'disabled'} onClick={() => setActiveTab('disabled')} icon={Ban} label="Disabled Accounts" />
         <TabButton active={activeTab === 'all'} onClick={() => setActiveTab('all')} icon={Users} label="All Accounts" />
+        <TabButton active={activeTab === 'auth_tracking'} onClick={() => setActiveTab('auth_tracking')} icon={ShieldCheck} label="Auth & Login Tracking" />
         <TabButton active={activeTab === 'ai_usage'} onClick={() => setActiveTab('ai_usage')} icon={BrainCircuit} label="AI Usage & Analytics" />
       </div>
 
@@ -51,6 +53,8 @@ export default function Admin() {
       <div className="p-4 sm:p-6 pb-32 sm:pb-36">
         {activeTab === 'ai_usage' ? (
           <AiUsageAdminTab />
+        ) : activeTab === 'auth_tracking' ? (
+          <AuthTrackingAdminTab />
         ) : (
           <UsersTab activeTab={activeTab} />
         )}

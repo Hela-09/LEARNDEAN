@@ -2,7 +2,14 @@ import { doc, getDoc, setDoc, addDoc, collection } from 'firebase/firestore';
 import { db, isFirestoreQuotaExhausted } from '../lib/firebase';
 import { StudyNote, NoteFlashcard, NotePracticeQuestion } from '../types';
 
-const LOCAL_NOTES_KEY = 'zetadu_user_study_notes';
+const getLocalNotesKey = (uid: string) => `zetadu_user_study_notes_${uid}`;
+
+// Clean up legacy unscoped key if present
+try {
+  if (typeof window !== 'undefined' && localStorage.getItem('zetadu_user_study_notes')) {
+    localStorage.removeItem('zetadu_user_study_notes');
+  }
+} catch (_) {}
 
 export const SAMPLE_NOTES = [
   {
@@ -71,24 +78,24 @@ Major Stages:
 ];
 
 export async function getUserNotes(uid: string): Promise<StudyNote[]> {
+  if (!uid) return [];
+  const localKey = getLocalNotesKey(uid);
   try {
-    if (uid) {
-      const snap = await getDoc(doc(db, 'notes', uid));
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data && Array.isArray(data.notes)) {
-          localStorage.setItem(LOCAL_NOTES_KEY, JSON.stringify(data.notes));
-          return data.notes as StudyNote[];
-        }
+    const snap = await getDoc(doc(db, 'notes', uid));
+    if (snap.exists()) {
+      const data = snap.data();
+      if (data && Array.isArray(data.notes)) {
+        localStorage.setItem(localKey, JSON.stringify(data.notes));
+        return data.notes as StudyNote[];
       }
     }
   } catch (err) {
-    console.warn("Firestore notes fetch error (falling back to local cache):", err);
+    console.warn("Firestore notes fetch error (falling back to user local cache):", err);
   }
 
-  // Fallback to local storage
+  // Fallback to user-scoped local storage only
   try {
-    const raw = localStorage.getItem(LOCAL_NOTES_KEY);
+    const raw = localStorage.getItem(localKey);
     if (raw) {
       return JSON.parse(raw) as StudyNote[];
     }
@@ -98,8 +105,10 @@ export async function getUserNotes(uid: string): Promise<StudyNote[]> {
 }
 
 export async function saveUserNote(uid: string, note: StudyNote): Promise<void> {
+  if (!uid) return;
+  const localKey = getLocalNotesKey(uid);
   try {
-    // 1. Update local cache immediately
+    // 1. Update user local cache immediately
     const existing = await getUserNotes(uid);
     const index = existing.findIndex(n => n.id === note.id);
     let updated: StudyNote[];
@@ -109,10 +118,10 @@ export async function saveUserNote(uid: string, note: StudyNote): Promise<void> 
     } else {
       updated = [note, ...existing];
     }
-    localStorage.setItem(LOCAL_NOTES_KEY, JSON.stringify(updated));
+    localStorage.setItem(localKey, JSON.stringify(updated));
 
     // 2. Persist to Firestore
-    if (uid && !isFirestoreQuotaExhausted()) {
+    if (!isFirestoreQuotaExhausted()) {
       await setDoc(doc(db, 'notes', uid), {
         uid,
         notes: updated,
@@ -125,12 +134,14 @@ export async function saveUserNote(uid: string, note: StudyNote): Promise<void> 
 }
 
 export async function deleteUserNote(uid: string, noteId: string): Promise<void> {
+  if (!uid) return;
+  const localKey = getLocalNotesKey(uid);
   try {
     const existing = await getUserNotes(uid);
     const updated = existing.filter(n => n.id !== noteId);
-    localStorage.setItem(LOCAL_NOTES_KEY, JSON.stringify(updated));
+    localStorage.setItem(localKey, JSON.stringify(updated));
 
-    if (uid && !isFirestoreQuotaExhausted()) {
+    if (!isFirestoreQuotaExhausted()) {
       await setDoc(doc(db, 'notes', uid), {
         uid,
         notes: updated,

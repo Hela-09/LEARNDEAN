@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   collection, query, where, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, increment, writeBatch 
@@ -6,11 +7,13 @@ import {
 import { db } from '../lib/firebase';
 import { 
   Layers, Plus, Sparkles, Bookmark, ArrowLeft, 
-  RotateCcw, CheckCircle, AlertCircle, Play, Edit3, Trash2, Check, Square, Info
+  RotateCcw, CheckCircle, AlertCircle, Play, Edit3, Trash2, Check, Square, Info,
+  ChevronDown, Maximize2, Minimize2, X, RefreshCw
 } from 'lucide-react';
 import { Flashcard, FlashcardDeck } from '../types';
 import FlashcardStudyScreen from './flashcards/FlashcardStudyScreen';
 import FlashcardDeckList from './flashcards/FlashcardDeckList';
+import { generateTopicFlashcards } from '../utils/studyJourneyContent';
 
 // Helper to normalize any Firestore timestamp representation (number, Timestamp, Date string)
 const normalizeTimestamp = (val: any): number | undefined => {
@@ -35,16 +38,21 @@ const normalizeTimestamp = (val: any): number | undefined => {
 
 export default function Flashcards({ setView }: { setView?: (v: any) => void }) {
   const { user, getToken } = useAuth();
-  const [mode, setMode] = useState<'dashboard' | 'create' | 'study' | 'generate' | 'post_generate'>('dashboard');
+  const routeParams = useParams<{ subjectId?: string }>();
+  const subjectId = routeParams.subjectId;
 
-  const navigateToMode = (newMode: 'dashboard' | 'create' | 'study' | 'generate' | 'post_generate') => {
+  const [mode, setMode] = useState<'study' | 'dashboard' | 'create' | 'generate' | 'post_generate'>('study');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [deckDropdownOpen, setDeckDropdownOpen] = useState(false);
+  const [generationSuccessBanner, setGenerationSuccessBanner] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const navigateToMode = (newMode: 'study' | 'dashboard' | 'create' | 'generate' | 'post_generate') => {
     setMode(newMode);
   };
 
   const exitToDashboard = () => {
     setMode('dashboard');
-    setActiveDeck(null);
-    setStudyCards([]);
   };
   
   // Decks & Cards state
@@ -120,10 +128,74 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
     return structuredDecks;
   }, [allCards]);
 
+  // Default starter cards for new users or when empty
+  const defaultStarterCards: Flashcard[] = useMemo(() => {
+    return generateTopicFlashcards(
+      'Biology',
+      'Cell Structure & Organization',
+      'JAMB / UTME',
+      10,
+      [],
+      user?.uid || 'guest'
+    );
+  }, [user?.uid]);
+
+  // Ensure we always have structured decks (including starter deck if user has no decks yet)
+  const displayDecks: FlashcardDeck[] = useMemo(() => {
+    if (decks.length > 0) return decks;
+    const starterDeck: FlashcardDeck = {
+      id: 'starter_biology_deck',
+      name: 'Biology: Cell Structure',
+      subject: 'Biology',
+      topic: 'Cell Structure & Organization',
+      cardCount: defaultStarterCards.length,
+      dueTodayCount: defaultStarterCards.length,
+      bookmarkedCount: 0,
+      cards: defaultStarterCards,
+      lastReviewed: Date.now()
+    };
+    return [starterDeck];
+  }, [decks, defaultStarterCards]);
+
   // Active study state
   const [activeDeck, setActiveDeck] = useState<FlashcardDeck | null>(null);
   const [studyCards, setStudyCards] = useState<Flashcard[]>([]);
   const [initialStudyCardIndex, setInitialStudyCardIndex] = useState(0);
+
+  // Auto-select initial deck to study
+  useEffect(() => {
+    if (!activeDeck && displayDecks.length > 0) {
+      let targetDeck = displayDecks[0];
+      if (subjectId) {
+        const found = displayDecks.find(d => 
+          d.subject.toLowerCase() === subjectId.toLowerCase() ||
+          d.name.toLowerCase().includes(subjectId.toLowerCase())
+        );
+        if (found) targetDeck = found;
+      } else {
+        const dueDeck = displayDecks.find(d => (d.dueTodayCount || 0) > 0);
+        if (dueDeck) targetDeck = dueDeck;
+      }
+
+      setActiveDeck(targetDeck);
+      setStudyCards(targetDeck.cards);
+    }
+  }, [activeDeck, displayDecks, subjectId]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDeckDropdownOpen(false);
+      }
+    };
+    if (deckDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [deckDropdownOpen]);
 
   // Manual create state
   const [formData, setFormData] = useState({
@@ -249,10 +321,8 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
   }, [user]);
 
   useEffect(() => {
-    if (mode === 'dashboard') {
-      fetchFlashcards();
-    }
-  }, [mode, fetchFlashcards]);
+    fetchFlashcards();
+  }, [fetchFlashcards]);
 
   // Handle draft flashcard saved by Quiz or Mistake converter
   useEffect(() => {
@@ -437,10 +507,151 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
 
   // EXIT STUDY SESSION
   const handleExitStudy = () => {
-    exitToDashboard();
-    setActiveDeck(null);
-    setStudyCards([]);
+    setMode('dashboard');
   };
+
+  // Render deck switcher dropdown in header
+  const renderDeckSelector = () => (
+    <div className="relative inline-block text-left" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setDeckDropdownOpen(prev => !prev)}
+        className="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700/60 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700 transition-colors shadow-2xs"
+        aria-label="Switch deck"
+        title="Switch deck or filter"
+      >
+        <span className="truncate max-w-[130px] sm:max-w-[190px]">
+          {activeDeck ? activeDeck.name : 'Select Deck'}
+        </span>
+        <ChevronDown size={13} className={`text-slate-400 transition-transform ${deckDropdownOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {deckDropdownOpen && (
+        <div className="absolute left-0 mt-1.5 w-72 sm:w-80 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl z-[80] p-2 space-y-1 animate-in fade-in-50 zoom-in-95">
+          <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center justify-between">
+            <span>Switch Deck ({displayDecks.length})</span>
+            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">{allCards.length} cards total</span>
+          </div>
+
+          <div className="max-h-56 overflow-y-auto space-y-1 pr-1">
+            {displayDecks.map(d => {
+              const isSelected = activeDeck?.id === d.id;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => {
+                    handleSelectDeck(d);
+                    setDeckDropdownOpen(false);
+                  }}
+                  className={`cursor-pointer w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-colors ${
+                    isSelected
+                      ? 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-bold'
+                      : 'hover:bg-slate-100 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  <div className="min-w-0 pr-2">
+                    <p className="truncate font-semibold">{d.name}</p>
+                    <p className="text-[10px] text-slate-400 truncate">{d.topic}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 text-[10px]">
+                    <span className="text-slate-400">{d.cardCount} cards</span>
+                    {d.dueTodayCount > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 font-bold">
+                        {d.dueTodayCount} due
+                      </span>
+                    )}
+                    {isSelected && <Check size={14} className="text-blue-600 dark:text-blue-400 ml-1" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="pt-1.5 border-t border-slate-100 dark:border-slate-700/80 space-y-0.5">
+            <button
+              type="button"
+              onClick={() => {
+                setDeckDropdownOpen(false);
+                setMode('dashboard');
+              }}
+              className="cursor-pointer w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"
+            >
+              <Layers size={14} className="text-blue-500" />
+              <span>Browse All Decks Library</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDeckDropdownOpen(false);
+                setMode('generate');
+              }}
+              className="cursor-pointer w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2"
+            >
+              <Sparkles size={14} />
+              <span>Generate New Deck with AI</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDeckDropdownOpen(false);
+                setMode('create');
+              }}
+              className="cursor-pointer w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-2"
+            >
+              <Plus size={14} />
+              <span>Create Custom Flashcard</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // Render header study action buttons
+  const renderStudyActions = () => (
+    <>
+      <button
+        type="button"
+        onClick={() => setMode('dashboard')}
+        className="p-2.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+        title="Browse All Decks"
+        aria-label="Browse All Decks"
+      >
+        <Layers size={20} />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setMode('generate')}
+        className="p-2.5 rounded-full text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+        title="Generate with AI"
+        aria-label="Generate with AI"
+      >
+        <Sparkles size={20} />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setMode('create')}
+        className="p-2.5 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+        title="Create Flashcard"
+        aria-label="Create Flashcard"
+      >
+        <Plus size={20} />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => setIsFullscreen(prev => !prev)}
+        className="p-2.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+        title={isFullscreen ? "Exit Fullscreen" : "Fullscreen Mode"}
+        aria-label={isFullscreen ? "Exit Fullscreen" : "Fullscreen Mode"}
+      >
+        {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+      </button>
+    </>
+  );
 
   // CREATE MANUAL FLASHCARD
   const handleCreate = async (e: React.FormEvent) => {
@@ -675,11 +886,17 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
       setAllCards(prev => [...prev, ...savedCards]);
       setGeneratedDeck(newDeck);
       setGeneratedCards(savedCards);
+      setActiveDeck(newDeck);
+      setStudyCards(savedCards);
+      setInitialStudyCardIndex(0);
       setIsEditingCards(false);
       setEditingCardId(null);
+      setGenerationSuccessBanner(
+        `Successfully generated and saved ${savedCards.length} flashcards for ${cleanSubject}: ${cleanTopic}! Ready to study now.`
+      );
       
-      // Move immediately to post-generation display screen
-      setMode('post_generate');
+      // Move immediately to Study Journey study screen
+      setMode('study');
     } catch (e: any) {
       if (e?.name === 'AbortError' || controller.signal.aborted) {
         setGenerationStatus("AI generation stopped by user. Your topic details have been safely preserved.");
@@ -782,19 +999,60 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
     }
   };
 
-  // 1. STUDY MODE (FOCUSED SESSION)
-  if (mode === 'study' && activeDeck && studyCards.length > 0) {
+  // 1. STUDY MODE (FOCUSED SESSION USING STUDY JOURNEY DESIGN & BEHAVIOR)
+  if (mode === 'study') {
+    const currentDeckToStudy = activeDeck || displayDecks[0];
+    const currentCardsToStudy = studyCards.length > 0 
+      ? studyCards 
+      : (currentDeckToStudy?.cards && currentDeckToStudy.cards.length > 0 
+          ? currentDeckToStudy.cards 
+          : defaultStarterCards);
+
     return (
-      <FlashcardStudyScreen
-        deckName={activeDeck.name}
-        subject={activeDeck.subject}
-        topic={activeDeck.topic}
-        cards={studyCards}
-        initialCardIndex={initialStudyCardIndex}
-        onExit={handleExitStudy}
-        onRateCard={handleRateCard}
-        onToggleBookmark={handleToggleBookmark}
-      />
+      <div className={isFullscreen ? "fixed inset-0 z-[70] bg-slate-50 dark:bg-slate-900 overflow-y-auto" : "w-full min-w-0"}>
+        {generationSuccessBanner && (
+          <div className="max-w-3xl mx-auto mb-3 p-3.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 rounded-2xl flex items-center justify-between border border-emerald-200 dark:border-emerald-900/50 shadow-xs">
+            <div className="flex items-center gap-2.5 text-xs sm:text-sm font-semibold">
+              <CheckCircle size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>{generationSuccessBanner}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setMode('post_generate')}
+                className="text-xs font-bold text-emerald-700 dark:text-emerald-300 underline hover:no-underline cursor-pointer"
+              >
+                Edit Cards
+              </button>
+              <button
+                type="button"
+                onClick={() => setGenerationSuccessBanner(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 cursor-pointer"
+                aria-label="Dismiss message"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        <FlashcardStudyScreen
+          deckName={currentDeckToStudy?.name || 'Flashcard Deck'}
+          subject={currentDeckToStudy?.subject || 'Flashcards'}
+          topic={currentDeckToStudy?.topic || 'General Topics'}
+          cards={currentCardsToStudy}
+          initialCardIndex={initialStudyCardIndex}
+          onExit={handleExitStudy}
+          onRateCard={handleRateCard}
+          onToggleBookmark={handleToggleBookmark}
+          onContinueToPractice={() => {
+            if (setView) setView('practice');
+          }}
+          extraActions={renderStudyActions()}
+          deckSelector={renderDeckSelector()}
+          embedded={!isFullscreen}
+        />
+      </div>
     );
   }
 
@@ -1343,7 +1601,7 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
 
   return (
     <FlashcardDeckList
-      decks={decks}
+      decks={displayDecks}
       allCards={allCards}
       totalCardsCount={totalCardsCount}
       totalDueCount={totalDueCount}
@@ -1362,6 +1620,8 @@ export default function Flashcards({ setView }: { setView?: (v: any) => void }) 
         setGenerationError(null);
         navigateToMode('generate');
       }}
+      activeDeck={activeDeck}
+      onReturnToStudy={() => setMode('study')}
     />
   );
 }

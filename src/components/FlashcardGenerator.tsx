@@ -1,22 +1,21 @@
 import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowLeft, Sparkles, BookOpen, ChevronLeft, ChevronRight, Loader2, RotateCcw, Square, Info } from 'lucide-react';
+import { ArrowLeft, Sparkles, BookOpen, Loader2, RotateCcw, Square, Info } from 'lucide-react';
+import FlashcardStudyScreen from './flashcards/FlashcardStudyScreen';
+import { Flashcard as FlashcardType } from '../types';
 
-interface Flashcard {
+interface GeneratedCardItem {
   front: string;
   back: string;
 }
 
 export default function Flashcards({ onBack }: { onBack: () => void }) {
-  const { getToken } = useAuth();
+  const { user, getToken } = useAuth();
   const [inputText, setInputText] = useState('');
   const [count, setCount] = useState(10);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
+  const [flashcards, setFlashcards] = useState<GeneratedCardItem[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleStopGeneration = () => {
@@ -60,8 +59,6 @@ export default function Flashcards({ onBack }: { onBack: () => void }) {
       const data = await response.json();
       if (data.flashcards && data.flashcards.length > 0) {
         setFlashcards(data.flashcards);
-        setCurrentIndex(0);
-        setIsFlipped(false);
       }
     } catch (error: any) {
       if (error?.name === 'AbortError' || controller.signal.aborted) {
@@ -76,93 +73,32 @@ export default function Flashcards({ onBack }: { onBack: () => void }) {
     }
   };
 
-  const nextCard = () => {
-    if (currentIndex < flashcards.length - 1) {
-      setIsFlipped(false);
-      setTimeout(() => setCurrentIndex(prev => prev + 1), 150);
-    }
-  };
-
-  const prevCard = () => {
-    if (currentIndex > 0) {
-      setIsFlipped(false);
-      setTimeout(() => setCurrentIndex(prev => prev - 1), 150);
-    }
-  };
-
   const resetGenerator = () => {
     setFlashcards([]);
     setInputText('');
-    setCurrentIndex(0);
-    setIsFlipped(false);
   };
 
   if (flashcards.length > 0) {
+    const studyCards: FlashcardType[] = flashcards.map((c, idx) => ({
+      id: `gen_fc_${idx}`,
+      uid: user?.uid || 'guest',
+      subject: 'Flashcards',
+      topic: 'Generated Flashcards',
+      front: c.front,
+      back: c.back,
+      reviews: 0
+    }));
+
     return (
-      <div className="w-full max-w-4xl mx-auto pb-12 flex flex-col items-center">
-        <div className="w-full flex items-center justify-between mb-8">
-          <button onClick={() => onBack()} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors">
-            <ArrowLeft size={24} />
-          </button>
-          <div className="flex items-center gap-2">
-            <span className="px-4 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full font-bold text-sm">
-              {currentIndex + 1} / {flashcards.length}
-            </span>
-          </div>
-          <button onClick={resetGenerator} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors" title="Create New">
-            <RotateCcw size={20} />
-          </button>
-        </div>
-
-        <div className="w-full max-w-2xl relative h-[400px] perspective-1000">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentIndex + (isFlipped ? '-back' : '-front')}
-              initial={{ rotateX: isFlipped ? -90 : 90, opacity: 0 }}
-              animate={{ rotateX: 0, opacity: 1 }}
-              exit={{ rotateX: isFlipped ? 90 : -90, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 cursor-pointer"
-              onClick={() => setIsFlipped(!isFlipped)}
-              style={{ transformStyle: 'preserve-3d' }}
-            >
-              <div className={`w-full h-full rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-xl border-2 ${
-                isFlipped 
-                  ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800' 
-                  : 'bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700'
-              }`}>
-                <span className="text-sm font-bold tracking-widest uppercase mb-6 text-slate-400">
-                  {isFlipped ? 'Answer' : 'Question'}
-                </span>
-                <p className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white leading-tight">
-                  {isFlipped ? flashcards[currentIndex].back : flashcards[currentIndex].front}
-                </p>
-                <div className="absolute bottom-6 text-sm text-slate-400 font-medium flex items-center gap-2">
-                  <RotateCcw size={14} /> Click to flip
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        <div className="flex items-center gap-6 mt-10">
-          <button 
-            onClick={prevCard} 
-            disabled={currentIndex === 0}
-            className="w-14 h-14 rounded-full flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronLeft size={24} className="text-slate-700 dark:text-slate-300" />
-          </button>
-          
-          <button 
-            onClick={nextCard} 
-            disabled={currentIndex === flashcards.length - 1}
-            className="w-14 h-14 rounded-full flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <ChevronRight size={24} className="text-slate-700 dark:text-slate-300" />
-          </button>
-        </div>
-      </div>
+      <FlashcardStudyScreen
+        deckName="Generated Flashcards"
+        subject="Notes"
+        topic="Generated Study Deck"
+        cards={studyCards}
+        onExit={resetGenerator}
+        onRateCard={async () => {}}
+        onToggleBookmark={async () => {}}
+      />
     );
   }
 

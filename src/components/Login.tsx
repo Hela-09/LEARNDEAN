@@ -6,6 +6,7 @@ import { Loader2, ArrowLeft, Eye, EyeOff, KeyRound, CheckCircle2, ShieldCheck, M
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from 'firebase/auth';
 import { auth, db, isFirestoreQuotaExhausted } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import { trackAuthEvent } from '../services/authTrackingService';
 
 type ViewState = 'login' | 'register' | 'forgot-password' | 'create-password';
 
@@ -108,7 +109,8 @@ export default function Login({ forceCreatePassword = false }: LoginProps) {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password) {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) {
       setError('Please enter both email and password.');
       return;
     }
@@ -116,9 +118,25 @@ export default function Login({ forceCreatePassword = false }: LoginProps) {
     try {
       clearError();
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password);
+      const userCredential = await signInWithEmailAndPassword(auth, cleanEmail, password);
+      // Track successful email/password login
+      trackAuthEvent({
+        eventType: 'login_success',
+        loginMethod: 'password',
+        email: userCredential.user.email || cleanEmail,
+        uid: userCredential.user.uid,
+        displayName: userCredential.user.displayName || ''
+      });
     } catch (err: any) {
       console.error(err);
+      // Track failed email/password login attempt (passwords NEVER stored)
+      trackAuthEvent({
+        eventType: 'login_failure',
+        loginMethod: 'password',
+        email: cleanEmail,
+        errorCode: err?.code || 'auth/invalid-credential',
+        errorMessage: translateError(err)
+      });
       setError(translateError(err));
       setLoading(false);
     }
@@ -208,8 +226,24 @@ export default function Login({ forceCreatePassword = false }: LoginProps) {
           console.warn('[Auth] Failed to write initial profile to Firestore:', dbErr);
         }
       }
+
+      // Track successful signup/login
+      trackAuthEvent({
+        eventType: 'login_success',
+        loginMethod: 'password',
+        email: trimmedEmail,
+        uid: userCredential.user.uid,
+        displayName: fullName
+      });
     } catch (err: any) {
       console.error(err);
+      trackAuthEvent({
+        eventType: 'login_failure',
+        loginMethod: 'password',
+        email: trimmedEmail,
+        errorCode: err?.code || 'auth/signup-failed',
+        errorMessage: translateError(err)
+      });
       setError(translateError(err));
       setLoading(false);
     }

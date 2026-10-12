@@ -9,10 +9,12 @@ import {
   Save, BookOpen, ChevronLeft, ChevronRight, AlertCircle, Loader2,
   ExternalLink, File, Image as ImageIcon, Plus, Clock, Bookmark, X, Square, Info
 } from 'lucide-react';
-import { ViewType, StudyNote, NoteFlashcard, NotePracticeQuestion, NoteAttachment } from '../types';
+import { ViewType, StudyNote, NoteFlashcard, NotePracticeQuestion, NoteAttachment, Flashcard as FlashcardType } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserNotes, saveUserNote, deleteUserNote, saveNoteFlashcardsToDeck, SAMPLE_NOTES } from '../utils/notesService';
 import CombineNotes from './notes/CombineNotes';
+import FlashcardStudyScreen from './flashcards/FlashcardStudyScreen';
+import { backgroundTasksService, TaskType } from '../services/backgroundTasksService';
 
 interface UploadNotesProps {
   setView: (view: ViewType) => void;
@@ -54,8 +56,13 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
   const [aiError, setAiError] = useState<string | null>(null);
   const [processingCanceledNotice, setProcessingCanceledNotice] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const activeTaskIdRef = useRef<string | null>(null);
 
   const handleStopProcessing = () => {
+    if (activeTaskIdRef.current) {
+      backgroundTasksService.cancelTask(user?.uid || 'guest', activeTaskIdRef.current);
+      activeTaskIdRef.current = null;
+    }
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
@@ -126,6 +133,53 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
   useEffect(() => {
     if (user?.uid) {
       loadHistory();
+    }
+  }, [user?.uid]);
+
+  // Restore active or recent background activities when navigating back to Upload Notes
+  useEffect(() => {
+    const uid = user?.uid || 'guest';
+    const activeTask = backgroundTasksService.getActiveTask(uid);
+    if (activeTask && activeTask.type.startsWith('notes_')) {
+      activeTaskIdRef.current = activeTask.id;
+      const rawAction = activeTask.type.replace('notes_', '');
+      const action = (rawAction === 'summary' ? 'summarize' : rawAction) as ProcessingAction;
+      setProcessingAction(action);
+      setProcessingStatus(activeTask.statusMessage || 'Processing in background...');
+
+      const unsubscribe = backgroundTasksService.subscribe(activeTask.id, (task) => {
+        if (task.status === 'completed' && task.result) {
+          const res = task.result.result;
+          if (task.result.action === 'summarize') {
+            setSummaryText(res?.summary || '');
+            setActiveTab('summary');
+          } else if (task.result.action === 'explain') {
+            setExplanationText(res?.explanation || '');
+            setActiveTab('explain');
+          } else if (task.result.action === 'flashcards') {
+            setGeneratedFlashcards(res?.flashcards || []);
+            setActiveTab('flashcards');
+          } else if (task.result.action === 'questions') {
+            setGeneratedQuestions(res?.questions || []);
+            setSelectedAnswers({});
+            setSubmittedQuestions({});
+            setActiveTab('questions');
+          }
+          setProcessingAction(null);
+          setProcessingStatus('');
+          activeTaskIdRef.current = null;
+        } else if (task.status === 'failed') {
+          setAiError(task.error || 'Background task failed');
+          setProcessingAction(null);
+          setProcessingStatus('');
+          activeTaskIdRef.current = null;
+        } else if (task.status === 'cancelled') {
+          setProcessingAction(null);
+          setProcessingStatus('');
+          activeTaskIdRef.current = null;
+        }
+      });
+      return () => unsubscribe();
     }
   }, [user?.uid]);
 
@@ -297,6 +351,24 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
+    const taskType: TaskType = action === 'summarize' ? 'notes_summary'
+      : action === 'explain' ? 'notes_explain'
+      : action === 'flashcards' ? 'notes_flashcards'
+      : 'notes_questions';
+
+    const { taskId, signal } = backgroundTasksService.registerTask(
+      user?.uid || 'guest',
+      taskType,
+      `Notes AI: ${action.charAt(0).toUpperCase() + action.slice(1)} (${noteSubject})`,
+      `Processing ${action}...`
+    );
+    activeTaskIdRef.current = taskId;
+
+    // Listen for cancel from background service
+    signal.addEventListener('abort', () => {
+      controller.abort();
+    });
+
     try {
       const token = await getToken();
       const response = await fetch('/api/process-notes', {
@@ -340,6 +412,9 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
         throw new Error(result?.error || `Processing failed with status ${response.status}`);
       }
 
+      // Mark background task complete
+      backgroundTasksService.completeTask(user?.uid || 'guest', taskId, { action, result });
+
       if (action === 'summarize') {
         setSummaryText(result.summary || 'Summary generated.');
         setActiveTab('summary');
@@ -377,13 +452,16 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
       }
     } catch (err: any) {
       if (err?.name === 'AbortError' || controller.signal.aborted) {
+        backgroundTasksService.cancelTask(user?.uid || 'guest', taskId, 'Processing stopped by user');
         setProcessingCanceledNotice('AI processing stopped by user. Your notes, inputs, and drafts have been safely preserved.');
         return;
       }
+      backgroundTasksService.failTask(user?.uid || 'guest', taskId, err?.message || 'Processing failed');
       console.error(`AI processing error for ${action}:`, err);
       setAiError(err.message || 'Failed to process notes with AI. Please try again.');
     } finally {
       abortControllerRef.current = null;
+      activeTaskIdRef.current = null;
       setProcessingAction(null);
       setProcessingStatus('');
     }
@@ -1229,152 +1307,62 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
 
       {/* 4. FLASHCARDS VIEW TAB */}
       {activeTab === 'flashcards' && generatedFlashcards.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-700">
-            <div>
-              <div className="flex items-center gap-2">
-                <Layers size={20} className="text-indigo-500" />
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-                  Interactive Study Flashcards
-                </h2>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Generated from your notes • Card {currentCardIndex + 1} of {generatedFlashcards.length}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => openCountModal('flashcards')}
-                className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-                title="Regenerate flashcards with a new count"
-              >
-                <RotateCcw size={14} /> Regenerate
-              </button>
-
+        <FlashcardStudyScreen
+          deckName={noteTitle.trim() || `${noteSubject} Notes Deck`}
+          subject={noteSubject || 'Notes'}
+          topic={noteTopic.trim() || noteTitle.trim() || 'Study Notes'}
+          cards={generatedFlashcards.map((card, idx) => ({
+            id: `note_fc_${idx}`,
+            uid: user?.uid || 'guest',
+            subject: noteSubject || 'Notes',
+            topic: noteTopic.trim() || noteTitle.trim() || 'Study Notes',
+            front: card.front,
+            back: card.back,
+            explanation: card.explanation || '',
+            difficulty: 'Medium',
+            reviews: 0
+          }))}
+          onExit={() => setActiveTab('editor')}
+          onRateCard={async () => {}}
+          onToggleBookmark={async () => {}}
+          onContinueToPractice={() => openCountModal('questions')}
+          extraActions={
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <button
                 id="save-deck-btn"
                 onClick={handleSaveFlashcardsToDecks}
                 disabled={isSavingDeck}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shadow-sm ${
                   deckSaveSuccess
                     ? 'bg-emerald-600 text-white'
                     : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                 }`}
+                title="Save generated flashcards as a permanent deck"
               >
                 {deckSaveSuccess ? (
                   <>
-                    <Check size={14} /> Saved to Flashcard Decks!
+                    <Check size={13} /> Saved!
                   </>
                 ) : isSavingDeck ? (
                   <>
-                    <Loader2 size={14} className="animate-spin" /> Saving...
+                    <Loader2 size={13} className="animate-spin" /> Saving...
                   </>
                 ) : (
                   <>
-                    <Save size={14} /> Save to My Decks
+                    <Save size={13} /> Save Deck
                   </>
                 )}
               </button>
-
               <button
                 onClick={() => setView('flashcards')}
-                className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                className="hidden sm:flex px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all items-center gap-1 cursor-pointer"
+                title="Open All Decks"
               >
-                <BookOpen size={14} /> Open All Decks
+                <BookOpen size={13} /> All Decks
               </button>
             </div>
-          </div>
-
-          {/* Interactive Flip Flashcard Box */}
-          <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-4 py-4">
-            <div
-              onClick={() => setIsCardFlipped(!isCardFlipped)}
-              className="w-full min-h-[300px] sm:min-h-[340px] p-8 rounded-3xl bg-gradient-to-br from-indigo-50/70 via-white to-blue-50/50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950/40 border-2 border-indigo-200 dark:border-indigo-900/60 shadow-lg cursor-pointer flex flex-col justify-between transition-all hover:scale-[1.01] relative group select-none"
-            >
-              <div className="flex items-center justify-between text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider">
-                <span>{isCardFlipped ? 'Answer & Explanation' : 'Question / Concept'}</span>
-                <span className="text-slate-400 font-normal normal-case">Click to flip ↷</span>
-              </div>
-
-              <div className="my-auto py-4 text-center">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentCardIndex + (isCardFlipped ? '-back' : '-front')}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {!isCardFlipped ? (
-                      <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-snug">
-                        {generatedFlashcards[currentCardIndex]?.front}
-                      </p>
-                    ) : (
-                      <div className="flex flex-col gap-3">
-                        <p className="text-lg sm:text-xl font-bold text-indigo-900 dark:text-indigo-200 leading-snug">
-                          {generatedFlashcards[currentCardIndex]?.back}
-                        </p>
-                        {generatedFlashcards[currentCardIndex]?.explanation && (
-                          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 italic pt-2 border-t border-indigo-100 dark:border-indigo-900/50">
-                            {generatedFlashcards[currentCardIndex]?.explanation}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Card {currentCardIndex + 1} of {generatedFlashcards.length}</span>
-                <span className="text-[11px] font-medium text-slate-500">
-                  {isCardFlipped ? 'Click to show question' : 'Click to reveal answer'}
-                </span>
-              </div>
-            </div>
-
-            {/* Carousel Controls */}
-            <div className="flex items-center gap-4">
-              <button
-                id="prev-card-btn"
-                onClick={() => {
-                  if (currentCardIndex > 0) {
-                    setIsCardFlipped(false);
-                    setCurrentCardIndex(prev => prev - 1);
-                  }
-                }}
-                disabled={currentCardIndex === 0}
-                className="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
-                title="Previous card"
-              >
-                <ChevronLeft size={20} />
-              </button>
-
-              <button
-                onClick={() => setIsCardFlipped(!isCardFlipped)}
-                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition-colors cursor-pointer"
-              >
-                {isCardFlipped ? 'Show Question' : 'Reveal Answer'}
-              </button>
-
-              <button
-                id="next-card-btn"
-                onClick={() => {
-                  if (currentCardIndex < generatedFlashcards.length - 1) {
-                    setIsCardFlipped(false);
-                    setCurrentCardIndex(prev => prev + 1);
-                  }
-                }}
-                disabled={currentCardIndex === generatedFlashcards.length - 1}
-                className="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm cursor-pointer"
-                title="Next card"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
+          }
+        />
       )}
 
       {/* 5. PRACTICE QUESTIONS QUIZ TAB */}

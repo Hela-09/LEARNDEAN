@@ -15,6 +15,7 @@ import {
 import { auth, googleProvider, db, isFirestoreQuotaExhausted } from '../lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from 'firebase/firestore';
 import { jambOfflineDb } from '../services/jambOfflineDb';
+import { trackAuthEvent } from '../services/authTrackingService';
 
 export interface UserSettings {
   fontSize: "small" | "medium" | "large";
@@ -713,6 +714,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(result.user);
         setLoading(false);
 
+        // Track successful Google sign-in
+        trackAuthEvent({
+          eventType: 'login_success',
+          loginMethod: 'google',
+          email: result.user.email || '',
+          uid: result.user.uid,
+          displayName: result.user.displayName || ''
+        });
+
         // Check if user already has a password provider linked
         const hasPassword = result.user.providerData.some((p) => p.providerId === 'password');
         
@@ -725,6 +735,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (err: any) {
       console.error("Firebase Google Sign-In Error:", err?.code, err?.message, err);
+
+      // Track failed Google sign-in
+      trackAuthEvent({
+        eventType: 'login_failure',
+        loginMethod: 'google',
+        errorCode: err?.code || 'auth/google-error',
+        errorMessage: err?.message || 'Google sign-in failed'
+      });
+
       if (err.code === 'auth/popup-blocked') {
         setError("Popup blocked by browser. Please allow popups or try again.");
       } else if (err.code === 'auth/cancelled-popup-request' || err.code === 'auth/popup-closed-by-user') {
@@ -744,6 +763,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     if (!auth) return;
     try {
+      if (user?.email) {
+        trackAuthEvent({
+          eventType: 'logout',
+          email: user.email,
+          uid: user.uid,
+          displayName: user.displayName || userProfile?.name
+        });
+      }
+
       localStorage.removeItem("practice_session");
       localStorage.removeItem("tutor_session");
       localStorage.removeItem("zetadu_current_view");
