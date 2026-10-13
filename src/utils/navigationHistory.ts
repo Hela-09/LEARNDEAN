@@ -82,6 +82,7 @@ export function getContextualFallback(pathname: string): string {
   if (clean === '/profile') return '/home';
 
   if (clean === '/ai-tutor' || clean === '/tutor') return '/learn';
+  if (clean === '/classroom' || clean === '/ai-classroom') return '/learn';
   if (clean === '/flashcards' || clean.startsWith('/flashcards/')) return '/learn';
   if (clean === '/study-journey' || clean === '/journey') return '/learn';
   if (clean === '/weak-topics') return '/learn';
@@ -106,7 +107,7 @@ export function getPreviousPath(): string | null {
 export const SECTION_ROOTS: Record<string, string> = {
   home: '/home',
   learn: '/learn',
-  tutor: '/ai-tutor',
+  classroom: '/classroom',
   upload: '/upload-notes',
   study: '/study',
 };
@@ -115,19 +116,24 @@ export const SECTION_ROOTS: Record<string, string> = {
  * Determines which of the 5 root navbar sections a given URL path belongs to:
  * 1. Home (/home)
  * 2. Learn (/learn, /library, /subjects, /novels, /flashcards, etc.)
- * 3. AI Tutor (/ai-tutor, /tutor) [Center Logo]
+ * 3. AI Classroom (/classroom, /ai-classroom) [Center Logo]
  * 4. Upload (/upload-notes)
  * 5. Study (/study, /jamb, /practice - Practice & JAMB inside Study)
  */
-export function getSectionForPath(path: string): 'home' | 'learn' | 'tutor' | 'upload' | 'study' | '' {
+export function getSectionForPath(path: string): 'home' | 'learn' | 'classroom' | 'upload' | 'study' | '' {
   const clean = path.split('?')[0].replace(/\/+$/, '') || '/';
 
   if (clean.startsWith('/upload-notes') || clean.startsWith('/upload')) {
     return 'upload';
   }
 
-  if (clean.startsWith('/ai-tutor') || clean.startsWith('/tutor')) {
-    return 'tutor';
+  if (
+    clean.startsWith('/classroom') ||
+    clean.startsWith('/ai-classroom') ||
+    clean.startsWith('/ai-tutor') ||
+    clean.startsWith('/tutor')
+  ) {
+    return 'classroom';
   }
 
   // Study: includes /study, /jamb, and /practice ("Practice is inside Study")
@@ -145,6 +151,8 @@ export function getSectionForPath(path: string): 'home' | 'learn' | 'tutor' | 'u
     clean.startsWith('/subjects') ||
     clean.startsWith('/novels') ||
     clean.startsWith('/flashcards') ||
+    clean.startsWith('/classroom') ||
+    clean.startsWith('/ai-classroom') ||
     clean.startsWith('/study-journey') ||
     clean.startsWith('/journey') ||
     clean.startsWith('/weak-topics')

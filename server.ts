@@ -1806,6 +1806,183 @@ ${text || '(Notes provided in the attached document/image)'}`;
     }
   });
 
+  // AI Classroom - Step-by-step Digital Chalkboard Teacher
+  app.post("/api/ai/classroom-lesson", optionalAuth, async (req, res) => {
+    try {
+      const { subject, topic, level } = req.body;
+      if (!subject || !topic) {
+        return res.status(400).json({ error: "Subject and topic are required." });
+      }
+
+      const ai = getGeminiClient();
+      const prompt = `You are a world-class, engaging, passionate educational teacher teaching a lesson on a digital chalkboard.
+Subject: ${subject}
+Topic: ${topic}
+Education Level: ${level || 'Senior Secondary (SSS / WAEC / JAMB)'}
+
+Generate a comprehensive, pedagogically sound lesson broken into 5 to 6 sequential chalkboard steps:
+1. Foundations / Core Concept & Definition
+2. The Mathematical Law / Fundamental Principle
+3. Chalkboard Diagram & Visual Model
+4. Step-by-Step Worked Problem with numbers, substitutions, and units
+5. Real-World Applications & Common Exam Traps to avoid
+6. Quick Concept Mastery Check (with an interactive quiz)
+
+Each step MUST contain:
+- stepTitle: Title of the step (e.g. "1. Concept & Definition")
+- spokenExplanation: 3-5 sentences of natural, engaging, oral classroom explanation as if speaking aloud to students. Clear, warm, enthusiastic.
+- chalkboard:
+  - heading: Big title to write in chalk
+  - bulletPoints: 3 to 4 concise points written in chalk style
+  - equation: (optional) Formatted formula or key relationship
+  - chalkColor: One of 'white', 'yellow', 'cyan', 'pink', 'emerald'
+  - highlightNote: (optional) Brief exam alert or key rule
+  - diagram: (optional, especially on step 3) {
+      type: 'coordinate_graph' | 'free_body_diagram' | 'flowchart' | 'geometry' | 'chemical_reaction' | 'circuit',
+      caption: string,
+      labels: string[]
+    }
+  - workedExample: (optional, especially on step 4) {
+      problem: string,
+      given: string,
+      solutionSteps: string[],
+      answer: string
+    }
+- quiz: (optional, on step 6) {
+    question: string,
+    options: string[] (exactly 4 options),
+    correctIndex: number (0-3),
+    explanation: string
+  }
+
+Return strict JSON conforming to this structure:
+{
+  "title": string,
+  "summary": string,
+  "steps": [ ... ]
+}`;
+
+      const config = {
+        responseMimeType: "application/json",
+      };
+
+      let response;
+      try {
+        response = await ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt,
+          config,
+        });
+      } catch (err: any) {
+        if (err?.status === 503 || err?.message?.includes("503") || err?.status === "UNAVAILABLE" || err?.error?.code === 503) {
+          response = await ai.models.generateContent({
+            model: 'gemini-3.1-flash-lite',
+            contents: prompt,
+            config,
+          });
+        } else {
+          throw err;
+        }
+      }
+
+      const responseText = response.text;
+      if (!responseText) throw new Error("No response text from Gemini");
+
+      const parsed = JSON.parse(responseText);
+      const lesson = {
+        id: `lesson_${Date.now()}`,
+        title: parsed.title || `${topic}: Chalkboard Lesson`,
+        subject,
+        topic,
+        level: level || 'Secondary',
+        summary: parsed.summary || `A step-by-step digital chalkboard lesson on ${topic}.`,
+        steps: (parsed.steps || []).map((s: any, idx: number) => ({
+          id: s.id || idx + 1,
+          stepTitle: s.stepTitle || `Step ${idx + 1}`,
+          spokenExplanation: s.spokenExplanation || '',
+          chalkboard: {
+            heading: s.chalkboard?.heading || parsed.title || topic,
+            bulletPoints: s.chalkboard?.bulletPoints || [],
+            equation: s.chalkboard?.equation,
+            workedExample: s.chalkboard?.workedExample,
+            diagram: s.chalkboard?.diagram,
+            chalkColor: s.chalkboard?.chalkColor || (idx % 2 === 0 ? 'yellow' : 'cyan'),
+            highlightNote: s.chalkboard?.highlightNote,
+          },
+          quiz: s.quiz,
+        })),
+        createdAt: Date.now(),
+      };
+
+      res.json({ lesson });
+
+      // Track usage
+      const user = (req as any).user;
+      const uid = user?.uid || user?.user_id;
+      if (uid) {
+        const inputTokens = response.usageMetadata?.promptTokenCount ?? 0;
+        const outputTokens = response.usageMetadata?.candidatesTokenCount ?? 0;
+        try {
+          recordAiUsage({
+            uid,
+            email: user?.email || '',
+            category: 'tutor',
+            model: 'gemini-3.8-flash',
+            inputTokens,
+            outputTokens,
+            totalTokens: inputTokens + outputTokens,
+          });
+        } catch (_) {}
+      }
+    } catch (error: any) {
+      console.error("Classroom Lesson Error:", error);
+      res.status(500).json({ error: error.message || "Failed to generate classroom lesson" });
+    }
+  });
+
+  // AI Classroom - Ask follow-up question or simplify step
+  app.post("/api/ai/classroom-ask", optionalAuth, async (req, res) => {
+    try {
+      const { subject, topic, currentStepTitle, currentStepContent, question, isSimplify } = req.body;
+      const ai = getGeminiClient();
+
+      const prompt = `You are a supportive, insightful teacher explaining on a chalkboard during an academic lesson.
+Subject: ${subject}
+Topic: ${topic}
+Current Step: ${currentStepTitle}
+Current Board Content: ${currentStepContent}
+Student's Question: "${question}"
+Is Simplification Request: ${isSimplify ? 'YES' : 'NO'}
+
+Respond in character:
+1. spokenAnswer: 2-4 sentences of warm, encouraging explanation addressing the question directly. If this is a simplification request, use an everyday relatable analogy.
+2. chalkboardNotes: Array of 2-3 concise bullet points to write on the side chalkboard.
+3. clarifyingFormula: (optional) A brief formula or relationship if helpful.
+4. miniExample: (optional) A quick illustrative example.
+
+Return strict JSON:
+{
+  "spokenAnswer": string,
+  "chalkboardNotes": string[],
+  "clarifyingFormula": string,
+  "miniExample": string
+}`;
+
+      let response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+        config: { responseMimeType: "application/json" },
+      });
+
+      const responseText = response.text;
+      const parsed = JSON.parse(responseText);
+      res.json(parsed);
+    } catch (error: any) {
+      console.error("Classroom Ask Error:", error);
+      res.status(500).json({ error: error.message || "Failed to answer question" });
+    }
+  });
+
   app.all('/api/*', (req, res) => {
     res.status(404).json({ error: 'API route not found: ' + req.method + ' ' + req.url });
   });

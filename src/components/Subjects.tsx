@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, ChevronRight, Search, ChevronLeft, ArrowLeft, Star, Play, MessageSquare, BookMarked, BarChart3, FileText, Settings, Compass } from 'lucide-react';
+import { BookOpen, ChevronRight, Search, ChevronLeft, ArrowLeft, Star, Play, MessageSquare, BookMarked, BarChart3, FileText, Settings, Compass, GraduationCap } from 'lucide-react';
 import { appNavigateBack } from '../utils/navigationHistory';
 import { db } from '../lib/firebase';
 import { collection, getDocs, query, where, addDoc, updateDoc } from 'firebase/firestore';
@@ -134,8 +134,8 @@ export default function Subjects({ setView, initialSection }: { setView?: (view:
     
     if (action === 'practice') {
       navigate(`/practice/${currentSub.id}`);
-    } else if (action === 'tutor') {
-      navigate(`/ai-tutor?subject=${currentSub.id}`);
+    } else if (action === 'classroom' || action === 'tutor') {
+      navigate(`/classroom?subject=${encodeURIComponent(currentSub.id)}`);
     } else if (action === 'journey') {
       localStorage.setItem('zetadu_journey_preselect_subject', currentSub.name);
       navigate('/study-journey');
@@ -250,18 +250,18 @@ export default function Subjects({ setView, initialSection }: { setView?: (view:
           </button>
 
           <button 
-            onClick={() => handleAction('tutor')}
+            onClick={() => handleAction('classroom')}
             className="group p-6 md:p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 shadow-sm hover:shadow-xl transition-all flex flex-col items-start gap-4 md:gap-6 text-left relative overflow-hidden"
           >
             <div className="absolute -right-8 -bottom-8 text-slate-50 dark:text-slate-700/20 group-hover:text-emerald-50 dark:group-hover:text-emerald-900/10 transition-colors pointer-events-none transform group-hover:scale-110 duration-500">
-              <MessageSquare size={180} className="fill-current" />
+              <GraduationCap size={180} className="fill-current" />
             </div>
             <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform relative z-10">
-              <MessageSquare size={32} className="fill-current" />
+              <GraduationCap size={32} className="fill-current" />
             </div>
             <div className="relative z-10">
-              <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3">Study with AI Tutor</h3>
-              <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base leading-relaxed">Get personalized step-by-step explanations, ask questions, and learn at your own pace.</p>
+              <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2 md:mb-3">Study in AI Classroom</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base leading-relaxed">Experience step-by-step digital chalkboard lessons with voice explanations, equations, and interactive Q&A.</p>
             </div>
           </button>
         </div>

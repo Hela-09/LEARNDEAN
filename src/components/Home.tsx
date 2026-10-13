@@ -385,11 +385,11 @@ export default function Home({ setView }: HomeProps) {
 
       {/* Five Main Feature Layouts */}
       <div id="home-top-feature-layouts" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 w-full min-w-0">
-        <button id="quick-action-ai-tutor" onClick={() => setView('tutor')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
-          <div className="w-11 h-11 mb-2.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+        <button id="quick-action-ai-classroom" onClick={() => setView('classroom')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-emerald-500 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
+          <div className="w-11 h-11 mb-2.5 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
             <LearnDeanEmblem className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">AI Tutor</h3>
+          <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">AI Classroom</h3>
         </button>
         <button id="quick-action-upload-notes" onClick={() => setView('upload_notes')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
           <div className="w-11 h-11 mb-2.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -415,6 +415,40 @@ export default function Home({ setView }: HomeProps) {
           </div>
           <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">Practice</h3>
         </button>
+      </div>
+
+      {/* AI Classroom Chalkboard Feature Banner */}
+      <div
+        id="home-classroom-banner"
+        onClick={() => setView('classroom')}
+        className="w-full bg-gradient-to-r from-[#182920] to-[#1e3a2d] p-4 sm:p-5 rounded-3xl border-2 border-[#5c3a21] shadow-xl hover:shadow-2xl transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group text-white relative overflow-hidden"
+      >
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.06),transparent)] pointer-events-none" />
+        <div className="flex items-center gap-3.5 min-w-0 z-10">
+          <div className="w-12 h-12 rounded-2xl bg-[#4a2e18] border border-amber-600/40 text-amber-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-md">
+            <GraduationCap size={26} />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold tracking-wider uppercase border border-emerald-500/30">
+                NEW FEATURE
+              </span>
+              <span className="text-amber-200/80 font-mono text-xs">Digital Chalkboard</span>
+            </div>
+            <h3 className="text-base sm:text-lg font-bold font-mono tracking-wide text-white group-hover:text-amber-200 transition-colors truncate mt-0.5">
+              AI Classroom: Step-by-Step Chalkboard Teacher
+            </h3>
+            <p className="text-xs text-emerald-100/70 truncate max-w-xl">
+              Watch formulas, diagrams, and worked problems written in chalk while the AI teacher explains aloud.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 z-10 shrink-0 self-end sm:self-auto">
+          <span className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-md transition-all group-hover:translate-x-0.5">
+            <span>Enter Classroom</span>
+            <ArrowRight size={15} />
+          </span>
+        </div>
       </div>
 
       {/* Quick Search Bar Banner on Home */}
@@ -669,15 +703,15 @@ export default function Home({ setView }: HomeProps) {
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Pick up where you left off</p>
               </div>
             ) : (
-              <div onClick={() => setView('tutor')} className="group p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-500 cursor-pointer transition-colors">
+              <div onClick={() => setView('classroom')} className="group p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700 hover:border-emerald-300 dark:hover:border-emerald-500 cursor-pointer transition-colors">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-lg">
-                    <MessageSquare size={16} />
+                    <GraduationCap size={16} />
                   </div>
-                  <span className="font-bold text-sm text-slate-800 dark:text-white">AI Tutor</span>
+                  <span className="font-bold text-sm text-slate-800 dark:text-white">AI Classroom</span>
                 </div>
-                <h4 className="font-bold text-slate-900 dark:text-white truncate">Start a new session</h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ask questions or review a topic</p>
+                <h4 className="font-bold text-slate-900 dark:text-white truncate">Digital Chalkboard Lesson</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Interactive step-by-step teaching with voice</p>
               </div>
             )}
           </div>

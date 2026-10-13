@@ -44,11 +44,11 @@ export default function BottomNav({ currentView, setCurrentView }: BottomNavProp
       isCenter: false,
     },
     {
-      id: 'tutor',
-      label: 'AI Tutor',
+      id: 'classroom',
+      label: 'Classroom',
       icon: null, // Uses distinctive LearnDean AI Logo
-      rootPath: '/ai-tutor',
-      isActive: currentSection === 'tutor',
+      rootPath: '/classroom',
+      isActive: currentSection === 'classroom',
       isCenter: true,
     },
     {

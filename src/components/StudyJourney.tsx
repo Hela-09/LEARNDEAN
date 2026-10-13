@@ -26,7 +26,8 @@ import {
   Play,
   FileCheck,
   Search,
-  Square
+  Square,
+  GraduationCap
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { ViewType, Flashcard, StudyJourneyState, StudyJourneyQuestion, StudyJourneyLearnData } from '../types';
@@ -639,8 +640,9 @@ export default function StudyJourney({ setView }: StudyJourneyProps) {
     if (!journey) return;
     const promptText = customQuestion || `I'm studying the topic "${journey.topic}" in ${journey.subject} for ${journey.examType}. Can you explain the core concepts and help me understand where students usually make mistakes?`;
     localStorage.setItem('zetadu_target_subject', journey.subject);
+    localStorage.setItem('zetadu_classroom_topic', journey.topic);
     localStorage.setItem('zetadu_tutor_initial_query', promptText);
-    setView('tutor');
+    setView('classroom');
   };
 
   // -------------------------------------------------------------
@@ -1380,8 +1382,8 @@ export default function StudyJourney({ setView }: StudyJourneyProps) {
                 onClick={() => handleAskAITutorAboutTopic()}
                 className="w-full sm:w-auto px-6 py-3.5 rounded-xl border-2 border-emerald-500/50 hover:border-emerald-500 text-emerald-700 dark:text-emerald-400 font-bold transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-emerald-50/50"
               >
-                <MessageSquare size={18} />
-                <span>Ask AI Tutor</span>
+                <GraduationCap size={18} />
+                <span>Explain in AI Classroom</span>
               </button>
 
               {isGenerating && (
@@ -1691,8 +1693,8 @@ export default function StudyJourney({ setView }: StudyJourneyProps) {
                     }
                     className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-sm flex items-center gap-2"
                   >
-                    <MessageSquare size={16} />
-                    <span>Ask AI Tutor</span>
+                    <GraduationCap size={16} />
+                    <span>Explain in AI Classroom</span>
                   </button>
 
                   <button

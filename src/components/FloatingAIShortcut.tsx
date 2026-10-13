@@ -13,11 +13,12 @@ export default function FloatingAIShortcut({ onOpenTutor }: FloatingAIShortcutPr
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Hide the floating icon when the user is already inside the AI Tutor
-  const isTutorPage = 
+  // Hide the floating icon when the user is already inside the AI Classroom
+  const isClassroomPage = 
+    location.pathname === '/classroom' || 
+    location.pathname === '/ai-classroom' || 
     location.pathname === '/ai-tutor' || 
-    location.pathname === '/tutor' || 
-    location.pathname.startsWith('/ai-tutor/');
+    location.pathname === '/tutor';
 
   // Clamping helper to keep the icon inside safe visible screen bounds
   const clampPosition = useCallback((x: number, y: number) => {
@@ -109,12 +110,12 @@ export default function FloatingAIShortcut({ onOpenTutor }: FloatingAIShortcutPr
     };
   }, [clampPosition, getDefaultPosition]);
 
-  // Click handler to open AI Tutor
+  // Click handler to open AI Classroom
   const handleOpenAI = useCallback(() => {
     if (onOpenTutor) {
       onOpenTutor();
     } else {
-      navigate('/ai-tutor');
+      navigate('/classroom');
     }
   }, [navigate, onOpenTutor]);
 
@@ -197,8 +198,8 @@ export default function FloatingAIShortcut({ onOpenTutor }: FloatingAIShortcutPr
     }
   };
 
-  // Don't render on the AI Tutor page itself, or before initial position calculation
-  if (isTutorPage || !isReady || position.x < 0) {
+  // Don't render on the AI Classroom page itself, or before initial position calculation
+  if (isClassroomPage || !isReady || position.x < 0) {
     return null;
   }
 
@@ -217,8 +218,8 @@ export default function FloatingAIShortcut({ onOpenTutor }: FloatingAIShortcutPr
         id="learndean-floating-ai-shortcut-btn"
         role="button"
         tabIndex={0}
-        aria-label="Open LearnDean AI Tutor (draggable shortcut)"
-        title="Open AI Tutor (Drag to reposition)"
+        aria-label="Open LearnDean AI Classroom (draggable shortcut)"
+        title="Open AI Classroom (Drag to reposition)"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

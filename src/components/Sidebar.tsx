@@ -51,12 +51,12 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
       isTutor: false,
     },
     {
-      id: 'tutor',
-      label: 'AI Tutor',
+      id: 'classroom',
+      label: 'AI Classroom',
       icon: null, // Uses distinctive LearnDean AI logo
-      rootPath: '/ai-tutor',
-      isActive: currentSection === 'tutor',
-      isTutor: true,
+      rootPath: '/classroom',
+      isActive: currentSection === 'classroom',
+      isClassroom: true,
     },
     {
       id: 'upload',
@@ -134,7 +134,7 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = item.isActive;
-          const isTutor = item.isTutor;
+          const isClassroom = (item as any).isClassroom;
 
           return (
             <button
@@ -151,13 +151,13 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
               aria-current={isActive ? 'page' : undefined}
             >
               <div className="flex items-center space-x-3.5 truncate">
-                {isTutor ? (
-                  /* LearnDean AI Logo Emblem for AI Tutor */
+                {isClassroom ? (
+                  /* LearnDean AI Logo Emblem for AI Classroom */
                   <div
                     className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-transform ${
                       isActive
                         ? 'text-white scale-105'
-                        : 'text-blue-400 group-hover:scale-105'
+                        : 'text-emerald-400 group-hover:scale-105'
                     }`}
                   >
                     <LearnDeanEmblem className="w-5 h-5" active={isActive} monochrome={isActive} />

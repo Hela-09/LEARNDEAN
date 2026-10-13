@@ -16,6 +16,7 @@ import {
   Target,
   Flame,
   Zap,
+  GraduationCap,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -29,17 +30,17 @@ export default function LearnHub({ setView }: LearnHubProps) {
 
   const learningFeatures = [
     {
-      id: 'tutor',
-      title: 'AI Tutor',
-      badge: 'Socratic 1-on-1',
-      description: 'Ask any question, get instant step-by-step explanations, math solutions, and concept breakdowns in real-time.',
-      icon: MessageSquare,
-      gradient: 'from-blue-600 to-indigo-600',
-      badgeBg: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-      borderColor: 'hover:border-blue-500/60 dark:hover:border-blue-500/60',
-      iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-      ctaText: 'Open AI Tutor',
-      onClick: () => setView('tutor'),
+      id: 'classroom',
+      title: 'AI Classroom',
+      badge: 'Chalkboard & Voice',
+      description: 'Step-by-step educational AI teacher that writes equations, diagrams, and worked examples on a digital chalkboard while explaining aloud.',
+      icon: GraduationCap,
+      gradient: 'from-emerald-600 via-teal-600 to-blue-600',
+      badgeBg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+      borderColor: 'hover:border-emerald-500/60 dark:hover:border-emerald-500/60',
+      iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+      ctaText: 'Enter AI Classroom',
+      onClick: () => setView('classroom'),
     },
     {
       id: 'practice',

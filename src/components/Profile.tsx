@@ -1018,7 +1018,7 @@ export default function Profile({ setView, initialSection }: ProfileProps) {
           <button onClick={closeSection} className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer" aria-label="Back">
             <ArrowLeft size={20} />
           </button>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">AI Tutor History</h2>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">AI Classroom History</h2>
         </div>
         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 mb-6">
            <div className="relative mb-6">
@@ -1039,7 +1039,7 @@ export default function Profile({ setView, initialSection }: ProfileProps) {
                       <p className="text-sm text-slate-500">{item.subject} • {new Date(item.updatedAt).toLocaleDateString()}</p>
                    </div>
                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      <button onClick={() => { localStorage.setItem('tutor_active_conv', item.id); setView('tutor'); }} className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">Open</button>
+                      <button onClick={() => { localStorage.setItem('zetadu_classroom_topic', item.title); localStorage.setItem('zetadu_target_subject', item.subject); setView('classroom'); }} className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors cursor-pointer">Open in Classroom</button>
                       <button onClick={() => handleDelete(item.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"><Trash2 size={18} /></button>
                    </div>
                 </div>
@@ -1642,7 +1642,7 @@ export default function Profile({ setView, initialSection }: ProfileProps) {
         <ActionRow icon={BookOpen} title="Subjects & Curriculum" onClick={() => { window.scrollTo(0, 0); setView('subjects'); }} />
         <ActionRow icon={Clock} title="Recently Studied Subjects" onClick={() => handleAction('subject_history')} />
         <ActionRow icon={BrainCircuit} title="JAMB CBT & Practice History" value="View past questions, answers & explanations" onClick={() => handleAction('practice_history')} />
-        <ActionRow icon={MessageSquare} title="AI Tutor History" onClick={() => handleAction('tutor_history')} />
+        <ActionRow icon={GraduationCap} title="AI Classroom History" value="View lessons & migrated records" onClick={() => handleAction('tutor_history')} />
         <ActionRow icon={Bookmark} title="Saved Content & Notes" onClick={() => handleAction('saved')} />
       </div>
 

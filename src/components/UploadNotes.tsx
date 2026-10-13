@@ -1272,13 +1272,13 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
               <button
                 onClick={() => {
                   localStorage.setItem('zetadu_target_subject', noteSubject);
-                  localStorage.setItem('zetadu_target_topic', noteTopic || noteTitle);
-                  localStorage.setItem('zetadu_tutor_prompt', `Hello! I just uploaded notes on "${noteTitle || noteTopic}". Can you answer follow-up questions and test my understanding of these concepts?`);
-                  setView('tutor');
+                  localStorage.setItem('zetadu_classroom_topic', noteTopic || noteTitle);
+                  localStorage.setItem('zetadu_tutor_prompt', `Hello! I just uploaded notes on "${noteTitle || noteTopic}". Can you teach this step-by-step on the chalkboard and test my understanding of these concepts?`);
+                  setView('classroom');
                 }}
                 className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
               >
-                <span>Ask AI Tutor</span>
+                <span>Teach in AI Classroom</span>
                 <ExternalLink size={14} />
               </button>
             </div>

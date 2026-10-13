@@ -22,7 +22,6 @@ const SearchModal = lazy(() => import('./components/SearchModal'));
 const Home = React.lazy(() => import('./components/Home'));
 const Subjects = React.lazy(() => import('./components/Subjects'));
 const Practice = React.lazy(() => import('./components/Practice'));
-const Tutor = React.lazy(() => import('./components/Tutor'));
 const Profile = React.lazy(() => import('./components/Profile'));
 const Admin = React.lazy(() => import('./components/Admin'));
 const DailyChallenge = React.lazy(() => import('./components/DailyChallenge'));
@@ -34,9 +33,10 @@ const JambPrep = React.lazy(() => import('./components/jamb/JambPrep'));
 const StudyHub = React.lazy(() => import('./components/study/StudyHub'));
 const NovelsLibrary = React.lazy(() => import('./components/novels/NovelsLibrary'));
 const LearnHub = React.lazy(() => import('./components/LearnHub'));
+const AIClassroom = React.lazy(() => import('./components/AIClassroom'));
 
 function getEffectiveView(pathname: string): ViewType {
-  if (pathname === '/ai-tutor' || pathname === '/tutor') return 'tutor';
+  if (pathname === '/classroom' || pathname === '/ai-classroom' || pathname === '/ai-tutor' || pathname === '/tutor') return 'classroom';
   if (pathname === '/learn') return 'learn';
   if (pathname === '/library' || pathname === '/subjects' || pathname.startsWith('/subjects/') || pathname.startsWith('/library/')) return 'subjects';
   if (pathname.startsWith('/novels') || pathname === '/learn/novels') return 'novels';
@@ -335,9 +335,10 @@ export default function App() {
                 >
                   <Routes>
                     <Route path="/" element={<Navigate to="/home" replace />} />
-                    <Route path="/home" element={<Home setView={setCurrentView} />} />
-                    <Route path="/ai-tutor" element={<Tutor setCurrentView={setCurrentView} />} />
-                    <Route path="/tutor" element={<Navigate to="/ai-tutor" replace />} />
+                    <Route path="/classroom" element={<AIClassroom setView={setCurrentView} />} />
+                    <Route path="/ai-classroom" element={<Navigate to="/classroom" replace />} />
+                    <Route path="/ai-tutor" element={<Navigate to="/classroom" replace />} />
+                    <Route path="/tutor" element={<Navigate to="/classroom" replace />} />
                     <Route path="/learn" element={<LearnHub setView={setCurrentView} />} />
                     <Route path="/library" element={<Subjects setView={setCurrentView} />} />
                     <Route path="/library/:subjectId" element={<Subjects setView={setCurrentView} />} />

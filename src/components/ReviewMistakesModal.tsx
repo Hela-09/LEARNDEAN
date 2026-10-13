@@ -8,7 +8,8 @@ import {
   Check, 
   Sparkles,
   ChevronRight,
-  BookOpen
+  BookOpen,
+  GraduationCap
 } from 'lucide-react';
 import { ViewType } from '../types';
 import { TopicResultSummary, TopicMistakeDetail } from '../utils/weakTopics';
@@ -52,12 +53,16 @@ export default function ReviewMistakesModal({
     if (mistake.explanation) {
       prompt += ` Explanation: "${mistake.explanation}".`;
     }
-    prompt += ` Can you help me understand why this answer is correct and how to solve problems like this step-by-step?`;
+    prompt += ` Can you help me understand why this answer is correct and teach how to solve problems like this step-by-step on the chalkboard?`;
     
+    if (topicSummary?.topic) {
+      localStorage.setItem('zetadu_classroom_topic', topicSummary.topic);
+      localStorage.setItem('zetadu_target_subject', topicSummary.subject || 'General');
+    }
     localStorage.setItem('zetadu_tutor_prompt', prompt);
     onCompleteReview();
     onClose();
-    setView('tutor');
+    setView('classroom');
   };
 
   const handleFinishReview = () => {
@@ -215,10 +220,10 @@ export default function ReviewMistakesModal({
 
                     <button
                       onClick={() => handleAskTutor(m)}
-                      className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 flex items-center gap-1.5 cursor-pointer"
+                      className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 flex items-center gap-1.5 cursor-pointer"
                     >
-                      <MessageSquare size={13} />
-                      <span>Ask AI Tutor to explain this question</span>
+                      <GraduationCap size={14} />
+                      <span>Ask AI Classroom to explain this question</span>
                     </button>
                   </div>
                 );
@@ -226,14 +231,14 @@ export default function ReviewMistakesModal({
             </div>
           ) : (
             <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800 text-center space-y-3">
-              <div className="w-12 h-12 mx-auto rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+              <div className="w-12 h-12 mx-auto rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <BookOpen size={24} />
               </div>
               <h4 className="font-bold text-slate-900 dark:text-white text-base">
                 Ready to review concepts in {topicSummary.topic}?
               </h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                Review key formulas, test your weak areas, or ask the AI Tutor for a diagnostic walkthrough of common pitfall traps.
+                Review key formulas, test your weak areas, or launch an AI Classroom lesson for a chalkboard walkthrough of common pitfall traps.
               </p>
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <button
@@ -244,9 +249,10 @@ export default function ReviewMistakesModal({
                 </button>
                 <button
                   onClick={() => handleAskTutor({ question: `Key concepts and common pitfalls in ${topicSummary.topic}` })}
-                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs hover:bg-slate-300 transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5"
                 >
-                  Ask AI Tutor Walkthrough
+                  <GraduationCap size={15} />
+                  <span>AI Classroom Chalkboard Walkthrough</span>
                 </button>
               </div>
             </div>

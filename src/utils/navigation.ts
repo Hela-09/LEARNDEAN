@@ -5,7 +5,7 @@ export const VIEW_TO_PATH: Record<ViewType, string> = {
   learn: '/learn',
   subjects: '/library',
   practice: '/practice',
-  tutor: '/ai-tutor',
+  tutor: '/classroom',
   profile: '/profile',
   admin: '/admin',
   daily_challenge: '/daily-challenge',
@@ -15,14 +15,17 @@ export const VIEW_TO_PATH: Record<ViewType, string> = {
   upload_notes: '/upload-notes',
   jamb: '/jamb',
   novels: '/novels',
+  classroom: '/classroom',
 };
 
 export const PATH_TO_VIEW: Record<string, ViewType> = {
   '/': 'home',
   '': 'home',
   '/home': 'home',
-  '/ai-tutor': 'tutor',
-  '/tutor': 'tutor',
+  '/classroom': 'classroom',
+  '/ai-classroom': 'classroom',
+  '/ai-tutor': 'classroom',
+  '/tutor': 'classroom',
   '/learn': 'learn',
   '/library': 'subjects',
   '/subjects': 'subjects',
