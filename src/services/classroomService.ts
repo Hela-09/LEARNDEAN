@@ -2,14 +2,82 @@ import { ClassroomLesson, ClassroomQA } from '../types/classroom';
 import { DEFAULT_PHYSICS_LESSON } from '../utils/classroomDefaults';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
+import {
+  GLOBAL_CLASSROOM_PROFILES,
+  SyllabusTopic,
+  findSyllabusTopicById,
+} from '../data/officialClassroomCurriculum';
 
 const CACHE_KEY = 'learndean_classroom_recent_lessons';
+
+// Check if a topic query matches a verified syllabus topic
+export function findMatchingVerifiedSyllabusTopic(subject: string, topic: string): SyllabusTopic | null {
+  const normTop = (topic || '').toLowerCase().trim();
+  const normSub = (subject || '').toLowerCase().trim();
+
+  for (const country of GLOBAL_CLASSROOM_PROFILES) {
+    for (const grade of country.grades) {
+      for (const subj of grade.subjects) {
+        if (
+          subj.id.toLowerCase() === normSub ||
+          subj.name.toLowerCase().includes(normSub) ||
+          normSub.includes(subj.name.toLowerCase())
+        ) {
+          for (const term of subj.terms) {
+            for (const t of term.topics) {
+              if (
+                t.title.toLowerCase().includes(normTop) ||
+                normTop.includes(t.title.toLowerCase()) ||
+                t.id.toLowerCase() === normTop
+              ) {
+                return t;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
 
 export async function fetchClassroomLesson(
   subject: string,
   topic: string,
   level: string = 'Senior Secondary (SSS / WAEC / JAMB)'
 ): Promise<ClassroomLesson> {
+  // Check if we have verified official syllabus steps for this topic
+  const verifiedMatch = findMatchingVerifiedSyllabusTopic(subject, topic);
+  if (verifiedMatch && verifiedMatch.steps && verifiedMatch.steps.length > 0) {
+    const verifiedLesson: ClassroomLesson = {
+      id: `lesson_${verifiedMatch.id}`,
+      title: `${verifiedMatch.title}: Digital Chalkboard Masterclass`,
+      subject,
+      topic: verifiedMatch.title,
+      level,
+      summary: `Official ${verifiedMatch.syllabusSource} lesson covering ${verifiedMatch.subtopics.join(', ')}.`,
+      steps: verifiedMatch.steps.map((st) => ({
+        id: st.id,
+        stepTitle: st.stepTitle,
+        spokenExplanation: st.spokenExplanation,
+        chalkboard: {
+          heading: st.chalkboard.heading,
+          bulletPoints: st.chalkboard.bulletPoints,
+          equation: st.chalkboard.equation,
+          workedExample: st.chalkboard.workedExample,
+          diagram: st.chalkboard.diagram,
+          chalkColor: st.chalkboard.chalkColor || 'yellow',
+          highlightNote: st.chalkboard.highlightNote,
+        },
+        quiz: st.quiz,
+      })),
+      createdAt: Date.now(),
+    };
+    saveLessonToHistory(verifiedLesson);
+    return verifiedLesson;
+  }
+
+  // Otherwise, invoke the AI classroom backend generator
   try {
     let token = '';
     if (auth && auth.currentUser) {
@@ -48,7 +116,6 @@ export async function fetchClassroomLesson(
     throw new Error('Invalid lesson structure returned');
   } catch (err) {
     console.warn('API Classroom Lesson generation error, using rich curated lesson:', err);
-    // If the requested subject/topic matches Physics, return curated lesson, or adapt default
     const fallback: ClassroomLesson = {
       ...DEFAULT_PHYSICS_LESSON,
       id: `lesson_${Date.now()}`,
@@ -105,9 +172,9 @@ export async function askClassroomTeacher(
     const data = await response.json();
     return {
       id: `qa_${Date.now()}`,
-      stepId: 1, // Will be set by caller
+      stepId: 1,
       question,
-      spokenAnswer: data.spokenAnswer || 'Let us simplify this step on the chalkboard.',
+      spokenAnswer: data.spokenAnswer || 'Let us clarify this step on the chalkboard.',
       chalkboardNotes: data.chalkboardNotes || ['Key concept clarified.'],
       clarifyingFormula: data.clarifyingFormula,
       miniExample: data.miniExample,
@@ -120,8 +187,8 @@ export async function askClassroomTeacher(
       stepId: 1,
       question,
       spokenAnswer: isSimplify
-        ? 'Think of this concept like pushing a heavy shopping cart. If the cart is empty, a light push makes it speed up quickly. But if it is fully loaded with groceries, you need much more force to achieve that same acceleration!'
-        : `Great question about ${topic}! Remember that in ${subject}, every formula connects directly to physical reality. Look at the balance of the variables: when one side increases, the other must balance it.`,
+        ? 'Think of this concept like pushing a heavy shopping cart. If the cart is empty, a light push makes it accelerate quickly. But if it is fully loaded with groceries, you need much more force to achieve that same acceleration!'
+        : `Great question about ${topic}! In ${subject}, every formula connects directly to physical reality. Look at the balance of the variables: when one side increases, the other must balance it.`,
       chalkboardNotes: [
         'Analogy: Push a shopping cart (Light cart = high acceleration; Heavy cart = low acceleration)',
         'Core takeaway: Unbalanced force is the sole cause of acceleration!',

@@ -83,12 +83,12 @@ export default function ReviewMistakesModal({
   return (
     <div
       id="review-mistakes-modal-overlay"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn overflow-y-auto"
       onClick={onClose}
     >
       <div
         id="review-mistakes-modal-card"
-        className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[90vh] rounded-3xl border-2 border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col animate-scaleUp"
+        className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[92dvh] rounded-3xl border-2 border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col my-auto animate-scaleUp"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

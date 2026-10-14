@@ -326,8 +326,8 @@ export default function FlashcardStudyScreen({
       </AnimatePresence>
 
       {/* TOP BAR */}
-      <header className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
-        <div className="flex items-center justify-between gap-3 mb-3">
+      <header className="w-full max-w-3xl mx-auto px-4 sm:px-6 pt-3 sm:pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 mb-3">
           {/* Subject & Topic */}
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -342,7 +342,7 @@ export default function FlashcardStudyScreen({
           </div>
 
           {/* Action Buttons: Bookmark, Shuffle, Exit */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap shrink-0 self-end sm:self-auto">
             <button
               onClick={handleBookmarkToggle}
               className={`p-2.5 rounded-full transition-colors ${

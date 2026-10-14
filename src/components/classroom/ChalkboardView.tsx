@@ -94,7 +94,7 @@ export default function ChalkboardView({
   // When active step page changes, auto-advance viewing page if user was on the previous active page
   useEffect(() => {
     onSetViewingPage(activeStepPageIndex);
-  }, [activeStepPageIndex, onSetViewingPage]);
+  }, [activeStepPageIndex]);
 
   // Board background styles
   const boardBgClass =

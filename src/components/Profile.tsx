@@ -1571,18 +1571,18 @@ export default function Profile({ setView, initialSection }: ProfileProps) {
               <p className="text-xs text-slate-400 mb-4">{user?.email}</p>
             </div>
             
-            <div className="flex items-center justify-center gap-3">
-              <div className="flex flex-col items-center bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 rounded-xl px-4 py-2">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+              <div className="flex flex-col items-center bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 min-w-[70px]">
                 <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Level</span>
-                <span className="text-xl font-black text-blue-700 dark:text-blue-400">{getLevelInfo(userProfile?.xp || 0).level}</span>
+                <span className="text-lg sm:text-xl font-black text-blue-700 dark:text-blue-400">{getLevelInfo(userProfile?.xp || 0).level}</span>
               </div>
-              <div className="flex flex-col items-center bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800/50 rounded-xl px-4 py-2">
+              <div className="flex flex-col items-center bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800/50 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 min-w-[70px]">
                 <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">XP</span>
-                <span className="text-xl font-black text-emerald-700 dark:text-emerald-400">{userProfile?.xp || 0}</span>
+                <span className="text-lg sm:text-xl font-black text-emerald-700 dark:text-emerald-400">{userProfile?.xp || 0}</span>
               </div>
-              <div className="flex flex-col items-center bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800/50 rounded-xl px-4 py-2">
+              <div className="flex flex-col items-center bg-orange-50 dark:bg-orange-900/30 border border-orange-100 dark:border-orange-800/50 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 min-w-[70px]">
                 <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Streak</span>
-                <span className="text-xl font-black text-orange-700 dark:text-orange-400">{userProfile?.streak || 0}🔥</span>
+                <span className="text-lg sm:text-xl font-black text-orange-700 dark:text-orange-400">{userProfile?.streak || 0}🔥</span>
               </div>
             </div>
           </div>

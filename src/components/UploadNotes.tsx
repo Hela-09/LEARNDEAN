@@ -1176,7 +1176,7 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => toggleSpeech(summaryText)}
                 className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
@@ -1218,7 +1218,7 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
             >
               ← Back to Notes Editor
             </button>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => runAiProcessing('explain')}
                 className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
@@ -1252,7 +1252,7 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => toggleSpeech(explanationText)}
                 className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
@@ -1288,7 +1288,7 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
             <ReactMarkdown>{explanationText}</ReactMarkdown>
           </div>
 
-          <div className="pt-6 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+          <div className="pt-6 border-t border-slate-100 dark:border-slate-700 flex flex-wrap items-center justify-between gap-3">
             <button
               onClick={() => setActiveTab('editor')}
               className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white cursor-pointer"
@@ -1381,7 +1381,7 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <div className="px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200">
                 Score: <span className="text-blue-600 dark:text-blue-400">{calculatedScore}</span> / {answeredCount}
               </div>
@@ -1662,7 +1662,7 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
               </div>
 
               {/* Options Grid */}
-              <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                 {COUNT_OPTIONS.map((num) => {
                   const isSelected = numberModal.count === num;
                   return (
@@ -1671,7 +1671,7 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
                       id={`notes-count-option-${num}`}
                       type="button"
                       onClick={() => setNumberModal(prev => ({ ...prev, count: num }))}
-                      className={`py-3 px-2 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer ${
+                      className={`py-2.5 sm:py-3 px-1.5 sm:px-2 rounded-2xl flex flex-col items-center justify-center transition-all cursor-pointer min-w-0 ${
                         isSelected
                           ? numberModal.type === 'flashcards'
                             ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20 ring-2 ring-indigo-600 ring-offset-2 dark:ring-offset-slate-800'
@@ -1679,9 +1679,9 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
                           : 'bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-700/60 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700'
                       }`}
                     >
-                      <span className="text-base font-extrabold">{num}</span>
-                      <span className={`text-[10px] font-medium leading-none mt-0.5 ${isSelected ? 'text-white/80' : 'text-slate-400 dark:text-slate-500'}`}>
-                        {numberModal.type === 'flashcards' ? 'cards' : 'questions'}
+                      <span className="text-sm sm:text-base font-extrabold">{num}</span>
+                      <span className={`text-[9px] sm:text-[10px] font-medium leading-none mt-0.5 truncate max-w-full ${isSelected ? 'text-white/80' : 'text-slate-400 dark:text-slate-500'}`}>
+                        {numberModal.type === 'flashcards' ? 'cards' : 'quiz'}
                       </span>
                     </button>
                   );
@@ -1689,7 +1689,7 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
               </div>
 
               {/* Selection Summary and Custom Input */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between gap-3">
+              <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/80 flex flex-col xs:flex-row xs:items-center justify-between gap-2.5 sm:gap-3">
                 <div className="flex items-center gap-2 min-w-0">
                   <Sparkles size={16} className={numberModal.type === 'flashcards' ? 'text-indigo-600 shrink-0' : 'text-rose-600 shrink-0'} />
                   <div className="truncate">
@@ -1702,7 +1702,7 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0 self-end xs:self-center">
                   <span className="text-xs text-slate-400 font-medium">Qty:</span>
                   <input
                     type="number"
@@ -1724,11 +1724,11 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
               </div>
 
               {/* Modal Actions */}
-              <div className="flex items-center justify-end gap-2.5 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center sm:justify-end gap-2 sm:gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setNumberModal(prev => ({ ...prev, isOpen: false }))}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 transition-colors cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 transition-colors cursor-pointer text-center"
                 >
                   Cancel
                 </button>
@@ -1736,14 +1736,14 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
                   type="button"
                   id="confirm-generate-btn"
                   onClick={handleConfirmGeneration}
-                  className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all shadow-md cursor-pointer flex items-center gap-2 ${
+                  className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 text-center ${
                     numberModal.type === 'flashcards'
                       ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20'
                       : 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/20'
                   }`}
                 >
-                  <Sparkles size={14} />
-                  <span>
+                  <Sparkles size={14} className="shrink-0" />
+                  <span className="truncate">
                     Generate {numberModal.count} {numberModal.type === 'flashcards' ? 'Flashcards' : 'Questions'}
                   </span>
                 </button>

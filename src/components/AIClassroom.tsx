@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   GraduationCap,
@@ -17,6 +17,12 @@ import {
   Settings2,
   Volume2,
   RefreshCw,
+  FileText,
+  Calendar,
+  CheckCircle,
+  Award,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { ViewType } from '../types';
 import { ClassroomLesson, ClassroomStep, ClassroomQA } from '../types/classroom';
@@ -27,12 +33,30 @@ import ClassroomInteractionPanel from './classroom/ClassroomInteractionPanel';
 import ClassroomSetupModal from './classroom/ClassroomSetupModal';
 import VoiceSelectionModal from './classroom/VoiceSelectionModal';
 import ClassroomHistoryDrawer from './classroom/ClassroomHistoryDrawer';
+import CurriculumSyllabusSelector from './classroom/CurriculumSyllabusSelector';
+import TopicAssignmentModal from './classroom/TopicAssignmentModal';
 import {
   fetchClassroomLesson,
   askClassroomTeacher,
   getRecentLessons,
   saveLessonToHistory,
+  findMatchingVerifiedSyllabusTopic,
 } from '../services/classroomService';
+import {
+  GLOBAL_CLASSROOM_PROFILES,
+  SyllabusTopic,
+  SyllabusSubject,
+  ClassGrade,
+  TopicAssignment,
+  findSyllabusTopicById,
+} from '../data/officialClassroomCurriculum';
+import {
+  loadClassroomProgress,
+  recordStepCompleted,
+  recordPracticeAttempt,
+  ClassroomMasterState,
+  AssignmentResult,
+} from '../services/classroomProgressService';
 import { DEFAULT_PHYSICS_LESSON } from '../utils/classroomDefaults';
 import { chalkAudio } from '../utils/chalkAudio';
 import { appNavigateBack } from '../utils/navigationHistory';
@@ -54,10 +78,14 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [viewingPageIndex, setViewingPageIndex] = useState<number>(0);
 
-  // Modals & Drawers
+  // Modals, Drawers & Views
   const [isSetupModalOpen, setIsSetupModalOpen] = useState<boolean>(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState<boolean>(false);
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState<boolean>(false);
+  const [isSyllabusOutlineOpen, setIsSyllabusOutlineOpen] = useState<boolean>(false);
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState<boolean>(false);
+  const [activeAssignmentTopic, setActiveAssignmentTopic] = useState<SyllabusTopic | null>(null);
+
   const [isLoadingLesson, setIsLoadingLesson] = useState<boolean>(false);
   const [autoPlayNext, setAutoPlayNext] = useState<boolean>(true);
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
@@ -69,11 +97,37 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
   // Recent Lessons List
   const [recentLessons, setRecentLessons] = useState<ClassroomLesson[]>(() => getRecentLessons());
 
+  // Master Classroom Progress State
+  const [progressState, setProgressState] = useState<ClassroomMasterState>(() => loadClassroomProgress());
+
   // Speech Hook
   const speech = useChalkboardSpeech();
 
   const currentStep: ClassroomStep =
     lesson.steps[currentStepIndex] || lesson.steps[0] || DEFAULT_PHYSICS_LESSON.steps[0];
+
+  // Current active verified syllabus topic (if matched)
+  const currentSyllabusTopic = useMemo<SyllabusTopic | null>(() => {
+    return findMatchingVerifiedSyllabusTopic(lesson.subject, lesson.topic);
+  }, [lesson.subject, lesson.topic]);
+
+  // Record step completion in progress service
+  useEffect(() => {
+    if (lesson && currentStep) {
+      const topicId = currentSyllabusTopic?.id || `custom-${lesson.topic.toLowerCase().replace(/\s+/g, '-')}`;
+      const updated = recordStepCompleted(
+        topicId,
+        lesson.topic,
+        lesson.subject,
+        currentSyllabusTopic?.term || 1,
+        currentSyllabusTopic?.week || 1,
+        currentStep.id,
+        lesson.steps.length,
+        viewingPageIndex
+      );
+      setProgressState(updated);
+    }
+  }, [lesson.id, currentStepIndex]);
 
   // Whenever lesson or step changes, play spoken explanation with voice
   useEffect(() => {
@@ -105,10 +159,33 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
       setQaHistory([]);
       setRecentLessons(getRecentLessons());
       setIsSetupModalOpen(false);
+      setIsSyllabusOutlineOpen(false);
+      setProgressState(loadClassroomProgress());
     } catch (e) {
       console.error('Failed to load lesson:', e);
     } finally {
       setIsLoadingLesson(false);
+    }
+  };
+
+  // Launch a topic directly from the syllabus outline
+  const handleSelectSyllabusTopic = (topic: SyllabusTopic, subject: SyllabusSubject, grade: ClassGrade) => {
+    speech.stop();
+    chalkAudio.playChalkTap();
+    handleStartLesson(subject.name, topic.title, grade.name);
+  };
+
+  // Open Topic Assignment
+  const handleOpenAssignment = (topic?: SyllabusTopic | null) => {
+    const targetTopic = topic || currentSyllabusTopic;
+    if (targetTopic && targetTopic.assignment) {
+      setActiveAssignmentTopic(targetTopic);
+      setIsAssignmentModalOpen(true);
+    } else {
+      // If no official assignment exists for this custom topic, open default topic assignment
+      const fallbackTopic = GLOBAL_CLASSROOM_PROFILES[0].grades[0].subjects[0].terms[0].topics[0];
+      setActiveAssignmentTopic(fallbackTopic);
+      setIsAssignmentModalOpen(true);
     }
   };
 
@@ -137,7 +214,7 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
     const targetTop = queryTopic || storedTopic;
 
     if (targetSub || targetTop) {
-      const cleanSubject = (targetSub || 'Physics')
+      const cleanSubject = (targetSub || 'General Mathematics')
         .replace(/[-_]/g, ' ')
         .replace(/\b\w/g, (c) => c.toUpperCase());
       const cleanTopic = targetTop
@@ -228,6 +305,10 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
   const stepTitles = lesson.steps.map((s) => s.stepTitle);
   const stepPages = calculateStepPages(lesson.steps);
 
+  const topicRecord = currentSyllabusTopic
+    ? progressState.topicsProgress[currentSyllabusTopic.id]
+    : progressState.topicsProgress[`custom-${lesson.topic.toLowerCase().replace(/\s+/g, '-')}`];
+
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-4 sm:gap-6 pb-12 sm:pb-16 min-w-0">
       {/* Top Header & Classroom Navigation Bar */}
@@ -242,12 +323,18 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           </button>
 
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-mono font-bold text-[10px] uppercase">
                 {lesson.subject}
               </span>
-              <span className="text-[11px] text-slate-400 dark:text-slate-500">
-                AI Digital Classroom
+              {currentSyllabusTopic && (
+                <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-bold text-[10px] flex items-center gap-1">
+                  <CheckCircle size={10} />
+                  <span>Week {currentSyllabusTopic.week} Official Syllabus</span>
+                </span>
+              )}
+              <span className="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:inline">
+                Interactive Classroom
               </span>
             </div>
             <h1 className="text-base sm:text-xl font-extrabold text-slate-900 dark:text-white truncate">
@@ -256,8 +343,42 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           </div>
         </div>
 
-        {/* Action Buttons: Voice Settings, History & Records, New Lesson */}
+        {/* Action Buttons: Syllabus Outline, Topic Assignment, Voice Settings, Records, New Lesson */}
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap">
+          {/* Syllabus Outline Toggle Button */}
+          <button
+            onClick={() => setIsSyllabusOutlineOpen((prev) => !prev)}
+            className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              isSyllabusOutlineOpen
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200'
+            }`}
+            title="Browse Complete Official Syllabus Outline"
+          >
+            <BookOpen size={15} />
+            <span className="hidden sm:inline">Syllabus</span>
+            {isSyllabusOutlineOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </button>
+
+          {/* Topic Assignment Button */}
+          <button
+            onClick={() => handleOpenAssignment()}
+            className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              topicRecord?.assignmentResult
+                ? 'bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-200 border-amber-300'
+                : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 text-slate-700 dark:text-slate-200'
+            }`}
+            title="End-of-Topic Assignment & Graded Assessment"
+          >
+            <FileText size={15} className="text-amber-500" />
+            <span className="hidden sm:inline">Assignment</span>
+            {topicRecord?.assignmentResult && (
+              <span className="px-1.5 py-0.2 rounded font-bold text-[10px] bg-amber-600 text-white">
+                {topicRecord.assignmentResult.percentage}%
+              </span>
+            )}
+          </button>
+
           {/* Voice Selector button */}
           <button
             onClick={() => setIsVoiceModalOpen(true)}
@@ -266,18 +387,18 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           >
             <Volume2 size={15} className="text-blue-500" />
             <span className="hidden md:inline">Voice:</span>
-            <span className="font-bold truncate max-w-[100px]">
+            <span className="font-bold truncate max-w-[90px]">
               {speech.selectedVoice
                 ? speech.selectedVoice.name.replace(/Google|Microsoft/gi, '').trim()
                 : 'Default'}
             </span>
           </button>
 
-          {/* History & Records Drawer button */}
+          {/* History Drawer button */}
           <button
             onClick={() => setIsHistoryDrawerOpen(true)}
             className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
-            title="Saved Lessons & Migrated Tutor Records"
+            title="Saved Lessons & Learning Records"
           >
             <History size={15} />
             <span className="hidden sm:inline">Records</span>
@@ -293,6 +414,20 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           </button>
         </div>
       </div>
+
+      {/* Expandable Course Outline & Learning Progress Panel */}
+      {isSyllabusOutlineOpen && (
+        <div className="w-full animate-fadeIn">
+          <CurriculumSyllabusSelector
+            progressState={progressState}
+            onSelectTopic={handleSelectSyllabusTopic}
+            onOpenAssignment={(top) => {
+              handleOpenAssignment(top);
+            }}
+            onRefreshProgress={() => setProgressState(loadClassroomProgress())}
+          />
+        </div>
+      )}
 
       {/* Main Multi-Page Classroom Chalkboard & Controls */}
       <div className="w-full flex flex-col gap-4 sm:gap-6 min-w-0">
@@ -350,8 +485,14 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           isAsking={isAsking}
           onSpeakAnswer={(text) => speech.play(text)}
           onQuizAnswered={(isCorrect) => {
-            if (isCorrect) {
-              // Quiz feedback handled in panel
+            if (currentSyllabusTopic && currentStep.quiz) {
+              const updated = recordPracticeAttempt(
+                currentSyllabusTopic.id,
+                `quiz-step-${currentStep.id}`,
+                isCorrect ? currentStep.quiz.correctIndex : -1,
+                isCorrect
+              );
+              setProgressState(updated);
             }
           }}
         />
@@ -394,6 +535,20 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           handleStartLesson(subj, top, 'Senior Secondary (SSS / WAEC / JAMB)');
         }}
       />
+
+      {/* End-of-Topic Assignment Modal */}
+      {activeAssignmentTopic && (
+        <TopicAssignmentModal
+          isOpen={isAssignmentModalOpen}
+          onClose={() => setIsAssignmentModalOpen(false)}
+          assignment={activeAssignmentTopic.assignment}
+          topicTitle={activeAssignmentTopic.title}
+          subject={lesson.subject}
+          onAssignmentCompleted={(result) => {
+            setProgressState(loadClassroomProgress());
+          }}
+        />
+      )}
     </div>
   );
 }

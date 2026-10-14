@@ -36,25 +36,26 @@ export default function WeakTopicActionModal({
   const handleAskTutor = () => {
     localStorage.setItem('zetadu_target_subject', topic.subject);
     localStorage.setItem('zetadu_target_topic', topic.topic);
+    localStorage.setItem('zetadu_classroom_topic', topic.topic);
     const prompt = `I'm struggling with ${topic.topic} in ${topic.subject} (my practice accuracy was ${topic.accuracy}%). Can you explain the core concepts step-by-step and show me how to avoid common mistakes?`;
     localStorage.setItem('zetadu_tutor_prompt', prompt);
     onClose();
-    setView('tutor');
+    setView('classroom');
   };
 
   return (
     <div
       id="weak-topic-modal-overlay"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-fadeIn overflow-y-auto"
       onClick={onClose}
     >
       <div
         id="weak-topic-modal-card"
-        className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl border-2 border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden animate-scaleUp"
+        className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl border-2 border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden animate-scaleUp max-h-[92dvh] flex flex-col my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4">
+        <div className="p-5 sm:p-6 pb-4 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4 shrink-0">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/50">
               <AlertTriangle size={20} />
@@ -94,7 +95,7 @@ export default function WeakTopicActionModal({
         </div>
 
         {/* Action Options */}
-        <div className="p-6 flex flex-col gap-3">
+        <div className="p-5 sm:p-6 flex flex-col gap-3 overflow-y-auto">
           <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Choose how you'd like to improve this topic:
           </p>
@@ -103,7 +104,7 @@ export default function WeakTopicActionModal({
           <button
             id="weak-topic-practice-btn"
             onClick={handlePractice}
-            className="w-full flex items-center justify-between gap-3 p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 text-left transition-all group cursor-pointer"
+            className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 text-left transition-all group cursor-pointer"
           >
             <div className="flex items-center gap-3.5 min-w-0 flex-1">
               <div className="w-11 h-11 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -125,7 +126,7 @@ export default function WeakTopicActionModal({
           <button
             id="weak-topic-flashcards-btn"
             onClick={handleFlashcards}
-            className="w-full flex items-center justify-between gap-3 p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 text-left transition-all group cursor-pointer"
+            className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 text-left transition-all group cursor-pointer"
           >
             <div className="flex items-center gap-3.5 min-w-0 flex-1">
               <div className="w-11 h-11 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -143,11 +144,11 @@ export default function WeakTopicActionModal({
             <ArrowRight size={18} className="text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0" />
           </button>
 
-          {/* Option 3: Ask AI Tutor */}
+          {/* Option 3: Learn in AI Classroom */}
           <button
             id="weak-topic-tutor-btn"
             onClick={handleAskTutor}
-            className="w-full flex items-center justify-between gap-3 p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 text-left transition-all group cursor-pointer"
+            className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 text-left transition-all group cursor-pointer"
           >
             <div className="flex items-center gap-3.5 min-w-0 flex-1">
               <div className="w-11 h-11 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
@@ -155,10 +156,10 @@ export default function WeakTopicActionModal({
               </div>
               <div className="min-w-0 flex-1">
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                  Ask AI Tutor
+                  Learn in AI Classroom
                 </h4>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 break-words">
-                  Get step-by-step explanations and clear up confusing topics
+                  Chalkboard lesson with spoken teacher explanations and worked examples
                 </p>
               </div>
             </div>

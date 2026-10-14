@@ -148,13 +148,11 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 .markdown-body h3 { font-size: 1.25em; }
 .markdown-body h4 { font-size: 1em; }
 
-.dark .markdown-body h2,
-@media (prefers-color-scheme: dark) {
-  .markdown-body h2 { border-bottom-color: var(--color-slate-700); }
+.dark .markdown-body h2 {
+  border-bottom-color: var(--color-slate-700);
 }
-.dark .markdown-body a,
-@media (prefers-color-scheme: dark) {
-  .markdown-body a { color: var(--color-blue-400); }
+.dark .markdown-body a {
+  color: var(--color-blue-400);
 }
 
 .markdown-body p,
@@ -180,12 +178,9 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   border-left: 0.25em solid var(--color-slate-200);
 }
 
-.dark .markdown-body blockquote,
-@media (prefers-color-scheme: dark) {
-  .markdown-body blockquote {
-    color: var(--color-slate-400);
-    border-left-color: var(--color-slate-700);
-  }
+.dark .markdown-body blockquote {
+  color: var(--color-slate-400);
+  border-left-color: var(--color-slate-700);
 }
 
 .markdown-body code {
@@ -197,12 +192,9 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   font-family: var(--font-mono);
 }
 
-.dark .markdown-body code,
-@media (prefers-color-scheme: dark) {
-  .markdown-body code {
-    background-color: var(--color-slate-800);
-    color: #e2e8f0;
-  }
+.dark .markdown-body code {
+  background-color: var(--color-slate-800);
+  color: #e2e8f0;
 }
 
 .markdown-body pre {
@@ -215,12 +207,9 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   max-width: 100%;
 }
 
-.dark .markdown-body pre,
-@media (prefers-color-scheme: dark) {
-  .markdown-body pre {
-    background-color: var(--color-slate-800);
-    border: 1px solid #334155;
-  }
+.dark .markdown-body pre {
+  background-color: var(--color-slate-800);
+  border: 1px solid #334155;
 }
 
 .markdown-body pre code {
@@ -254,12 +243,8 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 }
 
 .dark .markdown-body table th,
-.dark .markdown-body table td,
-@media (prefers-color-scheme: dark) {
-  .markdown-body table th,
-  .markdown-body table td {
-    border-color: var(--color-slate-700);
-  }
+.dark .markdown-body table td {
+  border-color: var(--color-slate-700);
 }
 
 .markdown-body table tr {
@@ -267,23 +252,17 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   border-top: 1px solid var(--color-slate-200);
 }
 
-.dark .markdown-body table tr,
-@media (prefers-color-scheme: dark) {
-  .markdown-body table tr {
-    background-color: var(--color-slate-900);
-    border-top-color: var(--color-slate-700);
-  }
+.dark .markdown-body table tr {
+  background-color: var(--color-slate-900);
+  border-top-color: var(--color-slate-700);
 }
 
 .markdown-body table tr:nth-child(2n) {
   background-color: var(--color-slate-50);
 }
 
-.dark .markdown-body table tr:nth-child(2n),
-@media (prefers-color-scheme: dark) {
-  .markdown-body table tr:nth-child(2n) {
-    background-color: var(--color-slate-800);
-  }
+.dark .markdown-body table tr:nth-child(2n) {
+  background-color: var(--color-slate-800);
 }
 
 .markdown-body img {
@@ -312,12 +291,9 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.dark .glass-panel,
-@media (prefers-color-scheme: dark) {
-  .glass-panel {
-    background: rgba(15, 23, 42, 0.85);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  }
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Responsive grid overrides */

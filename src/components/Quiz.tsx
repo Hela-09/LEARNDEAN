@@ -3186,7 +3186,7 @@ export default function Quiz({
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-                className="w-[88vw] max-w-[320px] sm:max-w-sm bg-white dark:bg-slate-900 h-full p-2.5 sm:p-4 shadow-2xl overflow-y-auto"
+                className="w-[88vw] max-w-[320px] sm:max-w-sm bg-white dark:bg-slate-900 h-full p-2.5 sm:p-4 pb-[max(1.5rem,calc(1rem+env(safe-area-inset-bottom)))] shadow-2xl overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
               >
                 {renderQuestionsPanel()}

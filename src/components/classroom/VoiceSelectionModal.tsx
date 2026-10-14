@@ -60,8 +60,6 @@ export default function VoiceSelectionModal({
   const [searchQuery, setSearchQuery] = useState('');
   const [previewingVoiceName, setPreviewingVoiceName] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
   const filteredVoices = useMemo(() => {
     if (!searchQuery.trim()) return voices;
     const q = searchQuery.toLowerCase();
@@ -72,6 +70,8 @@ export default function VoiceSelectionModal({
         getFriendlyAccentLabel(v.lang).toLowerCase().includes(q)
     );
   }, [voices, searchQuery]);
+
+  if (!isOpen) return null;
 
   const handlePreview = (e: React.MouseEvent, voice: SpeechSynthesisVoice) => {
     e.stopPropagation();
@@ -92,7 +92,7 @@ export default function VoiceSelectionModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-5 sm:p-6 space-y-4 animate-scaleUp">
+      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-5 sm:p-6 space-y-4 animate-scaleUp max-h-[92dvh] flex flex-col my-auto">
         {/* Close Button */}
         <button
           onClick={onClose}

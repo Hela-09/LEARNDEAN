@@ -1983,6 +1983,93 @@ Return strict JSON:
     }
   });
 
+  // AI Classroom - End-of-Topic Assignment Generation
+  app.post("/api/ai/classroom-assignment", optionalAuth, async (req, res) => {
+    try {
+      const { subject, topic, level, curriculum } = req.body;
+      const ai = getGeminiClient();
+
+      const prompt = `You are an expert school examination setter creating an authentic end-of-topic graded assignment.
+Subject: ${subject}
+Topic: ${topic}
+Education Level: ${level || 'Senior Secondary (SSS / WAEC / JAMB)'}
+Curriculum: ${curriculum || 'WAEC / NERDC Standard'}
+
+Generate an assessment with:
+1. title: Assignment title
+2. instructions: Clear examination instructions
+3. totalMarks: e.g. 25
+4. passPercentage: 70
+5. mcqQuestions: Array of 2 multiple-choice questions:
+   - id: string
+   - question: string
+   - options: 4 distinct choices
+   - correctAnswer: index (0-3)
+   - explanation: detailed explanation
+   - hint: helpful hint
+6. structuredQuestions: Array of 1 to 2 structured calculation or theory problems:
+   - id: string
+   - instruction: string
+   - question: full problem statement with numerical values/units
+   - totalMarks: number (e.g. 15)
+   - rubric: array of { step: string, marks: number }
+   - sampleSolution: complete step-by-step worked master solution
+
+Return strict JSON conforming to the TopicAssignment format.`;
+
+      let response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+        config: { responseMimeType: "application/json" },
+      });
+
+      const parsed = JSON.parse(response.text || '{}');
+      res.json({ assignment: parsed });
+    } catch (error: any) {
+      console.error("Classroom Assignment Gen Error:", error);
+      res.status(500).json({ error: error.message || "Failed to generate assignment" });
+    }
+  });
+
+  // AI Classroom - Graded Assignment Marking & AI Teacher Feedback
+  app.post("/api/ai/classroom-mark-assignment", optionalAuth, async (req, res) => {
+    try {
+      const { subject, topic, assignment, studentAnswers } = req.body;
+      const ai = getGeminiClient();
+
+      const prompt = `You are a dedicated, encouraging school teacher marking a student's end-of-topic assignment.
+Subject: ${subject}
+Topic: ${topic}
+Student Answers: ${JSON.stringify(studentAnswers)}
+Assignment Details: ${JSON.stringify(assignment)}
+
+Mark the student's submission:
+1. Evaluate each structured question against its marking scheme rubric.
+2. Award realistic marks based on their demonstrated working.
+3. Provide warm, constructive teacher feedback praising correct methods and pinpointing mistakes.
+4. List 1-3 specific subtopics or concepts for revision if any gaps were shown.
+
+Return strict JSON:
+{
+  "structuredScore": number,
+  "teacherFeedback": string,
+  "areasForRevision": string[]
+}`;
+
+      let response = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents: prompt,
+        config: { responseMimeType: "application/json" },
+      });
+
+      const parsed = JSON.parse(response.text || '{}');
+      res.json(parsed);
+    } catch (error: any) {
+      console.error("Classroom Marking Error:", error);
+      res.status(500).json({ error: error.message || "Failed to mark assignment" });
+    }
+  });
+
   app.all('/api/*', (req, res) => {
     res.status(404).json({ error: 'API route not found: ' + req.method + ' ' + req.url });
   });

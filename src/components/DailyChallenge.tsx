@@ -440,7 +440,7 @@ export default function DailyChallenge({ setView }: { setView: (view: any) => vo
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto min-h-full flex flex-col pb-8 md:pb-12 bg-white md:bg-transparent">
+    <div className="w-full max-w-3xl mx-auto min-h-full flex flex-col pb-8 md:pb-12 bg-white dark:bg-slate-900 md:bg-transparent md:dark:bg-transparent">
       {/* Header */}
       <div className="bg-white dark:bg-slate-800 p-4 md:rounded-3xl md:border-2 border-b-2 md:border-b-2 border-slate-100 dark:border-slate-700 flex justify-between items-center shrink-0 mb-0 md:mb-6 z-10 sticky top-0 md:relative shadow-sm md:shadow-none">
         <div className="flex items-center gap-3">
@@ -531,7 +531,7 @@ export default function DailyChallenge({ setView }: { setView: (view: any) => vo
       </div>
 
       {/* Navigation Footer */}
-      <div className="p-4 md:px-0 mt-4 md:mt-6 shrink-0 flex items-center justify-between gap-4 bg-white md:bg-transparent border-t md:border-none border-slate-100 dark:border-slate-800 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-0">
+      <div className="p-4 md:px-0 mt-4 md:mt-6 shrink-0 flex items-center justify-between gap-4 bg-white dark:bg-slate-900 md:bg-transparent md:dark:bg-transparent border-t md:border-none border-slate-100 dark:border-slate-800 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-0">
         <button
           onClick={() => setCurrentQIndex(Math.max(0, currentQIndex - 1))}
           disabled={currentQIndex === 0}

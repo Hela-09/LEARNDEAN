@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   BookOpen,
   Sparkles,
@@ -7,8 +7,11 @@ import {
   GraduationCap,
   X,
   Compass,
+  CheckCircle,
+  Globe,
 } from 'lucide-react';
 import { chalkAudio } from '../../utils/chalkAudio';
+import { GLOBAL_CLASSROOM_PROFILES } from '../../data/officialClassroomCurriculum';
 
 interface ClassroomSetupModalProps {
   isOpen: boolean;
@@ -18,78 +21,57 @@ interface ClassroomSetupModalProps {
 }
 
 export const CLASSROOM_SUBJECTS = [
-  'Mathematics',
+  'General Mathematics',
   'Physics',
   'Chemistry',
   'Biology',
   'English Language',
   'Economics',
   'Government',
-  'Computer Studies',
   'Further Mathematics',
   'Literature in English',
   'Commerce',
 ];
 
 export const CURATED_TOPICS: Record<string, string[]> = {
-  Mathematics: [
+  'General Mathematics': [
+    'Number Bases & Conversions',
+    'Modular Arithmetic & Congruences',
+    'Indices, Logarithms & Surds',
     'Quadratic Equations: Completing the Square',
-    'Differentiation from First Principles',
     'Pythagoras Theorem & Right Triangles',
     'Simultaneous Equations: Elimination & Substitution',
-    'Integration: Definite Integrals and Area under Curves',
-    'Probability: Combined and Independent Events',
   ],
   Physics: [
-    "Newton's Laws of Motion: F = ma & Dynamics",
+    'Kinematics: Rectilinear Motion & Velocity-Time Graphs',
+    "Newton's Laws of Motion & Momentum",
     "Ohm's Law and Series & Parallel Circuits",
     'Projectile Motion: Trajectory, Height & Range',
     'Work, Energy and Conservation of Energy',
     'Wave Mechanics: Reflection, Refraction & Diffraction',
-    'Thermodynamics: Heat Capacity and Latent Heat',
   ],
   Chemistry: [
+    'Atomic Structure & Chemical Bonding',
     'Organic Chemistry: IUPAC Naming of Hydrocarbons',
-    'Chemical Bonding: Ionic, Covalent & Metallic',
     'Periodic Table Trends: Electronegativity & Ionization',
     'Redox Reactions and Balancing Equations',
     'Acids, Bases, pH Scale and Neutralization',
     'Stoichiometry and Mole Concept Calculations',
   ],
   Biology: [
+    'Cell Biology: Organization, Organelles & Microscopy',
     'Photosynthesis: Light & Dark Reactions',
-    'Cell Structure: Organelles and Functions',
     "Genetics: Mendel's Laws of Inheritance & Punnett Squares",
     'Human Circulatory System & Double Circulation',
     'Enzymes: Catalysis, Lock-and-Key Mechanism',
     'Ecology: Food Webs, Trophic Levels & Energy Flow',
   ],
   'English Language': [
-    'Grammatical Concord: Subject-Verb Agreement Rules',
-    'Phonology: Vowel Sounds, Diphthongs & Stress Patterns',
+    'Grammatical Concord & Rules of Agreement',
     'Sentence Structure: Clauses & Complex Sentences',
-    'Figures of Speech: Metaphor, Simile & Irony',
-  ],
-  Economics: [
-    'Price Mechanism: Demand and Supply Equilibrium',
-    'Elasticity of Demand: Price, Income & Cross Elasticity',
-    'Fiscal Policy vs Monetary Policy in Economic Stabilization',
-    'Inflation: Causes, Types, and National Policies',
-  ],
-  Government: [
-    'Rule of Law & Separation of Powers',
-    'Federalism: Concepts, Advantages and Challenges',
-    'Electoral Systems: First-Past-The-Post vs Proportional',
-  ],
-  'Computer Studies': [
-    'Binary Arithmetic and Logic Gates (AND, OR, NOT)',
-    'Computer Architecture: CPU, Memory and System Bus',
-    'Algorithms and Flowcharts: Step-by-Step Problem Solving',
-  ],
-  'Further Mathematics': [
-    'Matrices: Determinants and Cramer’s Rule',
-    'Vectors in 2D and 3D: Dot Product & Cross Product',
-    'Binomial Theorem and Series Expansion',
+    'Phonology: Vowel Sounds, Diphthongs & Stress Patterns',
+    'Lexis and Structure: Idioms and Collocations',
+    'Reading Comprehension: Summary and Central Themes',
   ],
 };
 
@@ -99,13 +81,26 @@ export default function ClassroomSetupModal({
   onStartLesson,
   isLoading,
 }: ClassroomSetupModalProps) {
-  const [selectedSubject, setSelectedSubject] = useState<string>('Physics');
+  // All hooks must be unconditional at the top level
+  const [selectedCountryCode, setSelectedCountryCode] = useState<string>('NG');
+  const [selectedSubject, setSelectedSubject] = useState<string>('General Mathematics');
   const [topicInput, setTopicInput] = useState<string>('');
   const [educationLevel, setEducationLevel] = useState<string>('Senior Secondary (SSS / WAEC / JAMB)');
+  const [academicTerm, setAcademicTerm] = useState<number>(1);
 
+  const currentCountry = useMemo(() => {
+    return (
+      GLOBAL_CLASSROOM_PROFILES.find((c) => c.countryCode === selectedCountryCode) ||
+      GLOBAL_CLASSROOM_PROFILES[0]
+    );
+  }, [selectedCountryCode]);
+
+  const currentCurated = useMemo(() => {
+    return CURATED_TOPICS[selectedSubject] || CURATED_TOPICS['General Mathematics'];
+  }, [selectedSubject]);
+
+  // Early return is placed AFTER all hooks
   if (!isOpen) return null;
-
-  const currentCurated = CURATED_TOPICS[selectedSubject] || CURATED_TOPICS['Physics'];
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -121,7 +116,7 @@ export default function ClassroomSetupModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-5 sm:p-7 space-y-5 animate-scaleUp">
+      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-5 sm:p-7 space-y-5 animate-scaleUp max-h-[92dvh] overflow-y-auto my-auto">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -139,24 +134,67 @@ export default function ClassroomSetupModal({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                AI Classroom Teacher
+                AI Classroom Setup
               </h2>
               <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 font-mono font-bold text-[10px]">
-                CHALKBOARD
+                OFFICIAL SYLLABUS
               </span>
             </div>
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Choose a subject or question. The AI teacher will teach step by step on a realistic digital chalkboard with natural speech.
+              Select your curriculum, subject, and term. The AI teacher explains step by step on a realistic multi-page chalkboard with synchronized speech.
             </p>
           </div>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Country & Curriculum Framework */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                Country & National System
+              </label>
+              <select
+                value={selectedCountryCode}
+                onChange={(e) => {
+                  setSelectedCountryCode(e.target.value);
+                  chalkAudio.playChalkTap();
+                }}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              >
+                {GLOBAL_CLASSROOM_PROFILES.map((c) => (
+                  <option key={c.countryCode} value={c.countryCode}>
+                    {c.flag} {c.countryName} ({c.educationMinistry})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+                Target Level / Examination
+              </label>
+              <select
+                value={educationLevel}
+                onChange={(e) => {
+                  setEducationLevel(e.target.value);
+                  chalkAudio.playChalkTap();
+                }}
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              >
+                <option value="Senior Secondary (SSS / WAEC / JAMB)">Senior Secondary (SSS / WAEC / JAMB)</option>
+                <option value="JAMB UTME (IBASS Direct)">JAMB UTME (IBASS Direct)</option>
+                <option value="Junior Secondary (JSS / BECE)">Junior Secondary (JSS / BECE)</option>
+                <option value="Cambridge IGCSE / GCSE">Cambridge IGCSE / GCSE</option>
+                <option value="Cambridge A-Levels / AP">Cambridge A-Levels / College Prep AP</option>
+              </select>
+            </div>
+          </div>
+
           {/* Subject Selector */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
-              1. Select Subject
+              Select Subject
             </label>
             <div className="flex flex-wrap gap-1.5 sm:gap-2 max-h-36 overflow-y-auto p-1 border border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-850/50">
               {CLASSROOM_SUBJECTS.map((subj) => {
@@ -171,7 +209,7 @@ export default function ClassroomSetupModal({
                     }}
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-blue-600 text-white shadow-xs'
+                        ? 'bg-emerald-600 text-white shadow-xs'
                         : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700/60'
                     }`}
                   >
@@ -186,12 +224,15 @@ export default function ClassroomSetupModal({
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                2. Quick Syllabus Topics ({selectedSubject})
+                Verified Syllabus Topics ({selectedSubject})
               </label>
-              <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">Click to select</span>
+              <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                <CheckCircle size={12} />
+                <span>Verified Official</span>
+              </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {currentCurated.slice(0, 4).map((curTopic) => {
+              {currentCurated.map((curTopic) => {
                 const isSelected = topicInput === curTopic;
                 return (
                   <button
@@ -200,7 +241,7 @@ export default function ClassroomSetupModal({
                     onClick={() => handleSelectCuratedTopic(curTopic)}
                     className={`p-2.5 rounded-xl text-left text-xs font-medium border transition-all cursor-pointer truncate ${
                       isSelected
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-bold'
+                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold ring-1 ring-emerald-500'
                         : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 hover:border-slate-300 text-slate-700 dark:text-slate-300'
                     }`}
                   >
@@ -211,36 +252,20 @@ export default function ClassroomSetupModal({
             </div>
           </div>
 
-          {/* Custom Topic or Educational Question Input */}
+          {/* Custom Topic Input */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              3. Or Enter Any Topic / Homework Problem
+              Or Type Any Specific Topic / Past Question
             </label>
             <div className="relative">
               <input
                 type="text"
                 value={topicInput}
                 onChange={(e) => setTopicInput(e.target.value)}
-                placeholder={`e.g. ${currentCurated[0]} or "Teach me how to..."`}
-                className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
+                placeholder={`e.g. ${currentCurated[0]} or "Explain step-by-step how to..."`}
+                className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-slate-400"
               />
             </div>
-          </div>
-
-          {/* Target Education Level */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-              4. Target Level
-            </label>
-            <select
-              value={educationLevel}
-              onChange={(e) => setEducationLevel(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="Junior Secondary (JSS)">Junior Secondary (JSS)</option>
-              <option value="Senior Secondary (SSS / WAEC / JAMB)">Senior Secondary (SSS / WAEC / JAMB)</option>
-              <option value="University / Pre-Degree">University / Pre-Degree Foundation</option>
-            </select>
           </div>
 
           {/* Submit Button */}

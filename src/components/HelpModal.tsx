@@ -39,8 +39,8 @@ export default function HelpModal({ isOpen, onClose }: HelpModalProps) {
       icon: FileUp,
     },
     {
-      q: 'How does the Socratic AI Tutor work?',
-      a: 'The AI Tutor guides you step-by-step through tough problems rather than just giving a blunt answer. You can ask for analogies, real-world examples, or past UTME questions on any Nigerian secondary school subject.',
+      q: 'How does the AI Classroom & Socratic Teacher work?',
+      a: 'The AI Classroom teaches each syllabus topic step-by-step on a realistic chalkboard with synchronized voice narration. You can ask follow-up questions, request step simplifications, solve practice problems, and take end-of-topic assessments.',
       icon: Sparkles,
     },
     {

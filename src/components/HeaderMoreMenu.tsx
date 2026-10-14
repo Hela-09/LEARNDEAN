@@ -675,7 +675,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
               </div>
 
               {/* Drawer Footer with User Account and Sign Out */}
-              <div className="p-3 sm:p-4 border-t border-slate-200/90 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 shrink-0 space-y-2">
+              <div className="p-3 sm:p-4 pb-[max(1rem,calc(0.75rem+env(safe-area-inset-bottom)))] border-t border-slate-200/90 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 shrink-0 space-y-2">
                 {user ? (
                   <>
                     {/* User Profile Bar */}

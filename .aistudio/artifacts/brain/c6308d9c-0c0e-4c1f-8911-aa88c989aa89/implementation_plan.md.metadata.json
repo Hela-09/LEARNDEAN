@@ -1,0 +1,6 @@
+{
+  "summary": "Implementation plan for upgrading LearnDean AI Classroom into a complete interactive school classroom aligned with verified official curricula (Nigerian WAEC/JAMB/NECO, Cambridge, US, etc.), featuring persistent multi-page chalkboard teaching, natural teacher voice synchronization, subtopic worked examples & practice, end-of-topic assignments, and student progress persistence in Firebase.",
+  "updatedAt": "2026-10-14T11:32:39.042681983Z",
+  "requestFeedback": true,
+  "userFacing": true
+}
