@@ -540,7 +540,7 @@ export default function CombineNotes({
       localStorage.setItem('zetadu_tutor_prompt', prompt);
     } catch (_) {}
 
-    navigate('/ai-tutor');
+    navigate('/classroom');
   };
 
   // Save generated flashcards to deck

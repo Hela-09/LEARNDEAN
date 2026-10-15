@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     
-    <title>Learndean</title>
-    <meta name="description" content="Adaptive learning, exam preparation, and study platform." />
-    <meta property="og:title" content="Learndean" />
-    <meta property="og:description" content="Adaptive learning, exam preparation, and study platform." />
+    <title>LearnDean — Interactive Curriculum &amp; Exam Prep</title>
+    <meta name="description" content="Master secondary school curricula, WAEC, NECO, and JAMB UTME with step-by-step interactive chalkboard lessons, active recall flashcards, and verified past questions." />
+    <meta property="og:title" content="LearnDean — Interactive Curriculum &amp; Exam Prep" />
+    <meta property="og:description" content="Master secondary school curricula, WAEC, NECO, and JAMB UTME with step-by-step interactive chalkboard lessons, active recall flashcards, and verified past questions." />
     <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#071A3D" media="(prefers-color-scheme: dark)" />
     <link rel="manifest" href="/manifest.json" />
@@ -27,8 +27,8 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Windows Tile & App Identification -->
-    <meta name="apple-mobile-web-app-title" content="Learndean" />
-    <meta name="application-name" content="Learndean" />
+    <meta name="apple-mobile-web-app-title" content="LearnDean" />
+    <meta name="application-name" content="LearnDean" />
     <meta name="msapplication-TileColor" content="#071A3D" />
     <meta name="msapplication-TileImage" content="/pwa-192x192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -48,9 +48,23 @@
     <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
     <link rel="dns-prefetch" href="https://identitytoolkit.googleapis.com" />
 
-
-    
-  
+    <!-- Instant Theme Detection Script: Prevents white flash and follows system appearance -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('zetadu_theme');
+          var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = stored === 'dark' || ((!stored || stored === 'system') && systemDark);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+        } catch (_) {}
+      })();
+    </script>
     <script>
       const originalError = console.error;
       console.error = function(...args) {

@@ -12,7 +12,8 @@ import {
   Search,
   RotateCcw,
   BookOpen,
-  GraduationCap
+  GraduationCap,
+  Play
 } from 'lucide-react';
 import { OFFICIAL_JAMB_SUBJECTS, getJambSubjectByName, JAMB_CATEGORIES, JambCategory } from '../../data/jambSubjects';
 import { jambService } from '../../services/jambService';
@@ -648,20 +649,47 @@ export default function JambCbtSection({
           </div>
         </div>
 
+        {/* Pre-Exam Selection Summary Card */}
+        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+            <span className="flex items-center gap-1.5 uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400">
+              <CheckCircle2 size={14} className="text-emerald-500" />
+              UTME Mock Summary ({allSelectedSubjects.length} Subjects)
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold">
+              {questionCount} Questions (400 Marks)
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {allSelectedSubjects.map((sub, sIdx) => (
+              <span key={sIdx} className="px-2.5 py-1 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200">
+                {sub}
+              </span>
+            ))}
+          </div>
+
+          {allSelectedSubjects.length < 4 && (
+            <p className="text-[11px] text-amber-700 dark:text-amber-300 font-medium bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-xl border border-amber-200 dark:border-amber-800">
+              Note: Official JAMB UTME tests 4 subjects (English + 3 electives). You have selected {allSelectedSubjects.length} subjects. You can start now with these subjects or add more electives above.
+            </p>
+          )}
+        </div>
+
         {/* Launch Button */}
         <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-xs text-slate-500">
-            <span>Subjects: <strong>{allSelectedSubjects.join(', ')}</strong></span>
+            <span>Duration: <strong>{isUntimed ? 'Untimed Practice' : `${examDurationMinutes} Minutes`}</strong></span>
           </div>
 
           <button
             id="jamb-launch-cbt-exam-btn"
             type="button"
             onClick={handleLaunch}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-extrabold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
           >
-            <span>Launch JAMB CBT Mock Exam</span>
-            <ArrowRight size={18} />
+            <Play size={18} className="fill-current text-white" />
+            <span>Start Practice</span>
           </button>
         </div>
       </div>

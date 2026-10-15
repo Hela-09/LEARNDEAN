@@ -745,11 +745,11 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
             <button
               type="button"
               onClick={handleStopProcessing}
-              className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md cursor-pointer shrink-0"
-              title="Stop AI processing and safely preserve inputs"
+              className="w-8 h-8 rounded-xl bg-white/20 hover:bg-rose-600 text-white flex items-center justify-center transition-all shadow-xs cursor-pointer shrink-0"
+              title="Stop generation"
+              aria-label="Stop generation"
             >
               <Square size={13} className="fill-current" />
-              <span>Stop / Cancel</span>
             </button>
           </div>
         </div>

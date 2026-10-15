@@ -10,6 +10,7 @@ import {
   Volume2,
   RotateCcw,
   BookOpen,
+  Square,
 } from 'lucide-react';
 import { ClassroomStep, ClassroomQuiz, ClassroomQA } from '../../types/classroom';
 import { chalkAudio } from '../../utils/chalkAudio';
@@ -18,6 +19,7 @@ interface ClassroomInteractionPanelProps {
   currentStep: ClassroomStep;
   qaHistory: ClassroomQA[];
   onAskQuestion: (question: string, isSimplify: boolean) => Promise<void>;
+  onStopAsking?: () => void;
   isAsking: boolean;
   onSpeakAnswer?: (text: string) => void;
   onQuizAnswered?: (isCorrect: boolean) => void;
@@ -27,6 +29,7 @@ export default function ClassroomInteractionPanel({
   currentStep,
   qaHistory,
   onAskQuestion,
+  onStopAsking,
   isAsking,
   onSpeakAnswer,
   onQuizAnswered,
@@ -191,14 +194,28 @@ export default function ClassroomInteractionPanel({
               disabled={isAsking}
               className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
             />
-            <button
-              type="submit"
-              disabled={!questionInput.trim() || isAsking}
-              className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all cursor-pointer"
-            >
-              <Send size={15} />
-              <span>Ask</span>
-            </button>
+            {isAsking ? (
+              <button
+                type="button"
+                onClick={onStopAsking}
+                className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-slate-100 hover:bg-rose-600 dark:hover:bg-rose-600 text-white dark:text-slate-900 hover:text-white dark:hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
+                title="Stop generation"
+                aria-label="Stop generation"
+              >
+                <Square size={14} className="fill-current" />
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={!questionInput.trim()}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                title="Send question"
+                aria-label="Send question"
+              >
+                <Send size={15} />
+                <span>Ask</span>
+              </button>
+            )}
           </form>
 
           {isAsking && (

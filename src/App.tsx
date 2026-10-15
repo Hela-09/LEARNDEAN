@@ -1,4 +1,4 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import BottomNav from './components/BottomNav';
@@ -8,12 +8,16 @@ import HeaderMoreMenu from './components/HeaderMoreMenu';
 import HelpModal from './components/HelpModal';
 import GoogleBackupPromptModal from './components/GoogleBackupPromptModal';
 import { ViewType } from './types';
-import { Search } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAuth } from './contexts/AuthContext';
 import { ThemeToggle } from './components/ThemeToggle';
 import { VIEW_TO_PATH } from './utils/navigation';
 import { recordRoute } from './utils/navigationHistory';
+import ErrorBoundary from './components/ErrorBoundary';
+import NotificationCenterModal from './components/notifications/NotificationCenterModal';
+import BackgroundActivityIndicator from './components/BackgroundActivityIndicator';
+import { notificationService } from './services/notificationService';
 
 const Login = lazy(() => import('./components/Login'));
 const PaymentGate = lazy(() => import('./components/PaymentGate'));
@@ -78,6 +82,18 @@ export default function App() {
   const [adminChecked, setAdminChecked] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+
+  useEffect(() => {
+    notificationService.init(user?.uid || null);
+    const unsubscribe = notificationService.subscribe((list) => {
+      setUnreadNotificationsCount(list.filter((n) => !n.isRead).length);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, [user?.uid]);
 
   // Centralized React Router navigation
   const setCurrentView = React.useCallback(
@@ -280,6 +296,22 @@ export default function App() {
                 <Search size={18} />
               </button>
 
+              {/* Notification Center Trigger */}
+              <button
+                id="header-notifications-btn"
+                onClick={() => setIsNotificationsOpen(true)}
+                className="relative p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-400 transition-all cursor-pointer shadow-2xs"
+                aria-label="Notifications"
+                title="View Notifications"
+              >
+                <Bell size={18} />
+                {unreadNotificationsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center ring-2 ring-white dark:ring-slate-900 animate-in zoom-in-75 duration-150">
+                    {unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount}
+                  </span>
+                )}
+              </button>
+
               {/* Theme Toggle Button */}
               <ThemeToggle />
 
@@ -319,24 +351,26 @@ export default function App() {
           </header>
 
           <div className="flex-1 relative flex flex-col min-h-0">
-            <Suspense fallback={
-              <div className="flex-1 flex items-center justify-center">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" aria-label="Loading section..."></div>
-              </div>
-            }>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={location.pathname}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.1, ease: "easeOut" }}
-                  className="flex-1 flex flex-col min-h-0 relative"
-                >
-                  <Routes>
-                    <Route path="/" element={<Navigate to="/home" replace />} />
-                    <Route path="/classroom" element={<AIClassroom setView={setCurrentView} />} />
-                    <Route path="/ai-classroom" element={<Navigate to="/classroom" replace />} />
+            <ErrorBoundary>
+              <Suspense fallback={
+                <div className="flex-1 flex items-center justify-center min-h-[300px]">
+                  <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" aria-label="Loading section..."></div>
+                </div>
+              }>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={location.pathname}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.1, ease: "easeOut" }}
+                    className="flex-1 flex flex-col min-h-0 relative"
+                  >
+                    <Routes>
+                      <Route path="/" element={<Navigate to="/home" replace />} />
+                      <Route path="/home" element={<Home setView={setCurrentView} />} />
+                      <Route path="/classroom" element={<AIClassroom setView={setCurrentView} />} />
+                      <Route path="/ai-classroom" element={<Navigate to="/classroom" replace />} />
                     <Route path="/ai-tutor" element={<Navigate to="/classroom" replace />} />
                     <Route path="/tutor" element={<Navigate to="/classroom" replace />} />
                     <Route path="/learn" element={<LearnHub setView={setCurrentView} />} />
@@ -373,8 +407,9 @@ export default function App() {
                 </motion.div>
               </AnimatePresence>
             </Suspense>
-          </div>
-        </main>
+          </ErrorBoundary>
+        </div>
+      </main>
         
         {/* Bottom Navigation on Mobile */}
         <BottomNav currentView={currentView} setCurrentView={setCurrentView} />
@@ -400,6 +435,15 @@ export default function App() {
             onClose={() => setShowGoogleBackupPrompt(false)}
           />
         )}
+
+        {/* Floating Persistent Background Activity Indicator */}
+        <BackgroundActivityIndicator />
+
+        {/* Global In-App Notification Center Modal */}
+        <NotificationCenterModal
+          isOpen={isNotificationsOpen}
+          onClose={() => setIsNotificationsOpen(false)}
+        />
       </div>
     </div>
   );

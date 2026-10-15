@@ -32,7 +32,8 @@ import {
   Download,
   History,
   Layers,
-  Square
+  Square,
+  Play
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -2034,27 +2035,27 @@ export default function Quiz({
           )}
 
           {loading ? (
-            <div className="flex gap-3">
-              <div className="flex-1 bg-blue-600/70 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-sm text-base select-none">
-                <Loader2 className="animate-spin" size={20} />
-                <span>Generating Questions...</span>
+            <div className="w-full bg-slate-900 dark:bg-slate-800 text-white font-bold py-3.5 px-4 rounded-2xl flex items-center justify-between gap-3 shadow-md text-sm">
+              <div className="flex items-center gap-2.5 truncate">
+                <Loader2 className="animate-spin text-blue-400 shrink-0" size={18} />
+                <span className="truncate">Generating Questions...</span>
               </div>
               <button 
                 type="button" 
                 onClick={handleStopQuestionGeneration}
-                className="px-6 py-4 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 text-base cursor-pointer shrink-0"
-                title="Stop question generation"
+                className="w-9 h-9 rounded-xl bg-slate-800 dark:bg-slate-700 hover:bg-rose-600 dark:hover:bg-rose-600 text-white flex items-center justify-center transition-all cursor-pointer shadow-xs shrink-0"
+                title="Stop generation"
+                aria-label="Stop generation"
               >
-                <Square size={16} className="fill-current" />
-                <span>Stop / Cancel</span>
+                <Square size={13} className="fill-current" />
               </button>
             </div>
           ) : (
             <button 
               type="submit" 
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm text-base"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-blue-600/30 text-base active:scale-[0.99]"
             >
-              <Settings size={20} />
+              <Play size={18} className="fill-current" />
               <span>Start Practice Session</span>
             </button>
           )}

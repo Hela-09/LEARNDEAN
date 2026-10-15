@@ -25,7 +25,7 @@ interface HomeProps {
 }
 
 export default function Home({ setView }: HomeProps) {
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth();
   
   // Fast hydration from local cache to eliminate blank/spinner startup delays
   const [cachedHome] = useState(() => {
@@ -153,7 +153,10 @@ export default function Home({ setView }: HomeProps) {
   useEffect(() => {
     let isCancelled = false;
     const fetchStats = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       try {
         // Fetch all primary dashboard stats in parallel without blocking sequential waterfalls
         const [journeyRes, analysisRes, practiceRes] = await Promise.allSettled([
@@ -281,10 +284,30 @@ export default function Home({ setView }: HomeProps) {
     );
   }
 
-  if (loading) {
+  if (loading && authLoading && !cachedHome) {
     return (
-      <div className="w-full h-full flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="w-full max-w-7xl mx-auto flex flex-col gap-5 sm:gap-8 pb-6 sm:pb-8 min-w-0 animate-pulse">
+        {/* Skeleton Top Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl">
+          <div className="space-y-2">
+            <div className="h-6 w-48 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div className="h-4 w-72 bg-slate-100 dark:bg-slate-850 rounded-lg" />
+          </div>
+          <div className="flex gap-2">
+            <div className="h-10 w-28 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+            <div className="h-10 w-28 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+          </div>
+        </div>
+
+        {/* Skeleton Hero Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="h-44 bg-slate-200/80 dark:bg-slate-800/80 rounded-3xl" />
+          <div className="h-44 bg-slate-200/80 dark:bg-slate-800/80 rounded-3xl" />
+          <div className="h-44 bg-slate-200/80 dark:bg-slate-800/80 rounded-3xl" />
+        </div>
+
+        {/* Skeleton Content Section */}
+        <div className="h-64 bg-slate-100 dark:bg-slate-850 rounded-3xl border border-slate-200 dark:border-slate-800" />
       </div>
     );
   }

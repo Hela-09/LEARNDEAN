@@ -267,8 +267,24 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
     }
   };
 
+  const askAbortControllerRef = useRef<AbortController | null>(null);
+
+  const handleStopAskQuestion = () => {
+    if (askAbortControllerRef.current) {
+      askAbortControllerRef.current.abort();
+      askAbortControllerRef.current = null;
+    }
+    speech.stop();
+    setIsAsking(false);
+  };
+
   // Ask Follow-up Question
   const handleAskQuestion = async (question: string, isSimplify: boolean) => {
+    if (askAbortControllerRef.current) {
+      askAbortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    askAbortControllerRef.current = controller;
     setIsAsking(true);
     try {
       const bulletSummary = currentStep.chalkboard.bulletPoints.join('; ');
@@ -280,16 +296,22 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
         question,
         isSimplify
       );
+      if (controller.signal.aborted) return;
       qaResult.stepId = currentStep.id;
 
       setQaHistory((prev) => [qaResult, ...prev]);
 
       // Speak teacher's answer aloud
       speech.play(qaResult.spokenAnswer);
-    } catch (e) {
-      console.error('Failed to ask question:', e);
+    } catch (e: any) {
+      if (e?.name !== 'AbortError' && !controller.signal.aborted) {
+        console.error('Failed to ask question:', e);
+      }
     } finally {
-      setIsAsking(false);
+      if (!controller.signal.aborted) {
+        setIsAsking(false);
+      }
+      askAbortControllerRef.current = null;
     }
   };
 
@@ -482,6 +504,7 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           currentStep={currentStep}
           qaHistory={qaHistory}
           onAskQuestion={handleAskQuestion}
+          onStopAsking={handleStopAskQuestion}
           isAsking={isAsking}
           onSpeakAnswer={(text) => speech.play(text)}
           onQuizAnswered={(isCorrect) => {

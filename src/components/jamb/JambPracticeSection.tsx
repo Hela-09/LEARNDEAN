@@ -8,7 +8,8 @@ import {
   Calculator, 
   CheckCircle2, 
   FileText,
-  Sparkles
+  Sparkles,
+  Play
 } from 'lucide-react';
 import { JAMB_SUBJECTS, JAMB_YEARS, getRealAvailableQuestionsForSubject } from '../../data/jambQuestions';
 import { JAMB_CATEGORIES, JambCategory } from '../../data/jambSubjects';
@@ -404,7 +405,41 @@ export default function JambPracticeSection({ initialSubjectId, onStartPractice 
           </div>
         )}
 
-        {/* Launch Button */}
+        {/* Pre-Practice Configuration Summary Card */}
+        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-800 space-y-3">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+            <span className="flex items-center gap-1.5 uppercase tracking-wider text-[11px] text-slate-500 dark:text-slate-400">
+              <CheckCircle2 size={14} className="text-emerald-500" />
+              Practice Session Summary
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold">
+              {finalAmount > availableInBank ? availableInBank : finalAmount} Questions
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 block font-semibold">Subject</span>
+              <span className="font-bold text-slate-900 dark:text-white truncate block">{currentSubjectMeta.name}</span>
+            </div>
+            <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 block font-semibold">Focus Topic</span>
+              <span className="font-bold text-slate-900 dark:text-white truncate block">{selectedTopic}</span>
+            </div>
+            <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 block font-semibold">Mode</span>
+              <span className="font-bold text-slate-900 dark:text-white truncate block capitalize">{practiceMode}</span>
+            </div>
+            <div className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+              <span className="text-[10px] text-slate-400 block font-semibold">Timer</span>
+              <span className="font-bold text-slate-900 dark:text-white truncate block">
+                {practiceMode === 'study' || isUntimed ? 'Untimed' : `${timerMinutes} Mins`}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Launch Button with Play Icon */}
         <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-xs text-slate-500">
             <span>
@@ -417,10 +452,10 @@ export default function JambPracticeSection({ initialSubjectId, onStartPractice 
             id="jamb-launch-practice-btn"
             type="button"
             onClick={handleLaunch}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-[1.02]"
+            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-extrabold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
           >
-            <span>Start JAMB Practice</span>
-            <ArrowRight size={18} />
+            <Play size={18} className="fill-current text-white" />
+            <span>Start Practice</span>
           </button>
         </div>
       </div>

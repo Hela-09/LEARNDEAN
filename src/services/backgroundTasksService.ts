@@ -1,3 +1,5 @@
+import { notificationService } from './notificationService';
+
 export type TaskType = 
   | 'notes_summary' 
   | 'notes_explain' 
@@ -19,6 +21,8 @@ export interface BackgroundTask<T = any> {
   statusMessage: string;
   startedAt: number;
   completedAt?: number;
+  route?: string;
+  routeState?: Record<string, any>;
   result?: T;
   error?: string;
   metadata?: Record<string, any>;
@@ -78,7 +82,9 @@ class BackgroundTasksService {
     uid: string,
     type: TaskType,
     title: string,
-    initialMessage = 'Processing in background...'
+    initialMessage = 'Processing in background...',
+    route?: string,
+    routeState?: Record<string, any>
   ): { taskId: string; signal: AbortSignal } {
     const taskId = `task_${type}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const controller = new AbortController();
@@ -92,7 +98,9 @@ class BackgroundTasksService {
       status: 'in_progress',
       progress: 10,
       statusMessage: initialMessage,
-      startedAt: Date.now()
+      startedAt: Date.now(),
+      route,
+      routeState,
     };
 
     const current = this.getTasks(uid);
@@ -123,13 +131,25 @@ class BackgroundTasksService {
     const tasks = this.getTasks(uid);
     const index = tasks.findIndex(t => t.id === taskId);
     if (index >= 0) {
-      tasks[index].status = 'completed';
-      tasks[index].progress = 100;
-      tasks[index].statusMessage = message;
-      tasks[index].completedAt = Date.now();
-      tasks[index].result = result;
+      const task = tasks[index];
+      task.status = 'completed';
+      task.progress = 100;
+      task.statusMessage = message;
+      task.completedAt = Date.now();
+      task.result = result;
       this.saveTasks(uid, tasks);
-      this.notify(tasks[index]);
+      this.notify(task);
+
+      // Dispatch in-app notification & browser push if permitted
+      notificationService.addNotification({
+        uid,
+        title: `${task.title} Ready`,
+        message: message || `${task.title} completed successfully. Tap to review.`,
+        type: 'task_complete',
+        route: task.route || (task.type.startsWith('notes') || task.type === 'combine_notes' ? '/upload-notes' : '/home'),
+        routeState: task.routeState,
+        taskId: task.id,
+      }).catch(() => {});
     }
   }
 
@@ -138,12 +158,24 @@ class BackgroundTasksService {
     const tasks = this.getTasks(uid);
     const index = tasks.findIndex(t => t.id === taskId);
     if (index >= 0) {
-      tasks[index].status = 'failed';
-      tasks[index].statusMessage = error || 'Task failed';
-      tasks[index].completedAt = Date.now();
-      tasks[index].error = error;
+      const task = tasks[index];
+      task.status = 'failed';
+      task.statusMessage = error || 'Task failed';
+      task.completedAt = Date.now();
+      task.error = error;
       this.saveTasks(uid, tasks);
-      this.notify(tasks[index]);
+      this.notify(task);
+
+      // Dispatch failure notification
+      notificationService.addNotification({
+        uid,
+        title: `${task.title} Notice`,
+        message: error || `We could not complete ${task.title}. Tap to review and retry.`,
+        type: 'task_error',
+        route: task.route || (task.type.startsWith('notes') || task.type === 'combine_notes' ? '/upload-notes' : '/home'),
+        routeState: task.routeState,
+        taskId: task.id,
+      }).catch(() => {});
     }
   }
 
