@@ -134,7 +134,9 @@ export default function JambPracticeScreen({ config, onExit, onRetake }: JambPra
 
   // For multi-subject course combo, show pre-practice confirmation before starting
   const [hasStartedPractice, setHasStartedPractice] = useState<boolean>(() => {
-    return Boolean(config.reviewSession || (config.subjects && config.subjects.length <= 1) || (!config.subjects && !config.practiceMode));
+    if (config.reviewSession) return true;
+    if (config.subjects && config.subjects.length > 1) return false;
+    return true;
   });
 
   // Group questions by canonical subject for isolated subject navigation & reporting

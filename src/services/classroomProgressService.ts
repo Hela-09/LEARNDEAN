@@ -135,21 +135,77 @@ export function saveClassroomProgress(state: ClassroomMasterState): void {
     }
   }
 
-  // Cloud sync to Firestore if authenticated
+  // Cloud sync to Firestore securely if authenticated
   if (auth && auth.currentUser) {
     const uid = auth.currentUser.uid;
     try {
-      const ref = doc(db, 'users', uid, 'classroom_progress', 'master');
-      setDoc(ref, {
+      const payload = {
         ...state,
         uid,
         lastCloudSync: Date.now(),
-      }, { merge: true }).catch((err) => {
-        console.warn('Classroom cloud sync background warning:', err);
+      };
+      // Write to both top-level and user subcollection to guarantee sync reliability
+      const topRef = doc(db, 'classroom_progress', uid);
+      setDoc(topRef, payload, { merge: true }).catch((err) => {
+        console.warn('Classroom top-level cloud sync non-fatal notice:', err);
       });
-    } catch {}
+      const subRef = doc(db, 'users', uid, 'classroom_progress', 'master');
+      setDoc(subRef, payload, { merge: true }).catch((err) => {
+        console.warn('Classroom user subcollection cloud sync non-fatal notice:', err);
+      });
+    } catch (err) {
+      console.warn('Classroom cloud sync exception handled:', err);
+    }
   }
 }
+
+/**
+ * Syncs student classroom progress from Firestore on launch/login
+ * and merges with local storage to resume unfinished lessons across devices.
+ */
+export async function syncClassroomProgressFromCloud(): Promise<ClassroomMasterState> {
+  const local = loadClassroomProgress();
+  if (!auth || !auth.currentUser) return local;
+
+  const uid = auth.currentUser.uid;
+  try {
+    const snap1 = await getDoc(doc(db, 'classroom_progress', uid)).catch(() => null);
+    const snap2 = !snap1?.exists()
+      ? await getDoc(doc(db, 'users', uid, 'classroom_progress', 'master')).catch(() => null)
+      : null;
+    const cloudDoc = snap1?.exists() ? snap1.data() : snap2?.exists() ? snap2.data() : null;
+
+    if (cloudDoc && cloudDoc.topicsProgress) {
+      const mergedTopics = { ...local.topicsProgress };
+      for (const [topicId, rec] of Object.entries(
+        cloudDoc.topicsProgress as Record<string, TopicProgressRecord>
+      )) {
+        if (!mergedTopics[topicId] || (rec.lastStudiedAt || 0) > (mergedTopics[topicId].lastStudiedAt || 0)) {
+          mergedTopics[topicId] = rec;
+        }
+      }
+      const merged: ClassroomMasterState = {
+        ...local,
+        profile: cloudDoc.profile ? { ...local.profile, ...cloudDoc.profile } : local.profile,
+        topicsProgress: mergedTopics,
+        totalLessonsStudied: Math.max(local.totalLessonsStudied || 0, cloudDoc.totalLessonsStudied || 0),
+        overallAverageScore: cloudDoc.overallAverageScore || local.overallAverageScore,
+        flaggedRevisionTopicIds: Array.from(
+          new Set([...(local.flaggedRevisionTopicIds || []), ...(cloudDoc.flaggedRevisionTopicIds || [])])
+        ),
+        updatedAt: Math.max(local.updatedAt || 0, cloudDoc.updatedAt || 0),
+      };
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(merged));
+      }
+      return merged;
+    }
+  } catch (err) {
+    console.warn('Classroom cloud sync fetch error handled gracefully:', err);
+  }
+  return local;
+}
+
 
 // Update profile selection
 export function updateStudentProfile(profileUpdates: Partial<StudentCurriculumProfile>): ClassroomMasterState {

@@ -23,6 +23,9 @@ interface ClassroomInteractionPanelProps {
   isAsking: boolean;
   onSpeakAnswer?: (text: string) => void;
   onQuizAnswered?: (isCorrect: boolean) => void;
+  onNextStep?: () => void;
+  isLastStep?: boolean;
+  onOpenFinalAssessment?: () => void;
 }
 
 export default function ClassroomInteractionPanel({
@@ -33,6 +36,9 @@ export default function ClassroomInteractionPanel({
   isAsking,
   onSpeakAnswer,
   onQuizAnswered,
+  onNextStep,
+  isLastStep = false,
+  onOpenFinalAssessment,
 }: ClassroomInteractionPanelProps) {
   const [activeTab, setActiveTab] = useState<'transcript' | 'ask' | 'quiz'>('transcript');
   const [questionInput, setQuestionInput] = useState<string>('');
@@ -376,6 +382,29 @@ export default function ClassroomInteractionPanel({
               <p className="text-xs sm:text-sm leading-relaxed">
                 {currentStep.quiz.explanation}
               </p>
+
+              {/* Action to proceed after subtopic assessment */}
+              <div className="pt-2 border-t border-black/10 dark:border-white/10 flex items-center justify-end">
+                {isLastStep ? (
+                  <button
+                    type="button"
+                    onClick={onOpenFinalAssessment}
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm flex items-center gap-2 transition cursor-pointer shadow-xs"
+                  >
+                    <span>Final Topic Assessment</span>
+                    <Sparkles size={14} />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={onNextStep}
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm flex items-center gap-2 transition cursor-pointer shadow-xs"
+                  >
+                    <span>Continue to Next Subtopic</span>
+                    <CheckCircle2 size={14} />
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>

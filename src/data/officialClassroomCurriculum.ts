@@ -107,11 +107,20 @@ export interface SyllabusSubject {
   terms: AcademicTerm[];
 }
 
+export type EducationLevelTier =
+  | 'early_childhood'
+  | 'primary'
+  | 'junior_secondary'
+  | 'senior_secondary'
+  | 'tertiary'
+  | 'postgraduate';
+
 export interface ClassGrade {
   id: string;
   name: string;
   shortName: string;
-  levelCategory: 'Senior Secondary' | 'Tertiary Entrance' | 'Junior Secondary' | 'Primary' | 'High School' | 'College Prep' | 'International';
+  tier?: EducationLevelTier;
+  levelCategory: 'Early Childhood' | 'Primary' | 'Junior Secondary' | 'Senior Secondary' | 'Tertiary Entrance' | 'Tertiary' | 'Postgraduate' | 'High School' | 'College Prep' | 'International';
   examBoard: string;
   officialYear: string;
   subjects: SyllabusSubject[];
@@ -1739,107 +1748,57 @@ export const NIGERIA_WAEC_SSS_SUBJECTS: SyllabusSubject[] = [
   }
 ];
 
-// Country Profiles
+import {
+  assembleClassGradesForCountry,
+  EDUCATION_LEVEL_DEFINITIONS,
+  EducationLevelDefinition,
+} from './curriculumEducationHierarchy';
+
+export { EDUCATION_LEVEL_DEFINITIONS };
+export type { EducationLevelDefinition };
+
+// Country Profiles with full 6-tier educational coverage
 export const GLOBAL_CLASSROOM_PROFILES: CountryCurriculumProfile[] = [
   {
     countryCode: 'NG',
     countryName: 'Nigeria',
     flag: '🇳🇬',
     educationMinistry: 'Federal Ministry of Education (FME) & NERDC',
-    systemDescription: '6-3-3-4 System: Universal Basic Education, Senior Secondary, Tertiary Entrance (WAEC WASSCE, JAMB UTME, NECO SSCE).',
-    grades: [
-      {
-        id: 'sss',
-        name: 'Senior Secondary School (SSS 1 - 3)',
-        shortName: 'SSS 1-3 / WAEC / NECO',
-        levelCategory: 'Senior Secondary',
-        examBoard: 'West African Examinations Council (WAEC) & NECO',
-        officialYear: '2024 / 2025',
-        subjects: NIGERIA_WAEC_SSS_SUBJECTS
-      },
-      {
-        id: 'jamb',
-        name: 'JAMB UTME Tertiary Entrance',
-        shortName: 'JAMB UTME (IBASS)',
-        levelCategory: 'Tertiary Entrance',
-        examBoard: 'Joint Admissions and Matriculation Board (JAMB)',
-        officialYear: '2024 / 2025',
-        subjects: NIGERIA_WAEC_SSS_SUBJECTS
-      },
-      {
-        id: 'jss',
-        name: 'Junior Secondary School (JSS 1 - 3)',
-        shortName: 'JSS 1-3 / BECE Junior WAEC',
-        levelCategory: 'Junior Secondary',
-        examBoard: 'National Examinations Council (NECO) & State Boards',
-        officialYear: '2024 / 2025',
-        subjects: NIGERIA_WAEC_SSS_SUBJECTS
-      }
-    ]
+    systemDescription: 'Universal Basic Education (UBE), Senior Secondary (WAEC/NECO/JAMB), Tertiary (NUC/NBTE), and Postgraduate.',
+    grades: assembleClassGradesForCountry('NG', NIGERIA_WAEC_SSS_SUBJECTS),
   },
   {
     countryCode: 'GH',
     countryName: 'Ghana',
     flag: '🇬🇭',
     educationMinistry: 'Ministry of Education Ghana / Ghana Education Service (GES)',
-    systemDescription: 'Senior High School (SHS) curriculum leading to WASSCE certification.',
-    grades: [
-      {
-        id: 'gh-shs',
-        name: 'Senior High School (SHS 1 - 3)',
-        shortName: 'SHS / WASSCE Ghana',
-        levelCategory: 'Senior Secondary',
-        examBoard: 'WAEC Ghana & GES',
-        officialYear: '2024 / 2025',
-        subjects: NIGERIA_WAEC_SSS_SUBJECTS
-      }
-    ]
+    systemDescription: 'Basic Education, Senior High School (SHS / WASSCE Ghana), and Tertiary Universities & Polytechnics.',
+    grades: assembleClassGradesForCountry('GH', NIGERIA_WAEC_SSS_SUBJECTS),
   },
   {
     countryCode: 'GB',
     countryName: 'United Kingdom',
     flag: '🇬🇧',
     educationMinistry: 'Department for Education (DfE) & Ofqual',
-    systemDescription: 'Key Stages 3-5 leading to GCSE, IGCSE, and Cambridge A-Levels.',
-    grades: [
-      {
-        id: 'uk-gcse',
-        name: 'GCSE & Cambridge IGCSE (Years 10 - 11)',
-        shortName: 'GCSE / IGCSE',
-        levelCategory: 'High School',
-        examBoard: 'Cambridge International & Pearson Edexcel',
-        officialYear: '2024 / 2025',
-        subjects: NIGERIA_WAEC_SSS_SUBJECTS
-      },
-      {
-        id: 'uk-alevel',
-        name: 'GCE Advanced Level (A-Levels / Years 12 - 13)',
-        shortName: 'A-Levels',
-        levelCategory: 'College Prep',
-        examBoard: 'Cambridge International / AQA',
-        officialYear: '2024 / 2025',
-        subjects: NIGERIA_WAEC_SSS_SUBJECTS
-      }
-    ]
+    systemDescription: 'Key Stages 1-5 (Primary, GCSE, Cambridge IGCSE, A-Levels), and UK Higher Education Degree Standards.',
+    grades: assembleClassGradesForCountry('GB', NIGERIA_WAEC_SSS_SUBJECTS),
   },
   {
     countryCode: 'US',
     countryName: 'United States',
     flag: '🇺🇸',
     educationMinistry: 'State Departments of Education & College Board',
-    systemDescription: 'High School Diploma (Grades 9-12), AP (Advanced Placement), and SAT/ACT.',
-    grades: [
-      {
-        id: 'us-ap',
-        name: 'AP (Advanced Placement) & College Prep',
-        shortName: 'AP / SAT / ACT',
-        levelCategory: 'College Prep',
-        examBoard: 'College Board',
-        officialYear: '2024 / 2025',
-        subjects: NIGERIA_WAEC_SSS_SUBJECTS
-      }
-    ]
-  }
+    systemDescription: 'K-12 Elementary, Middle School, High School Diploma, AP (Advanced Placement), SAT, and College/Graduate levels.',
+    grades: assembleClassGradesForCountry('US', NIGERIA_WAEC_SSS_SUBJECTS),
+  },
+  {
+    countryCode: 'INT',
+    countryName: 'International / Cambridge',
+    flag: '🌐',
+    educationMinistry: 'International Baccalaureate (IB) & Cambridge Assessment',
+    systemDescription: 'Cambridge Early Years, Primary, Lower Secondary, IGCSE, Cambridge International A-Levels, and Global Tertiary.',
+    grades: assembleClassGradesForCountry('INT', NIGERIA_WAEC_SSS_SUBJECTS),
+  },
 ];
 
 // Helper: Find topic by ID across all profiles
@@ -1870,3 +1829,65 @@ export function findSyllabusSubject(subjectQuery: string): SyllabusSubject | nul
   }
   return GLOBAL_CLASSROOM_PROFILES[0].grades[0].subjects[0];
 }
+
+/**
+ * Smart Topic Search & Autocomplete
+ * Suggests relevant topics based on letters entered, selected class, subject, and syllabus.
+ */
+export function searchClassroomCurriculumTopics(
+  lettersQuery: string,
+  gradeId?: string,
+  subjectId?: string,
+  countryCode: string = 'NG'
+): SyllabusTopic[] {
+  const query = (lettersQuery || '').trim().toLowerCase();
+  const country = GLOBAL_CLASSROOM_PROFILES.find((c) => c.countryCode === countryCode) || GLOBAL_CLASSROOM_PROFILES[0];
+  const results: SyllabusTopic[] = [];
+  const seenIds = new Set<string>();
+
+  // Determine which grades to search
+  const gradesToSearch = gradeId
+    ? country.grades.filter((g) => g.id === gradeId || g.id.includes(gradeId))
+    : country.grades;
+
+  for (const grade of gradesToSearch) {
+    const subjectsToSearch = subjectId
+      ? grade.subjects.filter(
+          (s) =>
+            s.id.toLowerCase() === subjectId.toLowerCase() ||
+            s.name.toLowerCase().includes(subjectId.toLowerCase()) ||
+            subjectId.toLowerCase().includes(s.id.toLowerCase())
+        )
+      : grade.subjects;
+
+    for (const subject of subjectsToSearch) {
+      for (const term of subject.terms) {
+        for (const topic of term.topics) {
+          if (seenIds.has(topic.id)) continue;
+
+          // If no query, return up to 20 default topics for this subject
+          if (!query) {
+            results.push(topic);
+            seenIds.add(topic.id);
+            if (results.length >= 25) return results;
+            continue;
+          }
+
+          const matchesTitle = topic.title.toLowerCase().includes(query);
+          const matchesSubtopics = topic.subtopics.some((st) => st.toLowerCase().includes(query));
+          const matchesObjectives = topic.objectives.some((ob) => ob.toLowerCase().includes(query));
+          const matchesFormulas = topic.keyFormulae?.some((f) => f.toLowerCase().includes(query));
+
+          if (matchesTitle || matchesSubtopics || matchesObjectives || matchesFormulas) {
+            results.push(topic);
+            seenIds.add(topic.id);
+            if (results.length >= 30) return results;
+          }
+        }
+      }
+    }
+  }
+
+  return results;
+}
+

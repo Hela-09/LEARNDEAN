@@ -408,32 +408,32 @@ export default function Home({ setView }: HomeProps) {
 
       {/* Five Main Feature Layouts */}
       <div id="home-top-feature-layouts" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 w-full min-w-0">
-        <button id="quick-action-ai-classroom" onClick={() => setView('classroom')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-emerald-500 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
-          <div className="w-11 h-11 mb-2.5 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+        <button id="quick-action-ai-classroom" onClick={() => setView('classroom')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:shadow-md transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
+          <div className="w-11 h-11 mb-2.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform">
             <LearnDeanEmblem className="w-6 h-6" />
           </div>
           <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">AI Classroom</h3>
         </button>
-        <button id="quick-action-upload-notes" onClick={() => setView('upload_notes')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
-          <div className="w-11 h-11 mb-2.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+        <button id="quick-action-upload-notes" onClick={() => setView('upload_notes')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:shadow-md transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
+          <div className="w-11 h-11 mb-2.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform">
             <FileUp size={24} />
           </div>
           <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">Upload Notes</h3>
         </button>
-        <button id="quick-action-study-journey" onClick={() => setView('journey')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-500 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
-          <div className="w-11 h-11 mb-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+        <button id="quick-action-study-journey" onClick={() => setView('journey')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:shadow-md transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
+          <div className="w-11 h-11 mb-2.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform">
             <Compass size={24} />
           </div>
           <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">Study Journey</h3>
         </button>
-        <button id="quick-action-library" onClick={() => setView('subjects')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-amber-500 hover:shadow-lg transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
-          <div className="w-11 h-11 mb-2.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+        <button id="quick-action-library" onClick={() => setView('subjects')} className="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:shadow-md transition-all flex flex-col items-center justify-center text-center group cursor-pointer">
+          <div className="w-11 h-11 mb-2.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform">
             <BookOpen size={24} />
           </div>
           <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">Library</h3>
         </button>
-        <button id="quick-action-practice" onClick={() => setView('practice')} className="col-span-2 sm:col-span-1 lg:col-span-1 bg-white dark:bg-slate-800 p-3.5 sm:p-5 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-rose-500 hover:shadow-lg transition-all flex flex-row sm:flex-col items-center justify-center gap-2.5 sm:gap-0 text-center group cursor-pointer">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 sm:mb-2.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+        <button id="quick-action-practice" onClick={() => setView('practice')} className="col-span-2 sm:col-span-1 lg:col-span-1 bg-white dark:bg-slate-800 p-3.5 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:shadow-md transition-all flex flex-row sm:flex-col items-center justify-center gap-2.5 sm:gap-0 text-center group cursor-pointer">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 sm:mb-2.5 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
             <PenTool size={22} />
           </div>
           <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm">Practice</h3>

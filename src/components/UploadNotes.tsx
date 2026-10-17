@@ -149,17 +149,18 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
 
       const unsubscribe = backgroundTasksService.subscribe(activeTask.id, (task) => {
         if (task.status === 'completed' && task.result) {
-          const res = task.result.result;
-          if (task.result.action === 'summarize') {
+          const res = task.result?.result || task.result;
+          const taskAction = task.result?.action || res?.action || action;
+          if (taskAction === 'summarize') {
             setSummaryText(res?.summary || '');
             setActiveTab('summary');
-          } else if (task.result.action === 'explain') {
+          } else if (taskAction === 'explain') {
             setExplanationText(res?.explanation || '');
             setActiveTab('explain');
-          } else if (task.result.action === 'flashcards') {
+          } else if (taskAction === 'flashcards') {
             setGeneratedFlashcards(res?.flashcards || []);
             setActiveTab('flashcards');
-          } else if (task.result.action === 'questions') {
+          } else if (taskAction === 'questions') {
             setGeneratedQuestions(res?.questions || []);
             setSelectedAnswers({});
             setSubmittedQuestions({});
@@ -348,38 +349,18 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
     else if (action === 'flashcards') setProcessingStatus(`Generating ${selectedCount} active recall study flashcards...`);
     else if (action === 'questions') setProcessingStatus(`Drafting ${selectedCount} exam-standard practice questions...`);
 
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
     const taskType: TaskType = action === 'summarize' ? 'notes_summary'
       : action === 'explain' ? 'notes_explain'
       : action === 'flashcards' ? 'notes_flashcards'
       : 'notes_questions';
 
-    const { taskId, signal } = backgroundTasksService.registerTask(
-      user?.uid || 'guest',
-      taskType,
-      `Notes AI: ${action.charAt(0).toUpperCase() + action.slice(1)} (${noteSubject})`,
-      `Processing ${action}...`
-    );
-    activeTaskIdRef.current = taskId;
-
-    // Listen for cancel from background service
-    signal.addEventListener('abort', () => {
-      controller.abort();
-    });
-
     try {
       const token = await getToken();
-      const response = await fetch('/api/process-notes', {
-        method: 'POST',
-        signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({
+      const { taskId, isExisting } = await backgroundTasksService.startBackendJob(
+        user?.uid || 'guest',
+        taskType,
+        `Notes AI: ${action.charAt(0).toUpperCase() + action.slice(1)} (${noteSubject})`,
+        {
           action,
           text: noteContent,
           attachments: attachments.map(a => ({
@@ -392,76 +373,55 @@ export default function UploadNotes({ setView }: UploadNotesProps) {
           topic: noteTopic || noteTitle,
           educationLevel: userProfile?.educationLevel || 'Secondary',
           count: selectedCount
-        })
+        },
+        '/upload-notes',
+        { action },
+        token
+      );
+      activeTaskIdRef.current = taskId;
+      setProcessingAction(action);
+      setProcessingStatus(isExisting ? 'Reconnected to active background generation...' : 'Processing on server in background...');
+
+      // Subscribe to updates for this task
+      const unsubscribe = backgroundTasksService.subscribe(taskId, (task) => {
+        if (task.status === 'completed' && task.result) {
+          const res = task.result;
+          if (action === 'summarize') {
+            setSummaryText(res?.summary || '');
+            setActiveTab('summary');
+          } else if (action === 'explain') {
+            setExplanationText(res?.explanation || '');
+            setActiveTab('explain');
+          } else if (action === 'flashcards') {
+            setGeneratedFlashcards(res?.flashcards || []);
+            setCurrentCardIndex(0);
+            setIsCardFlipped(false);
+            setActiveTab('flashcards');
+          } else if (action === 'questions') {
+            setGeneratedQuestions(res?.questions || []);
+            setSelectedAnswers({});
+            setSubmittedQuestions({});
+            setActiveTab('questions');
+          }
+          setProcessingAction(null);
+          setProcessingStatus('');
+          activeTaskIdRef.current = null;
+          unsubscribe();
+        } else if (task.status === 'failed') {
+          setAiError(task.error || 'Generation failed');
+          setProcessingAction(null);
+          setProcessingStatus('');
+          activeTaskIdRef.current = null;
+          unsubscribe();
+        } else if (task.status === 'cancelled') {
+          setProcessingAction(null);
+          setProcessingStatus('');
+          activeTaskIdRef.current = null;
+          unsubscribe();
+        }
       });
-
-      const contentType = response.headers.get('content-type') || '';
-      const rawText = await response.text();
-      let result: any = null;
-
-      try {
-        result = JSON.parse(rawText);
-      } catch (_) {
-        if (rawText.trim().startsWith('<') || contentType.includes('text/html')) {
-          throw new Error(`Server returned HTML instead of JSON (${response.status}). Please try again.`);
-        }
-        throw new Error(`Invalid response format from server (${response.status})`);
-      }
-
-      if (!response.ok) {
-        throw new Error(result?.error || `Processing failed with status ${response.status}`);
-      }
-
-      // Mark background task complete
-      backgroundTasksService.completeTask(user?.uid || 'guest', taskId, { action, result });
-
-      if (action === 'summarize') {
-        setSummaryText(result.summary || 'Summary generated.');
-        setActiveTab('summary');
-      } else if (action === 'explain') {
-        setExplanationText(result.explanation || 'Explanation generated.');
-        setActiveTab('explain');
-      } else if (action === 'flashcards') {
-        if (result.flashcards && result.flashcards.length > 0) {
-          setGeneratedFlashcards(result.flashcards);
-          setCurrentCardIndex(0);
-          setIsCardFlipped(false);
-          setActiveTab('flashcards');
-        } else {
-          throw new Error('No flashcards were generated. Please try again.');
-        }
-      } else if (action === 'questions') {
-        if (result.questions && result.questions.length > 0) {
-          setGeneratedQuestions(result.questions);
-          setSelectedAnswers({});
-          setSubmittedQuestions({});
-          setActiveTab('questions');
-        } else {
-          throw new Error('No questions were generated. Please try again.');
-        }
-      }
-
-      // Auto-save the note with its processed outputs to history
-      if (user?.uid) {
-        handleSaveCurrentNote({
-          summary: action === 'summarize' ? result.summary : summaryText,
-          explanation: action === 'explain' ? result.explanation : explanationText,
-          flashcards: action === 'flashcards' ? result.flashcards : generatedFlashcards,
-          practiceQuestions: action === 'questions' ? result.questions : generatedQuestions
-        });
-      }
     } catch (err: any) {
-      if (err?.name === 'AbortError' || controller.signal.aborted) {
-        backgroundTasksService.cancelTask(user?.uid || 'guest', taskId, 'Processing stopped by user');
-        setProcessingCanceledNotice('AI processing stopped by user. Your notes, inputs, and drafts have been safely preserved.');
-        return;
-      }
-      backgroundTasksService.failTask(user?.uid || 'guest', taskId, err?.message || 'Processing failed');
-      console.error(`AI processing error for ${action}:`, err);
-      setAiError(err.message || 'Failed to process notes with AI. Please try again.');
-    } finally {
-      abortControllerRef.current = null;
-      activeTaskIdRef.current = null;
+      setAiError(err?.message || 'Failed to start generation');
       setProcessingAction(null);
       setProcessingStatus('');
     }

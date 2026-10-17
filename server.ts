@@ -13,6 +13,8 @@ import fs from "fs";
 import { recordAiUsage, getUserAiUsage, getSuperAdminAiStats } from "./src/server/aiUsageTracker";
 import { disableUser, enableUser, isUserDisabled, getAllDisabledUsers } from "./src/server/disabledUsersStore";
 import { generateQuestionFingerprint, validateQuestionPayload } from "./src/utils/jambFingerprint";
+import { generationJobStore } from "./src/server/generationJobStore";
+import { runGenerationJob } from "./src/server/backgroundGenerationRunner";
 
 const SUPER_ADMIN_EMAIL = "emmanuelomojola07@gmail.com";
 
@@ -1807,6 +1809,7 @@ ${text || '(Notes provided in the attached document/image)'}`;
   });
 
   // AI Classroom - Step-by-step Digital Chalkboard Teacher
+  // AI Classroom - Step-by-step Comprehensive Digital Chalkboard Teacher
   app.post("/api/ai/classroom-lesson", optionalAuth, async (req, res) => {
     try {
       const { subject, topic, level } = req.body;
@@ -1815,47 +1818,52 @@ ${text || '(Notes provided in the attached document/image)'}`;
       }
 
       const ai = getGeminiClient();
-      const prompt = `You are a world-class, engaging, passionate educational teacher teaching a lesson on a digital chalkboard.
+      const prompt = `You are a world-class, engaging, passionate educational teacher teaching a complete, in-depth lesson on a digital chalkboard.
 Subject: ${subject}
 Topic: ${topic}
 Education Level: ${level || 'Senior Secondary (SSS / WAEC / JAMB)'}
 
-Generate a comprehensive, pedagogically sound lesson broken into 5 to 6 sequential chalkboard steps:
-1. Foundations / Core Concept & Definition
-2. The Mathematical Law / Fundamental Principle
-3. Chalkboard Diagram & Visual Model
-4. Step-by-Step Worked Problem with numbers, substitutions, and units
-5. Real-World Applications & Common Exam Traps to avoid
-6. Quick Concept Mastery Check (with an interactive quiz)
+CRITICAL PEDAGOGICAL INSTRUCTION:
+Do not provide a brief overview or stop after only 4 or 5 pages. You must teach the ENTIRE topic comprehensively according to official curriculum standards, covering:
+1. Introduction, Terminology, Scope & Formal Definitions
+2. Fundamental Laws, Scientific/Academic Principles & Theory
+3. Chalkboard Diagram & Visual Conceptual Model
+4. Step-by-Step Mathematical Derivations or Analytical Mechanisms
+5. Primary Worked Exam Problem with full numbers, step-by-step substitutions, and units
+6. Additional Complex Worked Example covering edge cases, tricky variations, and advanced questions
+7. Practical Real-World Applications, Industrial Relevance & Common Exam Traps to Avoid
+8. Subtopic Synthesis & Advanced Problem-Solving Challenge
+9. Comprehensive Topic Revision Summary & Essential Master Formula Sheet
 
-Each step MUST contain:
-- stepTitle: Title of the step (e.g. "1. Concept & Definition")
-- spokenExplanation: 3-5 sentences of natural, engaging, oral classroom explanation as if speaking aloud to students. Clear, warm, enthusiastic.
+Generate 7 to 9 sequential chalkboard steps.
+EVERY single step MUST contain:
+- stepTitle: Clear title of the subtopic step (e.g. "1. Introduction & Formal Definitions")
+- spokenExplanation: 3-5 sentences of natural, engaging, oral classroom explanation as if speaking aloud to students. Clear, warm, enthusiastic, and directly explaining the notes written on the board.
 - chalkboard:
-  - heading: Big title to write in chalk
-  - bulletPoints: 3 to 4 concise points written in chalk style
-  - equation: (optional) Formatted formula or key relationship
+  - heading: Big title written in chalk style
+  - bulletPoints: 3 to 4 rich, detailed bullet points written clearly on the board
+  - equation: (optional) Formatted formula, law, or key mathematical relation
   - chalkColor: One of 'white', 'yellow', 'cyan', 'pink', 'emerald'
-  - highlightNote: (optional) Brief exam alert or key rule
-  - diagram: (optional, especially on step 3) {
-      type: 'coordinate_graph' | 'free_body_diagram' | 'flowchart' | 'geometry' | 'chemical_reaction' | 'circuit',
+  - highlightNote: (optional) Vital examination rule, tip, or common trap
+  - diagram: (especially on visual steps) {
+      type: 'coordinate_graph' | 'free_body_diagram' | 'flowchart' | 'geometry' | 'chemical_reaction' | 'circuit' | 'venn_diagram' | 'labeled_sketch',
       caption: string,
       labels: string[]
     }
-  - workedExample: (optional, especially on step 4) {
+  - workedExample: (especially on worked problem steps 5 and 6) {
       problem: string,
       given: string,
       solutionSteps: string[],
       answer: string
     }
-- quiz: (optional, on step 6) {
+- quiz: (REQUIRED on every subtopic step to assess student understanding) {
     question: string,
-    options: string[] (exactly 4 options),
+    options: string[] (exactly 4 distinct options),
     correctIndex: number (0-3),
-    explanation: string
+    explanation: string (explains why the correct answer is right and why other options are mistakes)
   }
 
-Return strict JSON conforming to this structure:
+Return strict JSON:
 {
   "title": string,
   "summary": string,
@@ -1874,28 +1882,35 @@ Return strict JSON conforming to this structure:
           config,
         });
       } catch (err: any) {
-        if (err?.status === 503 || err?.message?.includes("503") || err?.status === "UNAVAILABLE" || err?.error?.code === 503) {
+        try {
           response = await ai.models.generateContent({
             model: 'gemini-3.1-flash-lite',
             contents: prompt,
             config,
           });
-        } else {
-          throw err;
+        } catch {
+          response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config,
+          });
         }
       }
 
-      const responseText = response.text;
+      let responseText = response.text || '';
       if (!responseText) throw new Error("No response text from Gemini");
+
+      // Strip markdown code fences if model wrapped response
+      responseText = responseText.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/i, '').trim();
 
       const parsed = JSON.parse(responseText);
       const lesson = {
         id: `lesson_${Date.now()}`,
-        title: parsed.title || `${topic}: Chalkboard Lesson`,
+        title: parsed.title || `${topic}: Digital Chalkboard Masterclass`,
         subject,
         topic,
         level: level || 'Secondary',
-        summary: parsed.summary || `A step-by-step digital chalkboard lesson on ${topic}.`,
+        summary: parsed.summary || `A comprehensive curriculum masterclass on ${topic}.`,
         steps: (parsed.steps || []).map((s: any, idx: number) => ({
           id: s.id || idx + 1,
           stepTitle: s.stepTitle || `Step ${idx + 1}`,
@@ -1943,22 +1958,43 @@ Return strict JSON conforming to this structure:
   // AI Classroom - Ask follow-up question or simplify step
   app.post("/api/ai/classroom-ask", optionalAuth, async (req, res) => {
     try {
-      const { subject, topic, currentStepTitle, currentStepContent, question, isSimplify } = req.body;
+      const {
+        subject,
+        topic,
+        currentStepTitle,
+        currentStepContent,
+        question,
+        isSimplify,
+        previousQAs = [],
+        educationLevel,
+      } = req.body;
       const ai = getGeminiClient();
 
-      const prompt = `You are a supportive, insightful teacher explaining on a chalkboard during an academic lesson.
+      const previousContext = Array.isArray(previousQAs) && previousQAs.length > 0
+        ? `\nPrevious Q&A in this lesson session (DO NOT repeat these answers):\n${previousQAs.slice(-4).map((q: any) => `Student: "${q.question}" -> Teacher: "${q.spokenAnswer}"`).join('\n')}\n`
+        : '';
+
+      const prompt = `You are a dedicated, insightful teacher conducting an academic masterclass on a digital chalkboard.
 Subject: ${subject}
 Topic: ${topic}
-Current Step: ${currentStepTitle}
+Education Level: ${educationLevel || 'Senior Secondary'}
+Current Subtopic / Step: ${currentStepTitle}
 Current Board Content: ${currentStepContent}
-Student's Question: "${question}"
+${previousContext}
+Student's Latest Question: "${question}"
 Is Simplification Request: ${isSimplify ? 'YES' : 'NO'}
 
+CRITICAL TEACHER INSTRUCTIONS:
+1. Carefully read the student's actual latest message: "${question}".
+2. You MUST address their exact question directly, accurately, and with subject-specific terminology appropriate for ${educationLevel || 'the student'}.
+3. DO NOT repeat earlier answers or give generic boilerplate. If they are asking about a specific calculation, formula, concept, or practical question, answer that exact problem step-by-step.
+4. If this is a simplification request, craft a fresh, intuitive, everyday analogy tailored specifically to ${topic}.
+
 Respond in character:
-1. spokenAnswer: 2-4 sentences of warm, encouraging explanation addressing the question directly. If this is a simplification request, use an everyday relatable analogy.
+1. spokenAnswer: 2-4 sentences of warm, direct, encouraging pedagogical explanation answering the student's exact question.
 2. chalkboardNotes: Array of 2-3 concise bullet points to write on the side chalkboard.
 3. clarifyingFormula: (optional) A brief formula or relationship if helpful.
-4. miniExample: (optional) A quick illustrative example.
+4. miniExample: (optional) A quick illustrative mini example.
 
 Return strict JSON:
 {
@@ -1968,13 +2004,32 @@ Return strict JSON:
   "miniExample": string
 }`;
 
-      let response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: prompt,
-        config: { responseMimeType: "application/json" },
-      });
+      let response;
+      try {
+        response = await ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt,
+          config: { responseMimeType: "application/json" },
+        });
+      } catch (err: any) {
+        try {
+          response = await ai.models.generateContent({
+            model: 'gemini-3.1-flash-lite',
+            contents: prompt,
+            config: { responseMimeType: "application/json" },
+          });
+        } catch {
+          response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: { responseMimeType: "application/json" },
+          });
+        }
+      }
 
-      const responseText = response.text;
+      let responseText = response.text || '';
+      responseText = responseText.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/i, '').trim();
+
       const parsed = JSON.parse(responseText);
       res.json(parsed);
     } catch (error: any) {
@@ -2068,6 +2123,66 @@ Return strict JSON:
       console.error("Classroom Marking Error:", error);
       res.status(500).json({ error: error.message || "Failed to mark assignment" });
     }
+  });
+
+  // -------------------------------------------------------------
+  // Persistent Backend Generation Jobs API
+  // -------------------------------------------------------------
+  app.post("/api/jobs/create", optionalAuth, async (req, res) => {
+    try {
+      const { type, title, params, route, routeState } = req.body;
+      if (!type || !params) {
+        return res.status(400).json({ error: "Missing required fields: type and params" });
+      }
+      const user = (req as any).user;
+      const ownerUid = user?.uid || user?.user_id || 'guest';
+      
+      const { job, isExisting, abortSignal } = generationJobStore.createJob(
+        ownerUid,
+        type,
+        title || `Generation: ${type}`,
+        params,
+        route,
+        routeState
+      );
+
+      // If new job, trigger background execution in Node's async event loop
+      if (!isExisting) {
+        const ai = getGeminiClient();
+        runGenerationJob(job, ai, user, abortSignal).catch((err) => {
+          console.error("Unhandled error in background generation runner:", err);
+        });
+      }
+
+      res.json({ job, isExisting });
+    } catch (error: any) {
+      console.error("Error creating generation job:", error);
+      res.status(500).json({ error: error?.message || "Failed to create generation job" });
+    }
+  });
+
+  app.get("/api/jobs/:jobId", optionalAuth, (req, res) => {
+    const { jobId } = req.params;
+    const job = generationJobStore.getJob(jobId);
+    if (!job) {
+      return res.status(404).json({ error: "Job not found" });
+    }
+    res.json({ job });
+  });
+
+  app.get("/api/jobs", optionalAuth, (req, res) => {
+    const user = (req as any).user;
+    const ownerUid = user?.uid || user?.user_id || 'guest';
+    const jobs = generationJobStore.getUserJobs(ownerUid);
+    res.json({ jobs });
+  });
+
+  app.post("/api/jobs/:jobId/cancel", optionalAuth, (req, res) => {
+    const { jobId } = req.params;
+    const user = (req as any).user;
+    const ownerUid = user?.uid || user?.user_id || 'guest';
+    const success = generationJobStore.cancelJob(jobId, ownerUid);
+    res.json({ success, jobId });
   });
 
   app.all('/api/*', (req, res) => {

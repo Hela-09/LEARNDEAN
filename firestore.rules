@@ -13,6 +13,10 @@ service cloud.firestore {
     match /users/{docId} {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated() && (request.auth.uid == docId || isSuperAdmin());
+
+      match /{allSubcollections=**} {
+        allow read, write: if isAuthenticated() && (request.auth.uid == docId || isSuperAdmin());
+      }
     }
 
     match /disabled_users/{docId} {
@@ -287,5 +291,43 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
       allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
     }
+
+    // Background Generation Jobs
+    match /generation_jobs/{jobId} {
+      allow get: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == jobId || isSuperAdmin());
+      allow list: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow create: if isAuthenticated() && (request.resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow update: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+    }
+
+    // Device Push Notification Subscriptions
+    match /device_push_subscriptions/{subId} {
+      allow get: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == subId || isSuperAdmin());
+      allow list: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow create: if isAuthenticated() && (request.resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow update: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+    }
+
+    // Classroom Cloud Sync & Master Progress
+    match /classroom_progress/{docId} {
+      allow get: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
+      allow list: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow create: if isAuthenticated() && (request.resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
+      allow update: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
+      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
+    }
+
+    // Classroom Generated Lessons & Archive
+    match /classroom_lessons/{docId} {
+      allow get: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
+      allow list: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow create: if isAuthenticated() && (request.resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
+      allow update: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
+      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
+    }
   }
 }
+
+

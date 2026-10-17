@@ -30,6 +30,7 @@ interface ChalkboardViewProps {
   onWipeBoard?: () => void;
   isFullScreen?: boolean;
   onToggleFullScreen?: () => void;
+  isWritingNotes?: boolean;
 }
 
 // Helper to determine which page each step belongs to
@@ -75,6 +76,7 @@ export default function ChalkboardView({
   onWipeBoard,
   isFullScreen = false,
   onToggleFullScreen,
+  isWritingNotes = false,
 }: ChalkboardViewProps) {
   const [boardTheme, setBoardTheme] = useState<'green' | 'black'>('green');
   const [isWiping, setIsWiping] = useState<boolean>(false);
@@ -286,10 +288,16 @@ export default function ChalkboardView({
               </button>
             )}
 
-            {isViewingLivePage && isPlaying && (
+            {isViewingLivePage && isWritingNotes && (
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300 font-mono text-[11px] animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                <span>WRITING NOTES ON CHALKBOARD FIRST...</span>
+              </div>
+            )}
+            {isViewingLivePage && !isWritingNotes && isPlaying && (
               <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 font-mono text-[11px] animate-pulse">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>TEACHER WRITING ON BOARD</span>
+                <span>TEACHER EXPLAINING NOTES CLEARLY</span>
               </div>
             )}
             {isViewingLivePage && isPaused && (
@@ -409,47 +417,65 @@ function ChalkboardStepBlock({
   const { heading, bulletPoints = [], equation, workedExample, diagram, chalkColor = 'white', highlightNote } =
     step.chalkboard;
 
-  const isHeadingVisible = progress >= 0.04;
   const numBullets = bulletPoints.length;
+  // Calculate which bullet point the teacher is currently explaining
+  const activeBulletIndex = isPlaying && isActiveStep
+    ? Math.min(numBullets - 1, Math.floor(progress * numBullets))
+    : -1;
 
   return (
     <div className="w-full space-y-3 sm:space-y-4 pb-4 border-b border-white/10 last:border-b-0 animate-fadeIn">
-      {/* Step Label & Title */}
-      {isHeadingVisible && (
-        <div className="transition-all duration-300">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-[11px] sm:text-xs text-yellow-300/90 uppercase tracking-widest font-bold">
-              [ STEP {stepIndex + 1}: {step.stepTitle || 'Explanation'} ]
+      {/* Step Label & Title - Written on the board first */}
+      <div className="transition-all duration-300">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-mono text-[11px] sm:text-xs text-yellow-300/90 uppercase tracking-widest font-bold">
+            [ STEP {stepIndex + 1}: {step.stepTitle || 'Explanation'} ]
+          </span>
+          {isActiveStep && (
+            <span className="px-2 py-0.5 rounded-full bg-yellow-400/20 text-yellow-300 font-mono text-[10px] font-bold">
+              CURRENT STEP NOTES
             </span>
-          </div>
-          <h3
-            className="text-lg sm:text-2xl font-bold font-mono tracking-wide text-white inline-block border-b-2 border-dashed border-white/60 pb-1"
-            style={{
-              textShadow: '0 0 2px rgba(255,255,255,0.7), 0 0 8px rgba(255,255,255,0.2)',
-            }}
-          >
-            {heading}
-          </h3>
+          )}
         </div>
-      )}
+        <h3
+          className="text-lg sm:text-2xl font-bold font-mono tracking-wide text-white inline-block border-b-2 border-dashed border-white/60 pb-1"
+          style={{
+            textShadow: '0 0 2px rgba(255,255,255,0.7), 0 0 8px rgba(255,255,255,0.2)',
+          }}
+        >
+          {heading}
+        </h3>
+      </div>
 
-      {/* Bullet Points with natural handwriting line spacing */}
+      {/* Lesson Notes (Bullet Points) - Written first on board */}
       <div className="space-y-2.5 sm:space-y-3.5 my-2">
         {bulletPoints.map((point, idx) => {
-          const threshold = 0.08 + (idx / Math.max(1, numBullets)) * 0.45;
-          const isVisible = progress >= threshold;
-
-          if (!isVisible) return null;
+          const isCurrentSpokenPoint = idx === activeBulletIndex;
 
           return (
-            <div key={idx} className="flex items-start gap-2.5 sm:gap-3 transition-opacity animate-fadeIn">
-              <span className="font-mono font-bold text-yellow-200 text-base sm:text-lg leading-tight select-none">
+            <div
+              key={idx}
+              className={`flex items-start gap-2.5 sm:gap-3 transition-all duration-200 p-1.5 rounded-lg ${
+                isCurrentSpokenPoint
+                  ? 'bg-white/10 ring-1 ring-yellow-300/40'
+                  : ''
+              }`}
+            >
+              <span
+                className={`font-mono font-bold text-base sm:text-lg leading-tight select-none ${
+                  isCurrentSpokenPoint ? 'text-yellow-300 animate-pulse' : 'text-yellow-200'
+                }`}
+              >
                 ☞
               </span>
               <p
-                className="text-sm sm:text-base md:text-lg font-mono text-white leading-relaxed tracking-wide"
+                className={`text-sm sm:text-base md:text-lg font-mono leading-relaxed tracking-wide ${
+                  isCurrentSpokenPoint ? 'text-white font-bold' : 'text-white/95'
+                }`}
                 style={{
-                  textShadow: '0 0 1px rgba(255,255,255,0.6)',
+                  textShadow: isCurrentSpokenPoint
+                    ? '0 0 3px rgba(255,255,255,0.9), 0 0 10px rgba(254,240,138,0.4)'
+                    : '0 0 1px rgba(255,255,255,0.6)',
                 }}
               >
                 {point}
@@ -459,8 +485,8 @@ function ChalkboardStepBlock({
         })}
       </div>
 
-      {/* Formula / Equation Section */}
-      {equation && progress >= 0.4 && (
+      {/* Formula / Equation Section - Always visible once step is reached */}
+      {equation && (
         <div className="my-3 sm:my-4 p-3 sm:p-4 rounded-xl border-2 border-dashed border-cyan-300/60 bg-black/25 flex flex-col items-center justify-center transition-all animate-fadeIn">
           <span className="text-[10px] font-mono tracking-widest text-cyan-200/70 uppercase mb-1">
             [ MATHEMATICAL LAW / EQUATION ]
@@ -476,13 +502,13 @@ function ChalkboardStepBlock({
         </div>
       )}
 
-      {/* Chalkboard Diagram */}
-      {diagram && progress >= 0.45 && (
-        <ChalkboardDiagrams diagram={diagram} progress={progress} />
+      {/* Chalkboard Diagram - Always visible once step is reached */}
+      {diagram && (
+        <ChalkboardDiagrams diagram={diagram} progress={1.0} />
       )}
 
-      {/* Step-by-Step Worked Problem */}
-      {workedExample && progress >= 0.55 && (
+      {/* Step-by-Step Worked Problem - Written on board for student study */}
+      {workedExample && (
         <div className="my-3 p-3.5 sm:p-5 rounded-xl border-2 border-white/25 bg-black/30 font-mono text-xs sm:text-sm md:text-base space-y-2.5 transition-all animate-fadeIn">
           <div className="flex items-center justify-between text-yellow-200 font-bold border-b border-white/15 pb-1">
             <span>✎ WORKED EXAM PROBLEM:</span>
@@ -497,19 +523,15 @@ function ChalkboardStepBlock({
           )}
 
           <div className="space-y-1.5 pt-1">
-            {workedExample.solutionSteps.map((s, sIdx) => {
-              const stepThreshold = 0.6 + (sIdx / Math.max(1, workedExample.solutionSteps.length)) * 0.28;
-              if (progress < stepThreshold) return null;
-              return (
-                <div key={sIdx} className="flex items-start gap-2 text-white/95">
-                  <span className="text-emerald-300 font-bold">Step {sIdx + 1}:</span>
-                  <span>{s}</span>
-                </div>
-              );
-            })}
+            {workedExample.solutionSteps.map((s, sIdx) => (
+              <div key={sIdx} className="flex items-start gap-2 text-white/95">
+                <span className="text-emerald-300 font-bold">Step {sIdx + 1}:</span>
+                <span>{s}</span>
+              </div>
+            ))}
           </div>
 
-          {workedExample.answer && progress >= 0.9 && (
+          {workedExample.answer && (
             <div className="mt-3 pt-2 border-t border-dashed border-white/20 flex items-center justify-between flex-wrap gap-2">
               <span className="text-yellow-200 font-bold">Final Result:</span>
               <span

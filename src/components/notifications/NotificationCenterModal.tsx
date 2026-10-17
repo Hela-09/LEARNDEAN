@@ -13,10 +13,11 @@ import {
   ExternalLink,
   ChevronRight,
   ShieldCheck,
-  Clock
+  Clock,
+  Smartphone
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { notificationService, AppNotification, NotificationPreferences } from '../../services/notificationService';
+import { notificationService, AppNotification, NotificationPreferences, UserDevice } from '../../services/notificationService';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface NotificationCenterModalProps {
@@ -33,6 +34,8 @@ export default function NotificationCenterModal({ isOpen, onClose }: Notificatio
     notificationService.getPreferences(user?.uid)
   );
   const [pushStatusMessage, setPushStatusMessage] = useState<string | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
+  const [devices, setDevices] = useState<UserDevice[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -43,6 +46,7 @@ export default function NotificationCenterModal({ isOpen, onClose }: Notificatio
     });
 
     setPreferences(notificationService.getPreferences(user?.uid));
+    notificationService.getRegisteredDevices(user?.uid).then(setDevices).catch(() => {});
 
     return () => {
       unsubscribe();
@@ -70,6 +74,16 @@ export default function NotificationCenterModal({ isOpen, onClose }: Notificatio
     notificationService.markAllAsRead(user?.uid || 'guest');
   };
 
+  const handleClearHistory = () => {
+    notificationService.clearAllNotifications(user?.uid || 'guest');
+    setShowClearConfirm(false);
+  };
+
+  const handleDeleteOne = (e: React.MouseEvent, notifId: string) => {
+    e.stopPropagation();
+    notificationService.deleteNotification(user?.uid || 'guest', notifId);
+  };
+
   const handleTogglePref = (key: keyof NotificationPreferences) => {
     const updated = { ...preferences, [key]: !preferences[key] };
     setPreferences(updated);
@@ -78,28 +92,37 @@ export default function NotificationCenterModal({ isOpen, onClose }: Notificatio
 
   const handleRequestPush = async () => {
     setPushStatusMessage(null);
-    const granted = await notificationService.requestBrowserPushPermission(user?.uid || 'guest');
+    const res = await notificationService.requestBrowserPushPermission(user?.uid || 'guest');
     setPreferences(notificationService.getPreferences(user?.uid));
-    if (granted) {
-      setPushStatusMessage('Browser notifications enabled successfully.');
+    setPushStatusMessage(res.message);
+    if (res.success) {
       notificationService.sendBrowserNotification('LearnDean Notifications Active', {
         body: 'You will receive timely updates when your background tasks complete.',
       });
-    } else {
-      setPushStatusMessage('Browser notifications permission was not granted.');
     }
-    setTimeout(() => setPushStatusMessage(null), 4000);
+    notificationService.getRegisteredDevices(user?.uid).then(setDevices).catch(() => {});
+    setTimeout(() => setPushStatusMessage(null), 5000);
+  };
+
+  const handleRemoveDevice = async (deviceId: string) => {
+    await notificationService.removeRegisteredDevice(user?.uid || 'guest', deviceId);
+    setDevices(prev => prev.filter(d => d.id !== deviceId));
+    setPushStatusMessage('Device removed from notification delivery.');
+    setTimeout(() => setPushStatusMessage(null), 3000);
   };
 
   const formatTime = (ts: number) => {
     const diff = Date.now() - ts;
     const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'Just now';
-    if (mins < 60) return `${mins}m ago`;
+    const dateObj = new Date(ts);
+    const timeStr = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateStr = dateObj.toLocaleDateString([], { month: 'short', day: 'numeric' });
+
+    if (mins < 1) return `Just now • ${timeStr}`;
+    if (mins < 60) return `${mins}m ago • ${timeStr}`;
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
+    if (hours < 24) return `${hours}h ago • ${timeStr}`;
+    return `${dateStr} • ${timeStr}`;
   };
 
   const getIconForType = (type: string) => {
@@ -160,6 +183,19 @@ export default function NotificationCenterModal({ isOpen, onClose }: Notificatio
                 <span className="hidden sm:inline">Mark all read</span>
               </button>
             )}
+
+            {notifications.length > 0 && filter !== 'settings' && (
+              <button
+                type="button"
+                onClick={() => setShowClearConfirm(true)}
+                className="p-2 rounded-xl text-xs font-bold text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer flex items-center gap-1"
+                title="Clear notification history"
+              >
+                <Trash2 size={16} />
+                <span className="hidden sm:inline">Clear</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={onClose}
@@ -170,6 +206,29 @@ export default function NotificationCenterModal({ isOpen, onClose }: Notificatio
             </button>
           </div>
         </div>
+
+        {/* Clear Confirmation Banner */}
+        {showClearConfirm && (
+          <div className="px-4 py-2.5 bg-rose-50 dark:bg-rose-950/50 border-b border-rose-200 dark:border-rose-800 flex items-center justify-between text-xs text-rose-900 dark:text-rose-200 animate-fadeIn">
+            <span className="font-bold">Clear all notification history?</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowClearConfirm(false)}
+                className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleClearHistory}
+                className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold cursor-pointer shadow-xs"
+              >
+                Confirm Clear
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Filter Navigation Tabs */}
         <div className="flex items-center gap-1 px-4 py-2 border-b border-slate-200 dark:border-slate-800 text-xs font-bold bg-slate-100/60 dark:bg-slate-800/40">
@@ -284,6 +343,95 @@ export default function NotificationCenterModal({ isOpen, onClose }: Notificatio
                     </button>
                   </div>
                 </div>
+
+                {/* Multi-Device Management */}
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm">
+                      Registered Devices ({devices.length})
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-relaxed">
+                    Devices registered to receive background completion alerts for your LearnDean account.
+                  </p>
+                  <div className="space-y-1.5 pt-1">
+                    {devices.map((dev) => (
+                      <div
+                        key={dev.id}
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-xs"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Smartphone size={16} className="text-blue-500 shrink-0" />
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
+                                {dev.deviceName}
+                              </span>
+                              {dev.isCurrentDevice && (
+                                <span className="px-1.5 py-0.2 rounded bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-[10px] font-bold">
+                                  Current Device
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-slate-400">
+                              Subscribed {new Date(dev.subscribedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        {!dev.isCurrentDevice && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveDevice(dev.id)}
+                            className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
+                            title="Deregister device"
+                            aria-label="Deregister device"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Clear History with Confirmation */}
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-slate-900 dark:text-white text-xs block">
+                      Clear Notification History
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      Permanently delete all received notification records
+                    </span>
+                  </div>
+                  {showClearConfirm ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleClearHistory}
+                        className="px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold text-xs cursor-pointer hover:bg-rose-700"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowClearConfirm(false)}
+                        className="px-2 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowClearConfirm(true)}
+                      className="px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/60"
+                    >
+                      Clear History
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ) : filteredNotifications.length === 0 ? (
@@ -329,9 +477,20 @@ export default function NotificationCenterModal({ isOpen, onClose }: Notificatio
                     </div>
                   )}
                 </div>
-                {!notif.isRead && (
-                  <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0 mt-2" />
-                )}
+                <div className="flex items-center gap-1.5 shrink-0 self-start mt-1">
+                  {!notif.isRead && (
+                    <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => handleDeleteOne(e, notif.id)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer"
+                    title="Delete notification"
+                    aria-label="Delete notification"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
             ))
           )}

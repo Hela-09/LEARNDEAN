@@ -52,6 +52,7 @@ import {
 } from '../data/officialClassroomCurriculum';
 import {
   loadClassroomProgress,
+  syncClassroomProgressFromCloud,
   recordStepCompleted,
   recordPracticeAttempt,
   ClassroomMasterState,
@@ -99,6 +100,16 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
 
   // Master Classroom Progress State
   const [progressState, setProgressState] = useState<ClassroomMasterState>(() => loadClassroomProgress());
+  const [isWritingNotes, setIsWritingNotes] = useState<boolean>(false);
+
+  // Sync cloud progress on initial mount to restore unfinished lessons seamlessly
+  useEffect(() => {
+    syncClassroomProgressFromCloud().then((cloudProgress) => {
+      if (cloudProgress) {
+        setProgressState(cloudProgress);
+      }
+    });
+  }, []);
 
   // Speech Hook
   const speech = useChalkboardSpeech();
@@ -129,20 +140,28 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
     }
   }, [lesson.id, currentStepIndex]);
 
-  // Whenever lesson or step changes, play spoken explanation with voice
+  // Write notes on classroom chalkboard first, then explain notes clearly
   useEffect(() => {
-    if (currentStep && currentStep.spokenExplanation) {
-      speech.play(currentStep.spokenExplanation, () => {
-        // Step finished speaking
-        if (autoPlayNext && currentStepIndex < lesson.steps.length - 1) {
-          setTimeout(() => {
-            setCurrentStepIndex((prev) => Math.min(lesson.steps.length - 1, prev + 1));
-          }, 1400);
-        }
-      });
-    }
+    setIsWritingNotes(true);
+    chalkAudio.playChalkTap();
+
+    // Notes are written and displayed on the board first before verbal teaching begins
+    const noteWriteTimer = setTimeout(() => {
+      setIsWritingNotes(false);
+      if (currentStep && currentStep.spokenExplanation) {
+        speech.play(currentStep.spokenExplanation, () => {
+          // Step finished speaking
+          if (autoPlayNext && currentStepIndex < lesson.steps.length - 1) {
+            setTimeout(() => {
+              setCurrentStepIndex((prev) => Math.min(lesson.steps.length - 1, prev + 1));
+            }, 1400);
+          }
+        });
+      }
+    }, 600);
 
     return () => {
+      clearTimeout(noteWriteTimer);
       speech.stop();
     };
   }, [lesson.id, currentStepIndex]);
@@ -227,6 +246,23 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
     }
   }, []);
 
+  // Resume unfinished lesson progress if student was previously in the middle of this topic
+  useEffect(() => {
+    if (lesson && lesson.topic) {
+      const topicId = currentSyllabusTopic?.id || `custom-${lesson.topic.toLowerCase().replace(/\s+/g, '-')}`;
+      const savedRecord = progressState.topicsProgress[topicId];
+      if (savedRecord && typeof savedRecord.lastStepIndex === 'number' && savedRecord.lastStepIndex > 0) {
+        const stepIdx = Math.min(lesson.steps.length - 1, savedRecord.lastStepIndex);
+        if (stepIdx !== currentStepIndex) {
+          setCurrentStepIndex(stepIdx);
+          if (typeof savedRecord.lastPageIndex === 'number') {
+            setViewingPageIndex(savedRecord.lastPageIndex);
+          }
+        }
+      }
+    }
+  }, [lesson.id]);
+
   // Step Navigation
   const handlePrevStep = () => {
     if (currentStepIndex > 0) {
@@ -288,13 +324,19 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
     setIsAsking(true);
     try {
       const bulletSummary = currentStep.chalkboard.bulletPoints.join('; ');
+      const previousContext = qaHistory.slice(0, 6).map((q) => ({
+        question: q.question,
+        spokenAnswer: q.spokenAnswer,
+      }));
       const qaResult = await askClassroomTeacher(
         lesson.subject,
         lesson.topic,
         currentStep.stepTitle,
         bulletSummary,
         question,
-        isSimplify
+        isSimplify,
+        previousContext,
+        lesson.level
       );
       if (controller.signal.aborted) return;
       qaResult.stepId = currentStep.id;
@@ -429,7 +471,7 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           {/* New Lesson Button */}
           <button
             onClick={() => setIsSetupModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
           >
             <Plus size={16} />
             <span>New Lesson</span>
@@ -469,6 +511,7 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           onWipeBoard={handleReplay}
           isFullScreen={isFullScreen}
           onToggleFullScreen={() => setIsFullScreen((prev) => !prev)}
+          isWritingNotes={isWritingNotes}
         />
 
         {/* Classroom Controls (Play, Pause, Speed, Replay, Prev/Next Step, Restart) */}
@@ -507,10 +550,14 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           onStopAsking={handleStopAskQuestion}
           isAsking={isAsking}
           onSpeakAnswer={(text) => speech.play(text)}
+          onNextStep={handleNextStep}
+          isLastStep={currentStepIndex >= lesson.steps.length - 1}
+          onOpenFinalAssessment={() => handleOpenAssignment()}
           onQuizAnswered={(isCorrect) => {
-            if (currentSyllabusTopic && currentStep.quiz) {
+            const topicId = currentSyllabusTopic?.id || `custom-${lesson.topic.toLowerCase().replace(/\s+/g, '-')}`;
+            if (currentStep.quiz) {
               const updated = recordPracticeAttempt(
-                currentSyllabusTopic.id,
+                topicId,
                 `quiz-step-${currentStep.id}`,
                 isCorrect ? currentStep.quiz.correctIndex : -1,
                 isCorrect

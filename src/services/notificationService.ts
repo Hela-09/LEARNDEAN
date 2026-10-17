@@ -22,6 +22,17 @@ export interface AppNotification {
   taskId?: string;
 }
 
+export interface UserDevice {
+  id: string;
+  uid: string;
+  deviceName: string;
+  browser: string;
+  platform: string;
+  subscribedAt: number;
+  lastActiveAt: number;
+  isCurrentDevice?: boolean;
+}
+
 export interface NotificationPreferences {
   taskCompletion: boolean;
   studyReminders: boolean;
@@ -38,11 +49,42 @@ const DEFAULT_PREFERENCES: NotificationPreferences = {
 
 type NotificationListener = (notifications: AppNotification[]) => void;
 
+function getClientDeviceInfo(): { deviceName: string; browser: string; platform: string } {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return { deviceName: 'Current Browser', browser: 'Browser', platform: 'Web' };
+  }
+  const ua = navigator.userAgent;
+  let browser = 'Chrome';
+  if (ua.includes('Firefox')) browser = 'Firefox';
+  else if (ua.includes('Edg')) browser = 'Edge';
+  else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+
+  let platform = 'Desktop';
+  if (/iPad|Tablet/i.test(ua)) platform = 'Tablet';
+  else if (/iPhone|Android.*Mobile/i.test(ua)) platform = 'Mobile';
+
+  return {
+    deviceName: `${browser} on ${platform}`,
+    browser,
+    platform
+  };
+}
+
 class NotificationService {
   private listeners: Set<NotificationListener> = new Set();
   private unsubscribeFirestore: (() => void) | null = null;
   private currentUid: string | null = null;
   private cachedNotifications: AppNotification[] = [];
+
+  private getDeviceId(): string {
+    if (typeof window === 'undefined') return 'server_device';
+    let id = localStorage.getItem('zetadu_device_id');
+    if (!id) {
+      id = `dev_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      localStorage.setItem('zetadu_device_id', id);
+    }
+    return id;
+  }
 
   private getStorageKey(uid: string): string {
     return `zetadu_notifications_${uid || 'guest'}`;
@@ -50,6 +92,10 @@ class NotificationService {
 
   private getPrefsStorageKey(uid: string): string {
     return `zetadu_notif_prefs_${uid || 'guest'}`;
+  }
+
+  private getDevicesStorageKey(uid: string): string {
+    return `zetadu_devices_${uid || 'guest'}`;
   }
 
   public getPreferences(uid?: string): NotificationPreferences {
@@ -72,28 +118,157 @@ class NotificationService {
     } catch (_) {}
   }
 
-  public async requestBrowserPushPermission(uid: string): Promise<boolean> {
+  public async getRegisteredDevices(uid?: string): Promise<UserDevice[]> {
+    const resolvedUid = uid || this.currentUid || 'guest';
+    const currentDeviceId = this.getDeviceId();
+
+    // Check local devices first
+    let localList: UserDevice[] = [];
+    try {
+      const raw = localStorage.getItem(this.getDevicesStorageKey(resolvedUid));
+      if (raw) localList = JSON.parse(raw);
+    } catch (_) {}
+
+    // If authenticated, sync with Firestore device_push_subscriptions
+    if (resolvedUid && resolvedUid !== 'guest') {
+      try {
+        const q = query(
+          collection(db, 'device_push_subscriptions'),
+          where('uid', '==', resolvedUid),
+          limit(10)
+        );
+        const snap = await getDocs(q);
+        const remoteList: UserDevice[] = snap.docs.map(docSnap => {
+          const d = docSnap.data();
+          return {
+            id: docSnap.id,
+            uid: d.uid,
+            deviceName: d.deviceName || 'Registered Device',
+            browser: d.browser || 'Browser',
+            platform: d.platform || 'Device',
+            subscribedAt: d.subscribedAt || Date.now(),
+            lastActiveAt: d.lastActiveAt || Date.now(),
+            isCurrentDevice: docSnap.id === currentDeviceId || d.deviceId === currentDeviceId
+          };
+        });
+        if (remoteList.length > 0) {
+          localStorage.setItem(this.getDevicesStorageKey(resolvedUid), JSON.stringify(remoteList));
+          return remoteList;
+        }
+      } catch (err) {
+        console.warn('Could not fetch cloud devices:', err);
+      }
+    }
+
+    // Default current device entry if none exists
+    if (localList.length === 0) {
+      const info = getClientDeviceInfo();
+      const currentDev: UserDevice = {
+        id: currentDeviceId,
+        uid: resolvedUid,
+        deviceName: info.deviceName,
+        browser: info.browser,
+        platform: info.platform,
+        subscribedAt: Date.now(),
+        lastActiveAt: Date.now(),
+        isCurrentDevice: true
+      };
+      localList = [currentDev];
+      localStorage.setItem(this.getDevicesStorageKey(resolvedUid), JSON.stringify(localList));
+    } else {
+      localList = localList.map(d => ({
+        ...d,
+        isCurrentDevice: d.id === currentDeviceId
+      }));
+    }
+
+    return localList;
+  }
+
+  public async registerCurrentDevice(uid?: string): Promise<void> {
+    const resolvedUid = uid || this.currentUid || 'guest';
+    const currentDeviceId = this.getDeviceId();
+    const info = getClientDeviceInfo();
+
+    const deviceData: UserDevice = {
+      id: currentDeviceId,
+      uid: resolvedUid,
+      deviceName: info.deviceName,
+      browser: info.browser,
+      platform: info.platform,
+      subscribedAt: Date.now(),
+      lastActiveAt: Date.now(),
+      isCurrentDevice: true
+    };
+
+    // Save locally
+    const existing = await this.getRegisteredDevices(resolvedUid);
+    const updated = [deviceData, ...existing.filter(d => d.id !== currentDeviceId)];
+    localStorage.setItem(this.getDevicesStorageKey(resolvedUid), JSON.stringify(updated));
+
+    // Save to Firestore if authenticated
+    if (resolvedUid && resolvedUid !== 'guest') {
+      try {
+        await addDoc(
+          collection(db, 'device_push_subscriptions'),
+          cleanFirestoreData({
+            deviceId: currentDeviceId,
+            uid: resolvedUid,
+            deviceName: info.deviceName,
+            browser: info.browser,
+            platform: info.platform,
+            subscribedAt: Date.now(),
+            lastActiveAt: Date.now(),
+            status: 'active'
+          })
+        );
+      } catch (err) {
+        console.warn('Could not register device to cloud:', err);
+      }
+    }
+  }
+
+  public async removeRegisteredDevice(uid: string, deviceId: string): Promise<void> {
+    const resolvedUid = uid || this.currentUid || 'guest';
+    const existing = await this.getRegisteredDevices(resolvedUid);
+    const updated = existing.filter(d => d.id !== deviceId);
+    localStorage.setItem(this.getDevicesStorageKey(resolvedUid), JSON.stringify(updated));
+
+    if (resolvedUid && resolvedUid !== 'guest') {
+      try {
+        await deleteDoc(doc(db, 'device_push_subscriptions', deviceId)).catch(() => {});
+      } catch (_) {}
+    }
+  }
+
+  public async requestBrowserPushPermission(uid: string): Promise<{ success: boolean; status: 'granted' | 'denied' | 'unsupported'; message: string }> {
     if (typeof window === 'undefined' || !('Notification' in window)) {
-      return false;
+      return { success: false, status: 'unsupported', message: 'Web push notifications are not supported on this browser.' };
     }
 
     if (Notification.permission === 'granted') {
       this.savePreferences(uid, { browserPush: true });
-      return true;
+      await this.registerCurrentDevice(uid);
+      return { success: true, status: 'granted', message: 'Browser push notifications are active for this device.' };
     }
 
     if (Notification.permission === 'denied') {
       this.savePreferences(uid, { browserPush: false });
-      return false;
+      return { success: false, status: 'denied', message: 'Notification permission was denied. You can enable it in your browser address bar settings.' };
     }
 
     try {
       const permission = await Notification.requestPermission();
       const granted = permission === 'granted';
       this.savePreferences(uid, { browserPush: granted });
-      return granted;
+      if (granted) {
+        await this.registerCurrentDevice(uid);
+        return { success: true, status: 'granted', message: 'Push notifications enabled successfully for this device.' };
+      } else {
+        return { success: false, status: 'denied', message: 'Notification permission was not granted.' };
+      }
     } catch {
-      return false;
+      return { success: false, status: 'denied', message: 'Could not request notification permission.' };
     }
   }
 
@@ -102,7 +277,6 @@ class NotificationService {
       if (typeof window === 'undefined' || !('Notification' in window)) return;
       if (Notification.permission !== 'granted') return;
 
-      // Only send if the window is hidden/blurred or user explicitly requested
       new Notification(title, {
         icon: '/pwa-192x192.png',
         badge: '/favicon-32x32.png',
@@ -297,6 +471,21 @@ class NotificationService {
     if (resolvedUid && resolvedUid !== 'guest' && notifId && !notifId.startsWith('notif_')) {
       try {
         await deleteDoc(doc(db, 'notifications', notifId));
+      } catch (_) {}
+    }
+  }
+
+  public async clearAllNotifications(uid: string): Promise<void> {
+    const resolvedUid = uid || this.currentUid || 'guest';
+    const current = this.getLocalNotifications(resolvedUid);
+    this.saveLocalNotifications(resolvedUid, []);
+
+    if (resolvedUid && resolvedUid !== 'guest') {
+      try {
+        const firestoreDocs = current.filter((n) => !n.id.startsWith('notif_'));
+        for (const notif of firestoreDocs) {
+          await deleteDoc(doc(db, 'notifications', notif.id)).catch(() => {});
+        }
       } catch (_) {}
     }
   }
