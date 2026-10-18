@@ -2241,10 +2241,49 @@ ${answersTextDescription}`;
         config: { responseMimeType: "application/json" },
       });
 
-      let responseText = response.text || '{}';
-      responseText = responseText.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/i, '').trim();
+      let parsed = JSON.parse(responseText);
+      if (parsed.result && typeof parsed.result === 'object') {
+        parsed = parsed.result;
+      }
 
-      const parsed = JSON.parse(responseText);
+      // Normalize questionResults if model returned an array instead of keyed object
+      if (Array.isArray(parsed.questionResults)) {
+        const map: Record<string, any> = {};
+        parsed.questionResults.forEach((item: any) => {
+          if (item && item.questionId) {
+            map[item.questionId] = item;
+          }
+        });
+        parsed.questionResults = map;
+      } else if (!parsed.questionResults || typeof parsed.questionResults !== 'object') {
+        parsed.questionResults = {};
+      }
+
+      // Calculate totalScore and totalMarks accurately
+      let computedScore = 0;
+      let computedTotal = 0;
+      Object.values(parsed.questionResults).forEach((qr: any) => {
+        computedScore += Number(qr?.marksAwarded) || 0;
+        computedTotal += Number(qr?.marksAvailable) || 0;
+      });
+
+      if (typeof parsed.totalScore !== 'number') {
+        parsed.totalScore = computedScore;
+      }
+      if (typeof parsed.totalMarks !== 'number' || parsed.totalMarks === 0) {
+        parsed.totalMarks = computedTotal || assignment.totalMarks || 30;
+      }
+      if (typeof parsed.percentage !== 'number') {
+        parsed.percentage = parsed.totalMarks > 0 ? Math.round((parsed.totalScore / parsed.totalMarks) * 100) : 0;
+      }
+      if (!parsed.grade) {
+        const pct = parsed.percentage;
+        parsed.grade = pct >= 75 ? 'A' : pct >= 65 ? 'B' : pct >= 50 ? 'C' : pct >= 40 ? 'D' : pct >= 30 ? 'E' : 'F';
+      }
+      if (typeof parsed.isProvisional !== 'boolean') {
+        parsed.isProvisional = false;
+      }
+
       res.json(parsed);
 
       // Usage tracking

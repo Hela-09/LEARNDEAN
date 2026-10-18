@@ -42,6 +42,7 @@ interface TopicAssignmentModalProps {
   educationLevel?: string;
   grade?: string;
   onAssignmentCompleted?: (result: TheoryAssignmentSubmissionResult) => void;
+  onRequestAnotherAssignment?: () => Promise<void>;
 }
 
 export default function TopicAssignmentModal({
@@ -53,7 +54,9 @@ export default function TopicAssignmentModal({
   educationLevel = 'Secondary Education',
   grade = 'Senior Secondary',
   onAssignmentCompleted,
+  onRequestAnotherAssignment,
 }: TopicAssignmentModalProps) {
+  const [isGeneratingNewAssignment, setIsGeneratingNewAssignment] = useState<boolean>(false);
   // Answer state per question: textContent, type, images
   const [answers, setAnswers] = useState<Record<string, StudentAnswerItem>>(() => {
     const initial: Record<string, StudentAnswerItem> = {};
@@ -309,6 +312,22 @@ export default function TopicAssignmentModal({
     setSubmitError(null);
   };
 
+  const handleRequestAnotherAssignment = async () => {
+    if (!onRequestAnotherAssignment) return;
+    chalkAudio.playChalkTap();
+    setIsGeneratingNewAssignment(true);
+    setSubmitError(null);
+    try {
+      await onRequestAnotherAssignment();
+      setSubmissionResult(null);
+    } catch (err: any) {
+      console.error('Failed to request another assignment:', err);
+      setSubmitError(err.message || 'Could not generate a new assignment. Please try again.');
+    } finally {
+      setIsGeneratingNewAssignment(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
       <div className="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-5 sm:p-7 space-y-5 animate-scaleUp max-h-[92dvh] overflow-y-auto my-auto">
@@ -410,11 +429,28 @@ export default function TopicAssignmentModal({
                 <button
                   type="button"
                   onClick={handleResetForRetake}
-                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                  className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                  title="Revise your answers and resubmit"
                 >
                   <RotateCcw size={14} />
-                  <span>Retake</span>
+                  <span>Revise / Retake</span>
                 </button>
+                {onRequestAnotherAssignment && (
+                  <button
+                    type="button"
+                    disabled={isGeneratingNewAssignment}
+                    onClick={handleRequestAnotherAssignment}
+                    className="px-3.5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md"
+                    title="Generate a fresh set of theory questions for this topic"
+                  >
+                    {isGeneratingNewAssignment ? (
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Sparkles size={14} />
+                    )}
+                    <span>Another Assignment</span>
+                  </button>
+                )}
               </div>
             </div>
 

@@ -162,6 +162,35 @@ export default function ClassroomInteractionPanel({
             "{currentStep.spokenExplanation}"
           </div>
 
+          {/* Conversational Understanding Check (Conversational question, not multiple choice) */}
+          {currentStep.conversationalCheck && (
+            <div className="p-3.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 space-y-2">
+              <div className="flex items-center gap-1.5 text-blue-900 dark:text-blue-300 font-bold text-xs">
+                <Sparkles size={14} className="text-blue-500" />
+                <span>Teacher's Conversational Check:</span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 font-medium">
+                {currentStep.conversationalCheck.question}
+              </p>
+              {currentStep.conversationalCheck.hint && (
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  <strong className="text-blue-700 dark:text-blue-400">Hint:</strong> {currentStep.conversationalCheck.hint}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('ask');
+                  setQuestionInput(`In response to your check: "${currentStep.conversationalCheck?.question}", here is what I understand: `);
+                }}
+                className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 pt-1 cursor-pointer"
+              >
+                <MessageSquare size={12} />
+                <span>Discuss My Understanding with Teacher</span>
+              </button>
+            </div>
+          )}
+
           <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
             Tip: Press Play on the chalkboard controls to listen to this step aloud with synchronized writing.
           </p>

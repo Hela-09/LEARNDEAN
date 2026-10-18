@@ -43,6 +43,7 @@ import {
   saveLessonToHistory,
   findMatchingVerifiedSyllabusTopic,
   convertTopicAssignmentToTheoryAssignment,
+  fetchTheoryAssignment,
 } from '../services/classroomService';
 import {
   GLOBAL_CLASSROOM_PROFILES,
@@ -661,6 +662,18 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
           subject={lesson.subject}
           educationLevel={lesson.level}
           grade={lesson.grade}
+          onRequestAnotherAssignment={async () => {
+            const fresh = await fetchTheoryAssignment(
+              lesson.subject,
+              lesson.topic,
+              lesson.subtopic,
+              lesson.level,
+              lesson.grade,
+              lesson.curriculum,
+              3
+            );
+            setActiveTheoryAssignment(fresh);
+          }}
           onAssignmentCompleted={(_result) => {
             setProgressState(loadClassroomProgress());
           }}
