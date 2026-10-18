@@ -1808,41 +1808,66 @@ ${text || '(Notes provided in the attached document/image)'}`;
     }
   });
 
-  // AI Classroom - Step-by-step Digital Chalkboard Teacher
   // AI Classroom - Step-by-step Comprehensive Digital Chalkboard Teacher
   app.post("/api/ai/classroom-lesson", optionalAuth, async (req, res) => {
     try {
-      const { subject, topic, level } = req.body;
+      const { subject, topic, subtopic, level, grade, age, curriculum } = req.body;
       if (!subject || !topic) {
         return res.status(400).json({ error: "Subject and topic are required." });
       }
 
       const ai = getGeminiClient();
-      const prompt = `You are a world-class, engaging, passionate educational teacher teaching a complete, in-depth lesson on a digital chalkboard.
+
+      // Determine level-specific pedagogy guidelines
+      const normalizedLevel = (level || '').toLowerCase();
+      let levelInstructions = '';
+      if (normalizedLevel.includes('primary') || normalizedLevel.includes('basic') || (typeof age === 'number' && age < 12)) {
+        levelInstructions = `EDUCATION LEVEL: PRIMARY / BASIC EDUCATION (Pupils aged ~6-11 years, Grade: ${grade || 'Primary Class'}).
+- Vocabulary MUST be simple, clear, friendly, and accessible. Avoid intimidating tertiary jargon.
+- Use fun, relatable everyday examples and visual analogies (e.g., sharing biscuits, playground activities, sunlight on garden plants, familiar animals).
+- Keep explanations warm, conversational, encouraging, and easy to grasp.
+- Keep numbers in worked examples small and easy to calculate step by step.`;
+      } else if (normalizedLevel.includes('university') || normalizedLevel.includes('tertiary') || (typeof age === 'number' && age >= 19)) {
+        levelInstructions = `EDUCATION LEVEL: TERTIARY / UNIVERSITY EDUCATION (Collegiate students, Level: ${grade || 'Undergraduate'}).
+- Provide high academic depth, formal scientific/academic nomenclature, and thorough theoretical foundations.
+- Include advanced mechanisms, mathematical derivations, governing differential or structural formulations where appropriate.
+- Discuss practical industrial, research, or real-world engineering/professional case applications.`;
+      } else {
+        levelInstructions = `EDUCATION LEVEL: SECONDARY EDUCATION (Students aged ~12-18 years, Class: ${grade || 'Senior Secondary / High School'}).
+- Align with national examination standards (e.g. WAEC, JAMB, GCSE, High School).
+- Balance clear conceptual understanding with formal subject terminology, definitions, and SI units.
+- Include structured worked examination problems with complete intermediate steps, numbers, and units.`;
+      }
+
+      const subtopicFocus = subtopic && subtopic.trim()
+        ? `SPECIFIC SUBTOPIC FOCUS: Prioritize "${subtopic.trim()}" while briefly establishing necessary prerequisite concepts.`
+        : `LOGICAL PROGRESSION: Teach the main topic and introduce its core subtopics in logical sequential order.`;
+
+      const prompt = `You are a world-class, engaging, passionate educational teacher conducting an authentic academic masterclass on a digital chalkboard.
 Subject: ${subject}
 Topic: ${topic}
-Education Level: ${level || 'Senior Secondary (SSS / WAEC / JAMB)'}
+${subtopicFocus}
+${levelInstructions}
+${curriculum ? `Curriculum Framework: ${curriculum}` : ''}
 
-CRITICAL PEDAGOGICAL INSTRUCTION:
-Do not provide a brief overview or stop after only 4 or 5 pages. You must teach the ENTIRE topic comprehensively according to official curriculum standards, covering:
-1. Introduction, Terminology, Scope & Formal Definitions
-2. Fundamental Laws, Scientific/Academic Principles & Theory
-3. Chalkboard Diagram & Visual Conceptual Model
-4. Step-by-Step Mathematical Derivations or Analytical Mechanisms
-5. Primary Worked Exam Problem with full numbers, step-by-step substitutions, and units
-6. Additional Complex Worked Example covering edge cases, tricky variations, and advanced questions
-7. Practical Real-World Applications, Industrial Relevance & Common Exam Traps to Avoid
-8. Subtopic Synthesis & Advanced Problem-Solving Challenge
-9. Comprehensive Topic Revision Summary & Essential Master Formula Sheet
+TEACHING SEQUENCE GUIDELINES:
+Follow this logical classroom teaching sequence:
+1. Introduce the topic title and formal scope.
+2. Explain prerequisite concepts and core definitions in student-friendly language.
+3. Teach the main concept thoroughly, using relatable everyday scenarios and analogies when relevant.
+4. If a subtopic was requested, teach that subtopic in detail with clear step-by-step logic.
+5. Provide clear worked examples and solutions.
+6. Check student understanding with short conversational questions (not objective multiple-choice questions).
+7. Conclude with a comprehensive topic revision summary and essential key takeaways.
 
-Generate 7 to 9 sequential chalkboard steps.
+Generate 6 to 8 sequential chalkboard steps.
 EVERY single step MUST contain:
-- stepTitle: Clear title of the subtopic step (e.g. "1. Introduction & Formal Definitions")
-- spokenExplanation: 3-5 sentences of natural, engaging, oral classroom explanation as if speaking aloud to students. Clear, warm, enthusiastic, and directly explaining the notes written on the board.
+- stepTitle: Title of this subtopic step (e.g. "1. Topic Introduction & Core Definitions")
+- spokenExplanation: 3-5 sentences of natural, engaging, oral classroom explanation as if speaking aloud to the student. Clear, warm, enthusiastic, and explaining what is written on the board.
 - chalkboard:
-  - heading: Big title written in chalk style
-  - bulletPoints: 3 to 4 rich, detailed bullet points written clearly on the board
-  - equation: (optional) Formatted formula, law, or key mathematical relation
+  - heading: Big title written on the board
+  - bulletPoints: 3 to 4 rich, informative bullet points written clearly
+  - equation: (optional) Formatted formula, law, or key relationship
   - chalkColor: One of 'white', 'yellow', 'cyan', 'pink', 'emerald'
   - highlightNote: (optional) Vital examination rule, tip, or common trap
   - diagram: (especially on visual steps) {
@@ -1850,17 +1875,15 @@ EVERY single step MUST contain:
       caption: string,
       labels: string[]
     }
-  - workedExample: (especially on worked problem steps 5 and 6) {
+  - workedExample: (on worked problem steps) {
       problem: string,
       given: string,
       solutionSteps: string[],
       answer: string
     }
-- quiz: (REQUIRED on every subtopic step to assess student understanding) {
-    question: string,
-    options: string[] (exactly 4 distinct options),
-    correctIndex: number (0-3),
-    explanation: string (explains why the correct answer is right and why other options are mistakes)
+- conversationalCheck: {
+    question: string (A conversational check question to check the student's understanding without multiple choice),
+    hint: string
   }
 
 Return strict JSON:
@@ -1900,17 +1923,20 @@ Return strict JSON:
       let responseText = response.text || '';
       if (!responseText) throw new Error("No response text from Gemini");
 
-      // Strip markdown code fences if model wrapped response
       responseText = responseText.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/i, '').trim();
 
       const parsed = JSON.parse(responseText);
       const lesson = {
         id: `lesson_${Date.now()}`,
-        title: parsed.title || `${topic}: Digital Chalkboard Masterclass`,
+        title: parsed.title || `${topic}: Interactive Digital Masterclass`,
         subject,
         topic,
-        level: level || 'Secondary',
-        summary: parsed.summary || `A comprehensive curriculum masterclass on ${topic}.`,
+        subtopic: subtopic || '',
+        level: level || 'Secondary Education',
+        grade: grade || '',
+        age: age || undefined,
+        curriculum: curriculum || '',
+        summary: parsed.summary || `A tailored masterclass on ${topic}.`,
         steps: (parsed.steps || []).map((s: any, idx: number) => ({
           id: s.id || idx + 1,
           stepTitle: s.stepTitle || `Step ${idx + 1}`,
@@ -1924,7 +1950,10 @@ Return strict JSON:
             chalkColor: s.chalkboard?.chalkColor || (idx % 2 === 0 ? 'yellow' : 'cyan'),
             highlightNote: s.chalkboard?.highlightNote,
           },
-          quiz: s.quiz,
+          conversationalCheck: s.conversationalCheck || {
+            question: `In your own words, what is the most important idea from ${s.stepTitle || 'this step'}?`,
+            hint: 'Think about how this applies to everyday life or practical problems.',
+          },
         })),
         createdAt: Date.now(),
       };
@@ -1955,12 +1984,13 @@ Return strict JSON:
     }
   });
 
-  // AI Classroom - Ask follow-up question or simplify step
+  // AI Classroom - Ask follow-up question with strict Subject & Topic Relevance Check
   app.post("/api/ai/classroom-ask", optionalAuth, async (req, res) => {
     try {
       const {
         subject,
         topic,
+        subtopic,
         currentStepTitle,
         currentStepContent,
         question,
@@ -1971,37 +2001,50 @@ Return strict JSON:
       const ai = getGeminiClient();
 
       const previousContext = Array.isArray(previousQAs) && previousQAs.length > 0
-        ? `\nPrevious Q&A in this lesson session (DO NOT repeat these answers):\n${previousQAs.slice(-4).map((q: any) => `Student: "${q.question}" -> Teacher: "${q.spokenAnswer}"`).join('\n')}\n`
+        ? `\nPrevious Q&A in this lesson session:\n${previousQAs.slice(-4).map((q: any) => `Student: "${q.question}" -> Teacher: "${q.spokenAnswer}"`).join('\n')}\n`
         : '';
 
-      const prompt = `You are a dedicated, insightful teacher conducting an academic masterclass on a digital chalkboard.
+      const prompt = `You are an attentive, dedicated teacher conducting an academic class on a digital board.
 Subject: ${subject}
 Topic: ${topic}
-Education Level: ${educationLevel || 'Senior Secondary'}
-Current Subtopic / Step: ${currentStepTitle}
+${subtopic ? `Subtopic Focus: ${subtopic}` : ''}
+Education Level: ${educationLevel || 'Secondary Education'}
+Current Board Step: ${currentStepTitle}
 Current Board Content: ${currentStepContent}
 ${previousContext}
-Student's Latest Question: "${question}"
+Student's Latest Input: "${question}"
 Is Simplification Request: ${isSimplify ? 'YES' : 'NO'}
 
-CRITICAL TEACHER INSTRUCTIONS:
-1. Carefully read the student's actual latest message: "${question}".
-2. You MUST address their exact question directly, accurately, and with subject-specific terminology appropriate for ${educationLevel || 'the student'}.
-3. DO NOT repeat earlier answers or give generic boilerplate. If they are asking about a specific calculation, formula, concept, or practical question, answer that exact problem step-by-step.
-4. If this is a simplification request, craft a fresh, intuitive, everyday analogy tailored specifically to ${topic}.
+CRITICAL TASK 1 — TOPIC & SUBJECT RELEVANCE CHECK:
+Carefully determine whether the student's question is relevant to the current classroom lesson:
+A. RELEVANT ("status": "relevant"):
+   - The question directly or conceptually relates to ${subject}, ${topic}, or ${currentStepTitle}.
+   - The question asks for clarification, examples, simpler explanations, formula derivations, or calculations related to this topic.
+   - The question uses a relatable real-life analogy or everyday experience (e.g. asking "does boiling water or cooking relate to this chemical change?" or "is a car braking like friction?") to understand the topic. (DO NOT reject real-world examples!).
+   - The question asks about general background concepts, foundational math, or scientific principles necessary to understand this lesson.
+B. UNRELATED ("status": "unrelated"):
+   - The student asks about a completely different academic subject or unrelated topic (e.g., asking about Literature, Shakespeare, or History while in a Biology photosynthesis class; or asking about Accounting during a Physics kinematics class).
+   - In this case, DO NOT answer the unrelated subject! Politely and respectfully redirect the student:
+     "That's an interesting question! However, we're currently in ${subject} class learning about ${topic}. Let's stay focused on this topic for now. You can explore [Unrelated Subject] in the appropriate class."
+   - Provide guideBackToTopic to bring them smoothly back to ${currentStepTitle}.
+C. CLARIFICATION NEEDED ("status": "clarification_needed"):
+   - The student's question is too vague, fragmented, or ambiguous to understand (e.g., "what about the other one?", "will it change?").
+   - Instead of rejecting it, ask a brief, warm clarifying question to understand what aspect of ${topic} they want explained.
 
-Respond in character:
-1. spokenAnswer: 2-4 sentences of warm, direct, encouraging pedagogical explanation answering the student's exact question.
-2. chalkboardNotes: Array of 2-3 concise bullet points to write on the side chalkboard.
-3. clarifyingFormula: (optional) A brief formula or relationship if helpful.
-4. miniExample: (optional) A quick illustrative mini example.
+CRITICAL TASK 2 — TEACHER RESPONSE:
+- If RELEVANT: Give a warm, direct, 2-4 sentence spoken answer suited to ${educationLevel || 'the student'}, 2-3 chalkboard bullet points, and optional formula/mini example.
+- If UNRELATED: Give the polite redirection as spokenAnswer, chalkboard notes reinforcing the current topic, and guideBackToTopic.
+- If CLARIFICATION_NEEDED: Ask the brief clarifying question as spokenAnswer.
 
 Return strict JSON:
 {
+  "status": "relevant" | "unrelated" | "clarification_needed",
   "spokenAnswer": string,
   "chalkboardNotes": string[],
   "clarifyingFormula": string,
-  "miniExample": string
+  "miniExample": string,
+  "redirectSubject": string,
+  "guideBackToTopic": string
 }`;
 
       let response;
@@ -2038,39 +2081,48 @@ Return strict JSON:
     }
   });
 
-  // AI Classroom - End-of-Topic Assignment Generation
+  // AI Classroom - Theory-Based Assignment Generation (Pure Essay/Theory Questions)
   app.post("/api/ai/classroom-assignment", optionalAuth, async (req, res) => {
     try {
-      const { subject, topic, level, curriculum } = req.body;
+      const { subject, topic, subtopic, level, grade, curriculum, questionCount } = req.body;
       const ai = getGeminiClient();
 
-      const prompt = `You are an expert school examination setter creating an authentic end-of-topic graded assignment.
+      const numQuestions = Math.min(5, Math.max(2, Number(questionCount) || 3));
+
+      const prompt = `You are an expert academic examiner setting an authentic THEORY / ESSAY assignment.
 Subject: ${subject}
 Topic: ${topic}
-Education Level: ${level || 'Senior Secondary (SSS / WAEC / JAMB)'}
-Curriculum: ${curriculum || 'WAEC / NERDC Standard'}
+${subtopic ? `Subtopic Focus: ${subtopic}` : ''}
+Education Level: ${level || 'Secondary Education'} (Class/Grade: ${grade || 'Standard'})
+Curriculum: ${curriculum || 'Standard'}
 
-Generate an assessment with:
-1. title: Assignment title
-2. instructions: Clear examination instructions
-3. totalMarks: e.g. 25
-4. passPercentage: 70
-5. mcqQuestions: Array of 2 multiple-choice questions:
-   - id: string
-   - question: string
-   - options: 4 distinct choices
-   - correctAnswer: index (0-3)
-   - explanation: detailed explanation
-   - hint: helpful hint
-6. structuredQuestions: Array of 1 to 2 structured calculation or theory problems:
-   - id: string
-   - instruction: string
-   - question: full problem statement with numerical values/units
-   - totalMarks: number (e.g. 15)
-   - rubric: array of { step: string, marks: number }
-   - sampleSolution: complete step-by-step worked master solution
+CRITICAL REQUIREMENT:
+All questions MUST be THEORY / ESSAY questions. DO NOT generate multiple-choice or objective questions.
+Questions must thoroughly test understanding, detailed explanation, application, comparison, and examples appropriate for ${level || 'this level'}.
 
-Return strict JSON conforming to the TopicAssignment format.`;
+Generate exactly ${numQuestions} theory questions with:
+1. title: Assignment title (e.g. "Theory Assignment: ${topic}")
+2. instructions: Clear instructions (e.g. "Answer all questions clearly. You can submit typed answers, voice recordings, or photos of your handwritten working.")
+3. totalMarks: Total marks across all questions (e.g. ${numQuestions * 10})
+4. passPercentage: 60
+5. questions: Array of ${numQuestions} theory questions:
+   - id: "q1", "q2", etc.
+   - questionNumber: 1, 2, ...
+   - question: The full theory question statement
+   - marks: Marks allocated (e.g. 10 or 15)
+   - markingCriteria: Array of 3-4 specific rubric points (e.g. ["Clear definition of X (3 marks)", "Explanation of mechanism with example (4 marks)", "Correct conclusion (3 marks)"])
+   - sampleAnswer: Comprehensive model answer showing expected points
+   - hint: Helpful hint to guide the student's thinking
+
+Return strict JSON:
+{
+  "id": string,
+  "title": string,
+  "instructions": string,
+  "totalMarks": number,
+  "passPercentage": number,
+  "questions": [ ... ]
+}`;
 
       let response = await ai.models.generateContent({
         model: 'gemini-3.8-flash',
@@ -2081,47 +2133,140 @@ Return strict JSON conforming to the TopicAssignment format.`;
       const parsed = JSON.parse(response.text || '{}');
       res.json({ assignment: parsed });
     } catch (error: any) {
-      console.error("Classroom Assignment Gen Error:", error);
-      res.status(500).json({ error: error.message || "Failed to generate assignment" });
+      console.error("Classroom Theory Assignment Gen Error:", error);
+      res.status(500).json({ error: error.message || "Failed to generate theory assignment" });
     }
   });
 
-  // AI Classroom - Graded Assignment Marking & AI Teacher Feedback
-  app.post("/api/ai/classroom-mark-assignment", optionalAuth, async (req, res) => {
+  // AI Classroom - Multimodal AI Marking of Theory Answers & Handwritten Paper Photos
+  app.post("/api/ai/classroom-mark-theory", optionalAuth, async (req, res) => {
     try {
-      const { subject, topic, assignment, studentAnswers } = req.body;
+      const { subject, topic, level, grade, assignment, answers } = req.body;
+      if (!assignment || !answers) {
+        return res.status(400).json({ error: "Assignment and student answers are required." });
+      }
+
       const ai = getGeminiClient();
 
-      const prompt = `You are a dedicated, encouraging school teacher marking a student's end-of-topic assignment.
+      // Collect multimodal parts (text prompts + inline images of handwritten paper)
+      const parts: any[] = [];
+
+      let answersTextDescription = '';
+      let hasAnyImages = false;
+
+      const questionsList = assignment.questions || [];
+      for (const q of questionsList) {
+        const studentAns = answers[q.id];
+        if (!studentAns) {
+          answersTextDescription += `\n--- Question ${q.questionNumber} (${q.id}) ---\nQuestion: ${q.question}\nMarks Available: ${q.marks}\nStudent Answer: [NO SUBMISSION PROVIDED]\n`;
+          continue;
+        }
+
+        const ansType = studentAns.type || 'text';
+        answersTextDescription += `\n--- Question ${q.questionNumber} (${q.id}) ---\nQuestion: ${q.question}\nMarks Available: ${q.marks}\nMarking Rubric: ${JSON.stringify(q.markingCriteria || [])}\nSubmission Type: ${ansType}\n`;
+
+        if (studentAns.textContent && studentAns.textContent.trim()) {
+          answersTextDescription += `Student Typed/Spoken Answer:\n"""\n${studentAns.textContent.trim()}\n"""\n`;
+        }
+
+        if (studentAns.images && Array.isArray(studentAns.images) && studentAns.images.length > 0) {
+          hasAnyImages = true;
+          answersTextDescription += `Student Handwritten Images Uploaded: ${studentAns.images.length} page(s) attached below for this question.\n`;
+          studentAns.images.forEach((img: any, iIdx: number) => {
+            if (img.url && img.url.startsWith('data:')) {
+              const match = img.url.match(/^data:([^;]+);base64,(.+)$/);
+              if (match) {
+                parts.push({
+                  inlineData: { mimeType: match[1], data: match[2] }
+                });
+                parts.push({
+                  text: `[Image page ${iIdx + 1} for Question ${q.questionNumber} (${q.id}) above]`
+                });
+              }
+            }
+          });
+        }
+      }
+
+      const prompt = `You are a fair, expert academic examiner marking a student's theory assignment.
 Subject: ${subject}
 Topic: ${topic}
-Student Answers: ${JSON.stringify(studentAnswers)}
-Assignment Details: ${JSON.stringify(assignment)}
+Education Level: ${level || 'Secondary Education'} (Class/Grade: ${grade || 'Standard'})
 
-Mark the student's submission:
-1. Evaluate each structured question against its marking scheme rubric.
-2. Award realistic marks based on their demonstrated working.
-3. Provide warm, constructive teacher feedback praising correct methods and pinpointing mistakes.
-4. List 1-3 specific subtopics or concepts for revision if any gaps were shown.
-
-Return strict JSON:
+EXAMINATION & MARKING INSTRUCTIONS:
+1. MULTIMODAL HANDWRITING ANALYSIS:
+   ${hasAnyImages ? '- The student has uploaded photos of their handwritten work on paper. Use your full vision OCR capabilities to carefully transcribe and interpret the student\'s handwriting.' : ''}
+   - If a handwritten image is blurry, cutoff, dark, or illegible, DO NOT invent unreadable answers. Set "isUnclear": true and politely ask the student to upload a clearer photo or type the unclear section.
+   - If the handwriting is legible, transcribe the student\'s actual text into "transcribedAnswer" and mark it objectively.
+2. OBJECTIVE THEORY MARKING AGAINST RUBRIC:
+   - Carefully evaluate the student\'s submission for each question against its specific marking criteria.
+   - Award marks for correct points, clear explanations, relevant examples, and demonstrated understanding.
+   - RECOGNIZE ALTERNATIVE VALID WORDINGS and correct explanations; do not demand exact verbatim textbook wording.
+   - Identify missing key points, factual mistakes, and unclear parts.
+   - Award a realistic numerical mark for each question ("marksAwarded" out of "marksAvailable").
+   - Provide constructive, encouraging feedback explaining why marks were awarded or deducted.
+3. RETURN STRICT JSON conforming to the following structure:
 {
-  "structuredScore": number,
-  "teacherFeedback": string,
-  "areasForRevision": string[]
-}`;
+  "questionResults": {
+    "<questionId>": {
+      "questionId": string,
+      "transcribedAnswer": string (The transcribed handwritten text or student text),
+      "marksAwarded": number,
+      "marksAvailable": number,
+      "feedback": string,
+      "strengths": string[],
+      "missingPoints": string[],
+      "suggestedCorrections": string,
+      "isHandwritten": boolean,
+      "isUnclear": boolean
+    }
+  },
+  "totalScore": number,
+  "totalMarks": number,
+  "percentage": number,
+  "grade": "A" | "B" | "C" | "D" | "E" | "F",
+  "overallFeedback": string,
+  "areasForRevision": string[],
+  "isProvisional": boolean
+}
+
+STUDENT SUBMISSIONS TO MARK:
+${answersTextDescription}`;
+
+      parts.push({ text: prompt });
 
       let response = await ai.models.generateContent({
         model: 'gemini-3.8-flash',
-        contents: prompt,
+        contents: [{ role: 'user', parts }],
         config: { responseMimeType: "application/json" },
       });
 
-      const parsed = JSON.parse(response.text || '{}');
+      let responseText = response.text || '{}';
+      responseText = responseText.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/i, '').trim();
+
+      const parsed = JSON.parse(responseText);
       res.json(parsed);
+
+      // Usage tracking
+      const user = (req as any).user;
+      const uid = user?.uid || user?.user_id;
+      if (uid) {
+        try {
+          recordAiUsage({
+            uid,
+            email: user?.email,
+            displayName: user?.name,
+            category: 'tutor',
+            model: 'gemini-3.8-flash',
+            inputTokens: response.usageMetadata?.promptTokenCount ?? 0,
+            outputTokens: response.usageMetadata?.candidatesTokenCount ?? 0,
+            totalTokens: response.usageMetadata?.totalTokenCount ?? 0,
+          });
+        } catch (_) {}
+      }
     } catch (error: any) {
-      console.error("Classroom Marking Error:", error);
-      res.status(500).json({ error: error.message || "Failed to mark assignment" });
+      console.error("Theory Marking Error:", error);
+      res.status(500).json({ error: error.message || "Failed to mark theory assignment" });
     }
   });
 

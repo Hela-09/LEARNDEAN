@@ -1,11 +1,16 @@
-import { ClassroomLesson, ClassroomQA } from '../types/classroom';
+import {
+  ClassroomLesson,
+  ClassroomQA,
+  TheoryAssignment,
+  StudentAnswerItem,
+  TheoryAssignmentSubmissionResult,
+} from '../types/classroom';
 import { DEFAULT_PHYSICS_LESSON, generateCuratedCurriculumLesson } from '../utils/classroomDefaults';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import {
   GLOBAL_CLASSROOM_PROFILES,
   SyllabusTopic,
-  findSyllabusTopicById,
 } from '../data/officialClassroomCurriculum';
 
 const CACHE_KEY = 'learndean_classroom_recent_lessons';
@@ -44,37 +49,50 @@ export function findMatchingVerifiedSyllabusTopic(subject: string, topic: string
 export async function fetchClassroomLesson(
   subject: string,
   topic: string,
-  level: string = 'Senior Secondary (SSS / WAEC / JAMB)'
+  subtopic?: string,
+  level: string = 'Secondary Education',
+  grade?: string,
+  age?: number,
+  curriculum?: string
 ): Promise<ClassroomLesson> {
-  // Check if we have verified official syllabus steps for this topic
-  const verifiedMatch = findMatchingVerifiedSyllabusTopic(subject, topic);
-  if (verifiedMatch && verifiedMatch.steps && verifiedMatch.steps.length > 0) {
-    const verifiedLesson: ClassroomLesson = {
-      id: `lesson_${verifiedMatch.id}`,
-      title: `${verifiedMatch.title}: Digital Chalkboard Masterclass`,
-      subject,
-      topic: verifiedMatch.title,
-      level,
-      summary: `Official ${verifiedMatch.syllabusSource} lesson covering ${verifiedMatch.subtopics.join(', ')}.`,
-      steps: verifiedMatch.steps.map((st) => ({
-        id: st.id,
-        stepTitle: st.stepTitle,
-        spokenExplanation: st.spokenExplanation,
-        chalkboard: {
-          heading: st.chalkboard.heading,
-          bulletPoints: st.chalkboard.bulletPoints,
-          equation: st.chalkboard.equation,
-          workedExample: st.chalkboard.workedExample,
-          diagram: st.chalkboard.diagram,
-          chalkColor: st.chalkboard.chalkColor || 'yellow',
-          highlightNote: st.chalkboard.highlightNote,
-        },
-        quiz: st.quiz,
-      })),
-      createdAt: Date.now(),
-    };
-    saveLessonToHistory(verifiedLesson);
-    return verifiedLesson;
+  // If not a custom subtopic and matches an official verified syllabus topic, we can check for verified steps
+  if (!subtopic) {
+    const verifiedMatch = findMatchingVerifiedSyllabusTopic(subject, topic);
+    if (verifiedMatch && verifiedMatch.steps && verifiedMatch.steps.length > 0) {
+      const verifiedLesson: ClassroomLesson = {
+        id: `lesson_${verifiedMatch.id}`,
+        title: `${verifiedMatch.title}: Digital Chalkboard Masterclass`,
+        subject,
+        topic: verifiedMatch.title,
+        subtopic: '',
+        level,
+        grade: grade || '',
+        age,
+        curriculum: curriculum || '',
+        summary: `Official ${verifiedMatch.syllabusSource} lesson covering ${verifiedMatch.subtopics.join(', ')}.`,
+        steps: verifiedMatch.steps.map((st) => ({
+          id: st.id,
+          stepTitle: st.stepTitle,
+          spokenExplanation: st.spokenExplanation,
+          chalkboard: {
+            heading: st.chalkboard.heading,
+            bulletPoints: st.chalkboard.bulletPoints,
+            equation: st.chalkboard.equation,
+            workedExample: st.chalkboard.workedExample,
+            diagram: st.chalkboard.diagram,
+            chalkColor: st.chalkboard.chalkColor || 'yellow',
+            highlightNote: st.chalkboard.highlightNote,
+          },
+          conversationalCheck: {
+            question: `In your own words, what is the core idea of ${st.stepTitle}?`,
+            hint: 'Think about how this applies to everyday life or practical problems.',
+          },
+        })),
+        createdAt: Date.now(),
+      };
+      saveLessonToHistory(verifiedLesson);
+      return verifiedLesson;
+    }
   }
 
   // Otherwise, invoke the AI classroom backend generator
@@ -99,7 +117,11 @@ export async function fetchClassroomLesson(
       body: JSON.stringify({
         subject,
         topic,
+        subtopic,
         level,
+        grade,
+        age,
+        curriculum,
       }),
     });
 
@@ -117,6 +139,8 @@ export async function fetchClassroomLesson(
   } catch (err) {
     console.warn('API Classroom Lesson generation error, using rich curated lesson:', err);
     const fallback: ClassroomLesson = generateCuratedCurriculumLesson(subject, topic, level);
+    fallback.subtopic = subtopic;
+    fallback.grade = grade;
     saveLessonToHistory(fallback);
     return fallback;
   }
@@ -125,12 +149,13 @@ export async function fetchClassroomLesson(
 export async function askClassroomTeacher(
   subject: string,
   topic: string,
+  subtopic: string | undefined,
   currentStepTitle: string,
   currentStepContent: string,
   question: string,
   isSimplify: boolean = false,
   previousQAs: Array<{ question: string; spokenAnswer: string }> = [],
-  educationLevel: string = 'Senior Secondary'
+  educationLevel: string = 'Secondary Education'
 ): Promise<ClassroomQA> {
   try {
     let token = '';
@@ -153,6 +178,7 @@ export async function askClassroomTeacher(
       body: JSON.stringify({
         subject,
         topic,
+        subtopic,
         currentStepTitle,
         currentStepContent,
         question,
@@ -171,18 +197,59 @@ export async function askClassroomTeacher(
       id: `qa_${Date.now()}`,
       stepId: 1,
       question,
+      status: data.status || 'relevant',
       spokenAnswer: data.spokenAnswer || `Let us address your question regarding ${topic}.`,
       chalkboardNotes: data.chalkboardNotes || [`Analysis of: ${question.slice(0, 45)}...`],
       clarifyingFormula: data.clarifyingFormula,
       miniExample: data.miniExample,
+      redirectSubject: data.redirectSubject,
+      guideBackToTopic: data.guideBackToTopic,
       timestamp: Date.now(),
     };
   } catch (err) {
     console.warn('Teacher ask API failed, synthesizing contextual pedagogical response:', err);
 
-    // Highly responsive, question-aware pedagogical synthesizer
+    // Highly responsive, question-aware pedagogical synthesizer with subject relevance detection
     const cleanQ = question.trim();
     const lowerQ = cleanQ.toLowerCase();
+    const normSub = subject.toLowerCase();
+
+    // Check for obvious cross-subject mismatch in fallback (e.g. asking literature in science or accounting in literature)
+    const isLitQuery = /literature|romeo|juliet|shakespeare|poetry|poem|novel|sonnet|soliloquy|macbeth/i.test(lowerQ);
+    const isScienceClass = /biology|physics|chemistry|mathematics|general science/i.test(normSub);
+
+    if (isLitQuery && isScienceClass) {
+      return {
+        id: `qa_${Date.now()}`,
+        stepId: 1,
+        question,
+        status: 'unrelated',
+        spokenAnswer: `That's an interesting question! However, we're currently in ${subject} class learning about ${topic}. Let's stay focused on this topic for now. You can explore Literature in the appropriate class.`,
+        chalkboardNotes: [
+          `Classroom Focus: ${subject} — ${topic}`,
+          `Current Subtopic: ${currentStepTitle}`,
+          `Tip: Save Literature questions for your Literature class session!`,
+        ],
+        redirectSubject: 'Literature in English',
+        guideBackToTopic: `Let's continue with our notes on ${currentStepTitle}.`,
+        timestamp: Date.now(),
+      };
+    }
+
+    const isAmbiguous = cleanQ.length < 15 && /^(what about it\??|why\??|is it\??|can it\??|the other one\??)$/i.test(cleanQ);
+    if (isAmbiguous) {
+      return {
+        id: `qa_${Date.now()}`,
+        stepId: 1,
+        question,
+        status: 'clarification_needed',
+        spokenAnswer: `Could you clarify which part of ${topic} you'd like me to explain? For example, are you asking about the formula, the definition, or the worked example?`,
+        chalkboardNotes: [
+          `Clarification: Please specify the aspect of ${topic} you'd like explained`,
+        ],
+        timestamp: Date.now(),
+      };
+    }
 
     const isDefinition = /what is|what are|define|meaning of|explain the term|stand for/i.test(lowerQ);
     const isCalculation = /how (to|do we|can i) (calculate|solve|find|compute|determine)|steps to/i.test(lowerQ);
@@ -197,63 +264,59 @@ export async function askClassroomTeacher(
     let miniEx: string | undefined = undefined;
 
     if (isSimplify) {
-      spoken = `To picture this simply in everyday life: think of ${topic} like a familiar system you interact with daily. When you consider "${cleanQ}", remove all the heavy jargon and focus solely on the primary cause and its direct observable effect.`;
+      spoken = `To picture this simply in everyday life: think of ${topic} like a familiar system you interact with daily. When you consider "${cleanQ}", remove the heavy jargon and focus on the primary cause and its direct observable effect.`;
       notes = [
         `Intuitive Model: Relate ${cleanTopic(topic)} to everyday observable reality`,
-        `Core Rule: Identify primary input and the single direct result`,
+        `Core Rule: Identify the primary input and the single direct result`,
       ];
     } else if (isDefinition) {
-      spoken = `To define this clearly for your ${educationLevel} studies: "${cleanQ.replace(/^(what is|what are|define|explain)\s*/i, '')}" refers to the fundamental concept in ${topic} that establishes the standard framework and behavior under study. Make sure you memorize this standard term for your exams.`;
+      spoken = `To define this clearly for your ${educationLevel} studies: "${cleanQ.replace(/^(what is|what are|define|explain)\s*/i, '')}" refers to the fundamental concept in ${topic} that establishes the standard behavior under study.`;
       notes = [
         `Definition: ${cleanQ}`,
         `Context: Core terminology within ${topic} (${subject})`,
-        `Exam requirement: Use formal syllabus terminology and standard units`,
+        `Key rule: Use standard academic terminology and appropriate units`,
       ];
     } else if (isCalculation) {
-      spoken = `When calculating this in ${subject}, always follow a systematic 4-step sequence: first, write out all given data with their units; second, select the governing formula connecting those variables; third, substitute your numbers without skipping steps; and fourth, state your final answer with the correct unit.`;
+      spoken = `When calculating this in ${subject}, always follow a systematic 4-step sequence: first, write out all given data with units; second, select the governing formula; third, substitute values step by step; and fourth, state the final answer with its correct unit.`;
       notes = [
         `Step 1: List given parameters & target variable with units`,
         `Step 2: State governing equation from ${topic}`,
         `Step 3: Substitute values and compute step-by-step`,
         `Step 4: Check dimensional consistency and final units`,
       ];
-      formula = 'Final Answer = Formula(Known Parameters) [with correct units]';
-      miniEx = 'Always check whether any mass needs conversion from grams to kilograms, or minutes to seconds!';
+      formula = 'Final Answer = Formula(Known Parameters) [with units]';
+      miniEx = 'Always check whether any mass needs conversion to kilograms or seconds!';
     } else if (isWhy) {
-      spoken = `That is an insightful question about why this occurs in ${topic}. The underlying reason is governed by the fundamental equilibrium and conservation principles of ${subject}. When one parameter is altered, the system responds dynamically to maintain consistency with natural laws.`;
+      spoken = `That is an insightful question about why this occurs in ${topic}. The underlying reason is governed by the fundamental equilibrium and conservation principles of ${subject}.`;
       notes = [
         `Cause & Effect: Why this phenomenon occurs in ${topic}`,
-        `Governing Factor: Conservation of energy, momentum, or structural equilibrium`,
-        `Key takeaway: Changes in input directly determine the observed response`,
+        `Governing Factor: Conservation and dynamic equilibrium`,
       ];
     } else if (isDifference) {
-      spoken = `To clearly distinguish these in your examinations: compare their definitions, their mathematical or conceptual behavior, and their operational units. Examiners look for a clear point-by-point contrast rather than vague generalities.`;
+      spoken = `To clearly distinguish these in your examinations: compare their definitions, their physical or logical behavior, and their operational units. Present your contrast point by point.`;
       notes = [
-        `Point of Distinction 1: Differences in definition and origin`,
-        `Point of Distinction 2: Differences in properties and mathematical formulation`,
-        `Exam Presentation: Present comparisons in a clear two-column summary table`,
+        `Distinction 1: Differences in definition and origin`,
+        `Distinction 2: Differences in properties and mathematical formulation`,
       ];
     } else if (isFormula) {
-      spoken = `Regarding the formula or governing relation for "${cleanQ}": in ${topic}, the mathematical expression anchors directly to the fundamental law established on our chalkboard. Remember that all variables must match standard SI reference units before calculating.`;
+      spoken = `Regarding the formula for "${cleanQ}": in ${topic}, the mathematical expression anchors directly to the fundamental law on our chalkboard. Remember that all variables must match standard reference units before calculating.`;
       notes = [
         `Governing Relationship: Key equation for ${topic}`,
-        `Variable identification: Define each symbol and its international unit`,
-        `Application: Rearrange formula to isolate the unknown before substituting`,
+        `Variable identification: Define each symbol and its unit`,
       ];
       formula = 'Target Variable = f(Independent Variables)';
     } else if (isExample) {
-      spoken = `Here is a clear, practical example to illustrate your question about "${cleanQ}": imagine a real-world scenario where the conditions of ${topic} apply directly. By tracing what happens from start to finish, the abstract theory becomes concrete.`;
+      spoken = `Here is a clear, practical example to illustrate your question about "${cleanQ}": imagine a real-world scenario where the conditions of ${topic} apply directly. Tracing the steps makes the abstract theory concrete.`;
       notes = [
         `Illustrative Example: Real-world manifestation of ${topic}`,
         `Working: Given conditions -> Applied rule -> Concrete outcome`,
       ];
-      miniEx = `Practical test: If you test this principle under standard conditions, the outcome consistently verifies our chalkboard notes.`;
+      miniEx = `Practical test: Testing this principle under standard conditions verifies our chalkboard notes.`;
     } else {
-      spoken = `Regarding your question on "${cleanQ}": in ${subject} at the ${educationLevel} level, this concept is directly tied to the notes we wrote on the board for ${topic}. Always anchor your answer to the foundational principle before developing your explanation.`;
+      spoken = `Regarding your question on "${cleanQ}": in ${subject} at the ${educationLevel} level, this concept is directly tied to the notes we wrote on the board for ${topic}. Always anchor your answer to the foundational principle.`;
       notes = [
         `Key Principle: ${cleanTopic(topic)}`,
         `Application to your query: "${cleanQ.slice(0, 50)}"`,
-        `Exam rule: State definitions clearly and verify physical/logical balance`,
       ];
     }
 
@@ -261,12 +324,200 @@ export async function askClassroomTeacher(
       id: `qa_${Date.now()}`,
       stepId: 1,
       question,
+      status: 'relevant',
       spokenAnswer: spoken,
       chalkboardNotes: notes,
       clarifyingFormula: formula,
       miniExample: miniEx,
       timestamp: Date.now(),
     };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Theory Assignment API Services
+// ---------------------------------------------------------------------------
+
+export async function fetchTheoryAssignment(
+  subject: string,
+  topic: string,
+  subtopic?: string,
+  level: string = 'Secondary Education',
+  grade?: string,
+  curriculum?: string,
+  questionCount: number = 3
+): Promise<TheoryAssignment> {
+  try {
+    let token = '';
+    if (auth && auth.currentUser) {
+      try {
+        token = await auth.currentUser.getIdToken();
+      } catch {}
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch('/api/ai/classroom-assignment', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        subject,
+        topic,
+        subtopic,
+        level,
+        grade,
+        curriculum,
+        questionCount,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to generate theory assignment: ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.assignment && Array.isArray(data.assignment.questions)) {
+      return data.assignment;
+    }
+    throw new Error('Invalid assignment structure returned');
+  } catch (err) {
+    console.warn('API theory assignment generation error, falling back to rich curated theory:', err);
+    return {
+      id: `asg_${Date.now()}`,
+      title: `Theory Examination: ${topic}`,
+      instructions: 'Answer all theory questions in detail. You can type your answers, record spoken answers, or photograph your handwritten working on paper.',
+      totalMarks: 30,
+      passPercentage: 60,
+      questions: [
+        {
+          id: 'q1',
+          questionNumber: 1,
+          question: `State the fundamental principles and definition of ${topic} in ${subject}. Explain why this concept is essential.`,
+          marks: 10,
+          markingCriteria: [
+            'Comprehensive and accurate definition (4 marks)',
+            'Explanation of core mechanism and scope (3 marks)',
+            'Standard terminology and units (3 marks)',
+          ],
+          sampleAnswer: `The concept of ${topic} describes the fundamental behavior and governing relations in ${subject}. Full understanding requires correct terminology and units.`,
+          hint: 'State the formal definition first, then outline its significance.',
+        },
+        {
+          id: 'q2',
+          questionNumber: 2,
+          question: `Describe a practical, real-world application or worked scenario illustrating ${topic}. Explain step by step how the principles apply.`,
+          marks: 10,
+          markingCriteria: [
+            'Identification of relevant scenario (3 marks)',
+            'Step-by-step application of principles (4 marks)',
+            'Logical conclusion and accuracy (3 marks)',
+          ],
+          sampleAnswer: `In everyday applications, ${topic} manifests directly through observable changes and measurable parameters.`,
+          hint: 'Think of an everyday scenario where this concept is demonstrated in action.',
+        },
+        {
+          id: 'q3',
+          questionNumber: 3,
+          question: `Contrast the main factors influencing ${topic} and discuss common misconceptions or errors students make in examinations.`,
+          marks: 10,
+          markingCriteria: [
+            'Clear contrast of factors (4 marks)',
+            'Analysis of examination traps or misconceptions (3 marks)',
+            'Proposed corrective guidelines (3 marks)',
+          ],
+          sampleAnswer: `A common error is confusing the primary cause with secondary effects. Proper distinction ensures full marks.`,
+          hint: 'Highlight what examiners frequently check and where mistakes occur.',
+        },
+      ],
+    };
+  }
+}
+
+export async function submitTheoryAssignmentForMarking(
+  subject: string,
+  topic: string,
+  level: string,
+  grade: string,
+  assignment: TheoryAssignment,
+  answers: Record<string, StudentAnswerItem>
+): Promise<TheoryAssignmentSubmissionResult> {
+  try {
+    let token = '';
+    if (auth && auth.currentUser) {
+      try {
+        token = await auth.currentUser.getIdToken();
+      } catch {}
+    }
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch('/api/ai/classroom-mark-theory', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        subject,
+        topic,
+        level,
+        grade,
+        assignment,
+        answers,
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || `Failed to mark theory assignment: ${response.status}`);
+    }
+
+    const data: TheoryAssignmentSubmissionResult = await response.json();
+    data.assignmentId = assignment.id;
+    data.topicTitle = topic;
+    data.subject = subject;
+    data.submittedAt = Date.now();
+    data.studentAnswers = answers;
+
+    // Persist to Firebase / Firestore securely
+    if (auth && auth.currentUser) {
+      data.uid = auth.currentUser.uid;
+      const subId = `sub_${assignment.id}_${Date.now()}`;
+      data.id = subId;
+      try {
+        const subRef = doc(db, 'classroom_submissions', subId);
+        await setDoc(subRef, {
+          ...data,
+          uid: auth.currentUser.uid,
+          updatedAt: Date.now(),
+        }, { merge: true });
+      } catch (e) {
+        console.warn('Failed to sync theory submission to Firestore:', e);
+      }
+    }
+
+    // Save to local storage cache for instant offline retrieval
+    if (typeof window !== 'undefined') {
+      try {
+        const key = `learndean_theory_submissions_${auth?.currentUser?.uid || 'guest'}`;
+        const raw = localStorage.getItem(key);
+        const list: TheoryAssignmentSubmissionResult[] = raw ? JSON.parse(raw) : [];
+        list.unshift(data);
+        localStorage.setItem(key, JSON.stringify(list.slice(0, 20)));
+      } catch {}
+    }
+
+    return data;
+  } catch (err: any) {
+    console.error('Error submitting theory assignment:', err);
+    throw err;
   }
 }
 
@@ -310,3 +561,83 @@ export function getRecentLessons(): ClassroomLesson[] {
     return [DEFAULT_PHYSICS_LESSON];
   }
 }
+
+export function convertTopicAssignmentToTheoryAssignment(
+  topicAssignment: any,
+  topicTitle: string
+): TheoryAssignment {
+  if (topicAssignment && Array.isArray(topicAssignment.questions) && topicAssignment.questions.length > 0) {
+    return topicAssignment as TheoryAssignment;
+  }
+
+  if (topicAssignment && Array.isArray(topicAssignment.structuredQuestions) && topicAssignment.structuredQuestions.length > 0) {
+    return {
+      id: topicAssignment.id || `asg_${Date.now()}`,
+      title: topicAssignment.title || `Theory Examination: ${topicTitle}`,
+      instructions: topicAssignment.instructions || 'Answer all questions thoroughly showing step-by-step working, principles, and diagrams where required.',
+      totalMarks: topicAssignment.totalMarks || 30,
+      passPercentage: topicAssignment.passPercentage || 60,
+      questions: topicAssignment.structuredQuestions.map((q: any, idx: number) => ({
+        id: q.id || `q_${idx + 1}`,
+        questionNumber: idx + 1,
+        question: q.question,
+        marks: q.totalMarks || 10,
+        markingCriteria: Array.isArray(q.rubric)
+          ? q.rubric.map((r: any) => `${r.step} (${r.marks} marks)`)
+          : ['Comprehensive definition and theory (4m)', 'Accurate calculation/derivation (4m)', 'Units and clarity (2m)'],
+        sampleAnswer: q.sampleSolution,
+        hint: q.givenData ? `Given data: ${q.givenData}` : undefined,
+      })),
+    };
+  }
+
+  return {
+    id: `asg_${Date.now()}`,
+    title: `Theory Examination: ${topicTitle}`,
+    instructions: 'Answer all theory questions in detail. You can type your answers, speak them using your microphone, or upload handwritten notes.',
+    totalMarks: 30,
+    passPercentage: 60,
+    questions: [
+      {
+        id: 'q1',
+        questionNumber: 1,
+        question: `State the fundamental definitions, scientific laws, or governing principles of ${topicTitle}. Explain their core significance.`,
+        marks: 10,
+        markingCriteria: [
+          'Comprehensive and accurate definition (4 marks)',
+          'Explanation of mechanisms and scope (3 marks)',
+          'Standard scientific terminology and units (3 marks)',
+        ],
+        sampleAnswer: `The study of ${topicTitle} provides the foundational framework for analyzing physical and analytical systems.`,
+        hint: 'State the precise definition first, then highlight its key features.',
+      },
+      {
+        id: 'q2',
+        questionNumber: 2,
+        question: `Present a practical, real-world scenario or worked example illustrating ${topicTitle}. Detail the step-by-step resolution.`,
+        marks: 10,
+        markingCriteria: [
+          'Identification of realistic scenario (3 marks)',
+          'Step-by-step problem breakdown (4 marks)',
+          'Accurate evaluation and units (3 marks)',
+        ],
+        sampleAnswer: `In everyday life, ${topicTitle} is observed whenever changes in equilibrium, forces, or reactions take place.`,
+        hint: 'Walk through given parameters, applicable formulas, and final outcome.',
+      },
+      {
+        id: 'q3',
+        questionNumber: 3,
+        question: `Compare the primary factors influencing ${topicTitle} and discuss frequent student pitfalls or misconceptions in examination questions.`,
+        marks: 10,
+        markingCriteria: [
+          'Clear contrast of governing factors (4 marks)',
+          'Analysis of examination traps or misconceptions (3 marks)',
+          'Prescribed corrective methodology (3 marks)',
+        ],
+        sampleAnswer: `Examiners frequently penalize confusing scalar with vector quantities or omitting base units.`,
+        hint: 'Focus on what markers look for and common points lost.',
+      },
+    ],
+  };
+}
+

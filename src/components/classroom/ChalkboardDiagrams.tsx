@@ -4,16 +4,20 @@ import { ChalkboardDiagram } from '../../types/classroom';
 interface ChalkboardDiagramsProps {
   diagram: ChalkboardDiagram;
   progress?: number; // 0 to 1 for animated drawing
+  boardMode?: 'blackboard' | 'whiteboard';
 }
 
-export default function ChalkboardDiagrams({ diagram, progress = 1 }: ChalkboardDiagramsProps) {
+export default function ChalkboardDiagrams({ diagram, progress = 1, boardMode = 'blackboard' }: ChalkboardDiagramsProps) {
   const { type, caption, labels = [], equation } = diagram;
 
-  // Chalk stroke styles
-  const chalkStroke = '#f8fafc'; // Chalk white
-  const chalkAccent = '#fef08a'; // Chalk yellow
-  const chalkCyan = '#7dd3fc';   // Chalk cyan
-  const chalkPink = '#fca5a5';   // Chalk pink
+  const isWhiteboard = boardMode === 'whiteboard';
+
+  // Stroke styles (chalk white/pastels for blackboard, dry-erase marker navy/red/blue/green for whiteboard)
+  const chalkStroke = isWhiteboard ? '#0f172a' : '#f8fafc'; // Marker Dark Navy vs Chalk white
+  const chalkAccent = isWhiteboard ? '#1d4ed8' : '#fef08a'; // Marker Royal Blue vs Chalk yellow
+  const chalkCyan = isWhiteboard ? '#059669' : '#7dd3fc';   // Marker Emerald vs Chalk cyan
+  const chalkPink = isWhiteboard ? '#dc2626' : '#fca5a5';   // Marker Red vs Chalk pink
+  const blockFill = isWhiteboard ? 'rgba(37,99,235,0.08)' : 'rgba(255,255,255,0.06)';
 
   // Render specific diagram based on type
   const renderDiagramContent = () => {
@@ -239,10 +243,16 @@ export default function ChalkboardDiagrams({ diagram, progress = 1 }: Chalkboard
   };
 
   return (
-    <div className="w-full my-3 p-3 rounded-xl bg-black/25 border border-white/15 backdrop-blur-xs flex flex-col items-center justify-center transition-all">
-      <div className="w-full flex items-center justify-between px-2 mb-1.5 text-[11px] font-mono tracking-wider uppercase text-white/60">
-        <span>[ CHALKBOARD DIAGRAM ]</span>
-        <span className="text-yellow-200/80">{type.replace(/_/g, ' ')}</span>
+    <div className={`w-full my-3 p-3 rounded-2xl flex flex-col items-center justify-center transition-all ${
+      isWhiteboard
+        ? 'bg-slate-50/80 border border-slate-200 text-slate-800 shadow-xs'
+        : 'bg-black/25 border border-white/15 text-white backdrop-blur-xs'
+    }`}>
+      <div className={`w-full flex items-center justify-between px-2 mb-1.5 text-[11px] font-mono tracking-wider uppercase ${
+        isWhiteboard ? 'text-slate-500 font-bold' : 'text-white/60'
+      }`}>
+        <span>{isWhiteboard ? '[ WHITEBOARD DIAGRAM ]' : '[ CHALKBOARD DIAGRAM ]'}</span>
+        <span className={isWhiteboard ? 'text-blue-600 font-bold' : 'text-yellow-200/80'}>{type.replace(/_/g, ' ')}</span>
       </div>
 
       <div className="w-full flex items-center justify-center overflow-x-auto py-1">
@@ -250,7 +260,9 @@ export default function ChalkboardDiagrams({ diagram, progress = 1 }: Chalkboard
       </div>
 
       {caption && (
-        <p className="mt-2 text-center text-xs sm:text-sm font-mono text-white/80 italic px-2">
+        <p className={`mt-2 text-center text-xs sm:text-sm font-mono italic px-2 ${
+          isWhiteboard ? 'text-slate-600' : 'text-white/80'
+        }`}>
           ✎ {caption}
         </p>
       )}

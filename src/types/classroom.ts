@@ -42,12 +42,18 @@ export interface ClassroomQuiz {
   explanation: string;
 }
 
+export interface ConversationalCheck {
+  question: string;
+  hint: string;
+}
+
 export interface ClassroomStep {
   id: number;
   stepTitle: string;
   spokenExplanation: string;
   chalkboard: ChalkboardContent;
   quiz?: ClassroomQuiz;
+  conversationalCheck?: ConversationalCheck;
 }
 
 export interface ClassroomLesson {
@@ -55,7 +61,11 @@ export interface ClassroomLesson {
   title: string;
   subject: string;
   topic: string;
+  subtopic?: string;
   level: string;
+  grade?: string;
+  age?: number;
+  curriculum?: string;
   summary: string;
   steps: ClassroomStep[];
   createdAt: number;
@@ -70,10 +80,13 @@ export interface ClassroomQA {
   id: string;
   stepId: number;
   question: string;
+  status?: 'relevant' | 'unrelated' | 'clarification_needed';
   spokenAnswer: string;
   chalkboardNotes: string[];
   clarifyingFormula?: string;
   miniExample?: string;
+  redirectSubject?: string;
+  guideBackToTopic?: string;
   timestamp: number;
 }
 
@@ -82,4 +95,64 @@ export interface TeacherVoiceOption {
   name: string;
   lang: string;
   gender: 'female' | 'male';
+}
+
+// ---------------------------------------------------------------------------
+// Theory Assignment & Multimodal (Text, Voice, Handwritten Image) Submission Types
+// ---------------------------------------------------------------------------
+
+export interface TheoryAssignmentQuestion {
+  id: string;
+  questionNumber: number;
+  question: string;
+  marks: number;
+  markingCriteria: string[];
+  sampleAnswer?: string;
+  hint?: string;
+}
+
+export interface TheoryAssignment {
+  id: string;
+  title: string;
+  instructions: string;
+  totalMarks: number;
+  passPercentage: number;
+  questions: TheoryAssignmentQuestion[];
+}
+
+export interface StudentAnswerItem {
+  type: 'text' | 'voice' | 'image';
+  textContent: string;
+  images: Array<{ url: string; name?: string }>;
+}
+
+export interface QuestionMarkResult {
+  questionId: string;
+  transcribedAnswer?: string;
+  marksAwarded: number;
+  marksAvailable: number;
+  feedback: string;
+  strengths: string[];
+  missingPoints: string[];
+  suggestedCorrections?: string;
+  isHandwritten?: boolean;
+  isUnclear?: boolean;
+}
+
+export interface TheoryAssignmentSubmissionResult {
+  id?: string;
+  uid?: string;
+  assignmentId: string;
+  topicTitle: string;
+  subject: string;
+  questionResults: Record<string, QuestionMarkResult>;
+  totalScore: number;
+  totalMarks: number;
+  percentage: number;
+  grade: string;
+  overallFeedback: string;
+  areasForRevision: string[];
+  isProvisional: boolean;
+  submittedAt: number;
+  studentAnswers?: Record<string, StudentAnswerItem>;
 }

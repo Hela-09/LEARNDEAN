@@ -327,6 +327,15 @@ service cloud.firestore {
       allow update: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
       allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
     }
+
+    // Classroom Theory Assignment Submissions, Student Image Working & Verified AI Feedback
+    match /classroom_submissions/{docId} {
+      allow get: if isAuthenticated() && (resource.data.uid == request.auth.uid || request.auth.uid == docId || isSuperAdmin());
+      allow list: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow create: if isAuthenticated() && (request.resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow update: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+      allow delete: if isAuthenticated() && (resource.data.uid == request.auth.uid || isSuperAdmin());
+    }
   }
 }
 

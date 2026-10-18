@@ -35,12 +35,14 @@ import VoiceSelectionModal from './classroom/VoiceSelectionModal';
 import ClassroomHistoryDrawer from './classroom/ClassroomHistoryDrawer';
 import CurriculumSyllabusSelector from './classroom/CurriculumSyllabusSelector';
 import TopicAssignmentModal from './classroom/TopicAssignmentModal';
+import { ClassroomSetupData } from './classroom/ClassroomSetupModal';
 import {
   fetchClassroomLesson,
   askClassroomTeacher,
   getRecentLessons,
   saveLessonToHistory,
   findMatchingVerifiedSyllabusTopic,
+  convertTopicAssignmentToTheoryAssignment,
 } from '../services/classroomService';
 import {
   GLOBAL_CLASSROOM_PROFILES,
@@ -50,6 +52,7 @@ import {
   TopicAssignment,
   findSyllabusTopicById,
 } from '../data/officialClassroomCurriculum';
+import { TheoryAssignment } from '../types/classroom';
 import {
   loadClassroomProgress,
   syncClassroomProgressFromCloud,
@@ -85,7 +88,7 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
   const [isHistoryDrawerOpen, setIsHistoryDrawerOpen] = useState<boolean>(false);
   const [isSyllabusOutlineOpen, setIsSyllabusOutlineOpen] = useState<boolean>(false);
   const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState<boolean>(false);
-  const [activeAssignmentTopic, setActiveAssignmentTopic] = useState<SyllabusTopic | null>(null);
+  const [activeTheoryAssignment, setActiveTheoryAssignment] = useState<TheoryAssignment | null>(null);
 
   const [isLoadingLesson, setIsLoadingLesson] = useState<boolean>(false);
   const [autoPlayNext, setAutoPlayNext] = useState<boolean>(true);
@@ -166,12 +169,50 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
     };
   }, [lesson.id, currentStepIndex]);
 
-  // Handle Starting a New Lesson
-  const handleStartLesson = async (subject: string, topic: string, level: string) => {
+  // Handle Starting a New Lesson (supports ClassroomSetupData object or string arguments)
+  const handleStartLesson = async (
+    setupOrSubject: ClassroomSetupData | string,
+    topicArg?: string,
+    levelArg?: string,
+    subtopicArg?: string,
+    gradeArg?: string
+  ) => {
     setIsLoadingLesson(true);
     speech.stop();
     try {
-      const newLesson = await fetchClassroomLesson(subject, topic, level);
+      let subject: string;
+      let topic: string;
+      let level: string = 'Secondary Education';
+      let subtopic: string | undefined;
+      let grade: string | undefined;
+      let age: number | undefined;
+      let curriculum: string | undefined;
+
+      if (typeof setupOrSubject === 'string') {
+        subject = setupOrSubject;
+        topic = topicArg || '';
+        level = levelArg || 'Senior Secondary (SSS / WAEC / JAMB)';
+        subtopic = subtopicArg;
+        grade = gradeArg;
+      } else {
+        subject = setupOrSubject.subject;
+        topic = setupOrSubject.topic;
+        level = setupOrSubject.level || 'Secondary Education';
+        subtopic = setupOrSubject.subtopic;
+        grade = setupOrSubject.grade;
+        age = setupOrSubject.age;
+        curriculum = setupOrSubject.curriculum;
+      }
+
+      const newLesson = await fetchClassroomLesson(
+        subject,
+        topic,
+        subtopic,
+        level,
+        grade,
+        age,
+        curriculum
+      );
       setLesson(newLesson);
       setCurrentStepIndex(0);
       setViewingPageIndex(0);
@@ -194,18 +235,21 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
     handleStartLesson(subject.name, topic.title, grade.name);
   };
 
-  // Open Topic Assignment
+  // Open Topic Assignment (creates or converts to TheoryAssignment)
   const handleOpenAssignment = (topic?: SyllabusTopic | null) => {
     const targetTopic = topic || currentSyllabusTopic;
+    const title = targetTopic?.title || lesson.topic;
     if (targetTopic && targetTopic.assignment) {
-      setActiveAssignmentTopic(targetTopic);
-      setIsAssignmentModalOpen(true);
+      const converted = convertTopicAssignmentToTheoryAssignment(targetTopic.assignment, title);
+      setActiveTheoryAssignment(converted);
     } else {
-      // If no official assignment exists for this custom topic, open default topic assignment
-      const fallbackTopic = GLOBAL_CLASSROOM_PROFILES[0].grades[0].subjects[0].terms[0].topics[0];
-      setActiveAssignmentTopic(fallbackTopic);
-      setIsAssignmentModalOpen(true);
+      const fallback = convertTopicAssignmentToTheoryAssignment(
+        GLOBAL_CLASSROOM_PROFILES[0].grades[0].subjects[0].terms[0].topics[0].assignment,
+        title
+      );
+      setActiveTheoryAssignment(fallback);
     }
+    setIsAssignmentModalOpen(true);
   };
 
   // Check for preselected subject/topic from other parts of LearnDean
@@ -331,6 +375,7 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
       const qaResult = await askClassroomTeacher(
         lesson.subject,
         lesson.topic,
+        lesson.subtopic,
         currentStep.stepTitle,
         bulletSummary,
         question,
@@ -607,14 +652,16 @@ export default function AIClassroom({ setView }: AIClassroomProps) {
       />
 
       {/* End-of-Topic Assignment Modal */}
-      {activeAssignmentTopic && (
+      {activeTheoryAssignment && (
         <TopicAssignmentModal
           isOpen={isAssignmentModalOpen}
           onClose={() => setIsAssignmentModalOpen(false)}
-          assignment={activeAssignmentTopic.assignment}
-          topicTitle={activeAssignmentTopic.title}
+          assignment={activeTheoryAssignment}
+          topicTitle={lesson.topic}
           subject={lesson.subject}
-          onAssignmentCompleted={(result) => {
+          educationLevel={lesson.level}
+          grade={lesson.grade}
+          onAssignmentCompleted={(_result) => {
             setProgressState(loadClassroomProgress());
           }}
         />
