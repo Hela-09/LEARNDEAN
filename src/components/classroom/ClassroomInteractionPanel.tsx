@@ -253,6 +253,37 @@ export default function ClassroomInteractionPanel({
             )}
           </form>
 
+          {/* Quick Understanding & Confusion Action Buttons */}
+          <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mr-1">
+              Quick Ask:
+            </span>
+            <button
+              type="button"
+              disabled={isAsking}
+              onClick={() => onAskQuestion("I don't understand this step. Could you explain the confusing parts in simpler words?", true)}
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/60 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition cursor-pointer disabled:opacity-50"
+            >
+              "I don't understand"
+            </button>
+            <button
+              type="button"
+              disabled={isAsking}
+              onClick={() => onAskQuestion("Could you explain this step again from the beginning?", false)}
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-900/60 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition cursor-pointer disabled:opacity-50"
+            >
+              "Explain again"
+            </button>
+            <button
+              type="button"
+              disabled={isAsking}
+              onClick={() => onAskQuestion("Can you give a different everyday practical example to help me understand?", true)}
+              className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-900/60 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition cursor-pointer disabled:opacity-50"
+            >
+              "Give another example"
+            </button>
+          </div>
+
           {isAsking && (
             <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex items-center gap-3 animate-pulse">
               <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />

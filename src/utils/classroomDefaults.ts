@@ -1,5 +1,250 @@
 import { ClassroomLesson } from '../types/classroom';
 
+export const DEFAULT_PHOTOSYNTHESIS_LESSON: ClassroomLesson = {
+  id: 'lesson_photosynthesis_masterclass',
+  title: 'Photosynthesis: How Green Plants Manufacture Food',
+  subject: 'Biology',
+  topic: 'Photosynthesis',
+  level: 'Secondary Education',
+  summary:
+    'A complete pedagogical masterclass introducing photosynthesis from beginner principles, what plants need, step-by-step chemical equations, chloroplast architecture, and ecological significance.',
+  createdAt: Date.now(),
+  steps: [
+    {
+      id: 1,
+      stepTitle: '1. Meaning of Photosynthesis',
+      spokenExplanation:
+        "Today, we are learning about photosynthesis. Before we begin, think about a plant growing in a pot. You give it water, place it where it can receive sunlight, and it grows. But where does the plant get the food it needs to grow? That is the question photosynthesis helps us answer. In simple words, photosynthesis is the process green plants use to make their own food. The word comes from two Greek words: 'photo', which means light, and 'synthesis', which means putting things together. So green plants use light energy to make glucose from water and carbon dioxide, releasing oxygen into the air in the process. Glucose is a simple type of sugar that the plant uses for energy and growth. Unlike humans and animals that eat other living things, green plants are autotrophs—they manufacture their own nourishment from simple ingredients. Can you explain in your own words where a plant gets the materials it uses to make glucose?",
+      chalkboard: {
+        heading: 'PHOTOSYNTHESIS: MEANING & DEFINITION',
+        bulletPoints: [
+          'Definition: The process by which green plants manufacture glucose from water and carbon dioxide using light energy.',
+          'Etymology: "Photo" means light; "Synthesis" means putting ingredients together.',
+          'Glucose: A simple soluble sugar used by plant cells for energy, growth, and tissue repair.',
+          'By-Product: Oxygen gas (O₂) is produced and released into the atmosphere.',
+        ],
+        chalkColor: 'yellow',
+        highlightNote: '⚡ CORE CONCEPT: Plants are autotrophs—they make their own food from inorganic raw materials.',
+      },
+      conversationalCheck: {
+        question: 'Can you explain in your own words where a plant gets the materials it uses to make glucose?',
+        hint: 'Think about the soil beneath the plant and the air surrounding its leaves.',
+      },
+      explanationBreakdown: [
+        {
+          point: 'Definition: The process by which green plants manufacture glucose from water and carbon dioxide using light energy.',
+          explanation: 'Plants do not eat food like animals do; they use light energy to chemically build their food inside their leaves.',
+          example: 'A potted plant placed on a sunny windowsill grows bigger even though you only give it water.',
+          simplifiedTerms: [
+            { term: 'Photosynthesis', meaning: 'Using light energy to assemble nourishment from simple raw materials.' },
+          ],
+        },
+        {
+          point: 'Etymology: "Photo" means light; "Synthesis" means putting ingredients together.',
+          explanation: 'The name itself explains the entire process: light is the energy source used to build chemical compounds.',
+          example: 'Like taking individual building blocks and assembling them into a house using power tools.',
+          simplifiedTerms: [
+            { term: 'Synthesis', meaning: 'Putting smaller parts together to create a complex substance.' },
+          ],
+        },
+        {
+          point: 'Glucose: A simple soluble sugar used by plant cells for energy, growth, and tissue repair.',
+          explanation: 'Glucose is the end product of photosynthesis. The plant uses it immediately for energy or stores it as starch for later.',
+          example: 'Sweet fruits, potatoes, and maize grains are rich stores of food made from glucose.',
+          simplifiedTerms: [
+            { term: 'Glucose', meaning: 'A simple type of sugar that provides cells with fuel.' },
+          ],
+        },
+        {
+          point: 'By-Product: Oxygen gas (O₂) is produced and released into the atmosphere.',
+          explanation: 'During the chemical process, oxygen is liberated from water molecules and exits the leaves into the air.',
+          example: 'The oxygen we breathe in every second originally came from plants undergoing photosynthesis.',
+          simplifiedTerms: [
+            { term: 'By-Product', meaning: 'Something useful made during a process in addition to the main product.' },
+          ],
+        },
+      ],
+      quiz: {
+        question: 'What is glucose in the context of plant nutrition?',
+        options: [
+          'A simple type of sugar that the plant uses for energy and growth',
+          'A mineral absorbed directly from sand particles',
+          'A green pigment that traps sunlight',
+          'A waste gas released into the atmosphere',
+        ],
+        correctIndex: 0,
+        explanation: 'Glucose is a soluble sugar manufactured during photosynthesis that plant cells use for energy, respiration, and cellular growth.',
+      },
+    },
+    {
+      id: 2,
+      stepTitle: '2. What Plants Need for Photosynthesis',
+      spokenExplanation:
+        "Now let us look at the four essential ingredients that plants need for photosynthesis written on our board. The first is sunlight. Sunlight provides the light energy that powers the entire chemical process. The second is water. Plants absorb water from the soil through their roots and transport it up the stem to the leaves. The third ingredient is carbon dioxide. Carbon dioxide is an invisible gas in the air around us. Leaves take in this gas through microscopic pores on their surface called stomata. Finally, the fourth ingredient is chlorophyll. Chlorophyll is the special green pigment that absorbs light energy, and it is housed inside tiny cellular structures called chloroplasts. Without chlorophyll, the leaf cannot capture light energy, just like a solar panel that has been disconnected. Think of these four items like the ingredients a chef needs to bake bread: take away even one, and the recipe cannot work! Why do you think a plant in a dark cupboard cannot make food, even if you water it regularly?",
+      chalkboard: {
+        heading: 'WHAT PLANTS NEED FOR PHOTOSYNTHESIS',
+        bulletPoints: [
+          'Sunlight: Radiant light energy that powers the chemical conversion.',
+          'Water (H₂O): Absorbed from soil by root hair cells and carried up via xylem vessels.',
+          'Carbon Dioxide (CO₂): Atmospheric gas absorbed through microscopic leaf openings called stomata.',
+          'Chlorophyll: Green pigment inside chloroplasts that captures and traps light energy.',
+        ],
+        diagram: {
+          type: 'labeled_sketch',
+          caption: 'Essential inputs for photosynthesis: Sunlight, CO2 via stomata, and H2O via roots.',
+          labels: ['Sunlight (Light Energy)', 'CO2 entering leaf via Stomata', 'H2O absorbed by Roots', 'Chloroplasts containing Chlorophyll'],
+        },
+        chalkColor: 'cyan',
+        highlightNote: '⚡ FACT CHECK: Chlorophyll absorbs blue and red wavelengths of light, reflecting green—giving plants their green appearance!',
+      },
+      conversationalCheck: {
+        question: 'Why can a healthy green plant not carry out photosynthesis if left inside a completely dark cupboard with plenty of water?',
+        hint: 'Consider which of the four essential ingredients is completely absent in the dark.',
+      },
+      explanationBreakdown: [
+        {
+          point: 'Sunlight: Radiant light energy that powers the chemical conversion.',
+          explanation: 'Light provides the physical energy required to split chemical bonds and power glucose synthesis.',
+          example: 'Plants placed near a sunny window naturally bend towards the sun to capture maximum light.',
+          simplifiedTerms: [{ term: 'Light Energy', meaning: 'Energy carried by light waves from the sun.' }],
+        },
+        {
+          point: 'Water (H₂O): Absorbed from soil by root hair cells and carried up via xylem vessels.',
+          explanation: 'Roots act like drinking straws, drawing moisture and dissolved minerals from the damp soil.',
+          example: 'When soil dries out, leaves wilt because cells lack the water needed to maintain shape and make food.',
+          simplifiedTerms: [{ term: 'Xylem', meaning: 'Microscopic plant tubes that transport water from roots to leaves.' }],
+        },
+        {
+          point: 'Carbon Dioxide (CO₂): Atmospheric gas absorbed through microscopic leaf openings called stomata.',
+          explanation: 'Leaves have microscopic pores like tiny breathing mouths that open to allow carbon dioxide gas to enter.',
+          example: 'When humans breathe out carbon dioxide, green plants take in that gas to build their stems and leaves.',
+          simplifiedTerms: [{ term: 'Stomata', meaning: 'Tiny microscopic pores on the underside of leaves for gas exchange.' }],
+        },
+        {
+          point: 'Chlorophyll: Green pigment inside chloroplasts that captures and traps light energy.',
+          explanation: 'Chlorophyll acts like tiny solar panels inside plant cells, catching sunlight and converting it to chemical energy.',
+          example: 'Pale or yellow leaves struggle to grow because they have less chlorophyll to absorb sunlight.',
+          simplifiedTerms: [
+            { term: 'Chlorophyll', meaning: 'The green chemical in plants that absorbs light.' },
+            { term: 'Chloroplast', meaning: 'The microscopic compartment inside plant cells where photosynthesis happens.' },
+          ],
+        },
+      ],
+      quiz: {
+        question: 'Through which tiny openings do leaves absorb carbon dioxide gas from the atmosphere?',
+        options: ['Stomata', 'Chloroplasts', 'Root hairs', 'Xylem vessels'],
+        correctIndex: 0,
+        explanation: 'Stomata are microscopic pores located predominantly on the underside of leaves that open and close to allow gases such as carbon dioxide and oxygen to diffuse in and out.',
+      },
+    },
+    {
+      id: 3,
+      stepTitle: '3. How the Process Works & The Word Equation',
+      spokenExplanation:
+        "Now let us examine how these ingredients react in logical steps. First, water enters through the roots and travels up through thin tubes called xylem vessels right into the leaf cells. At the same time, carbon dioxide diffuses from the air into the leaves through the stomata. Inside the chloroplasts, the green chlorophyll absorbs light energy from the sun. The plant uses that light energy to split water and combine hydrogen with carbon dioxide to manufacture glucose sugar. During this reaction, oxygen gas is released as a by-product and diffuses out through the stomata into the atmosphere. On our chalkboard, notice the clear word equation: Carbon dioxide + Water, in the presence of light and chlorophyll, produces Glucose + Oxygen. Notice what enters the process on the left, and what is produced on the right. Never look at an equation as mere memorized symbols—each side tells the story of matter and energy transforming into life! Can you tell me what the two inputs entering the reaction are, and what the two products created are?",
+      chalkboard: {
+        heading: 'HOW PHOTOSYNTHESIS WORKS: THE WORD EQUATION',
+        bulletPoints: [
+          'Step 1: Water enters roots and travels up stem to leaves via xylem.',
+          'Step 2: Carbon dioxide enters leaves from the atmosphere through stomata.',
+          'Step 3: Chlorophyll absorbs light energy, driving chemical bond formation.',
+          'Outputs: Glucose sugar is produced for energy; oxygen gas is released into the air.',
+        ],
+        equation: 'Carbon dioxide + Water \\xrightarrow{light, chlorophyll} Glucose + Oxygen',
+        chalkColor: 'white',
+        highlightNote: '⚡ CHEMICAL EQUATION: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂ (Balanced formula equation).',
+      },
+      conversationalCheck: {
+        question: 'Looking at the word equation, what are the two inputs entering the reaction, and what are the two outputs produced?',
+        hint: 'Look at what is on the left side of the arrow versus what appears on the right side.',
+      },
+      explanationBreakdown: [
+        {
+          point: 'Step 1: Water enters roots and travels up stem to leaves via xylem.',
+          explanation: 'Water provides the hydrogen atoms that will be combined with carbon to build glucose.',
+          example: 'Watering the soil beneath a garden bed supplies water to the highest leaves within minutes.',
+          simplifiedTerms: [{ term: 'Reactants', meaning: 'The starting substances that enter into a chemical reaction.' }],
+        },
+        {
+          point: 'Step 2: Carbon dioxide enters leaves from the atmosphere through stomata.',
+          explanation: 'Carbon dioxide provides the carbon atoms that form the backbone of the glucose sugar molecule.',
+          example: 'Carbon from the air becomes the solid wood of a giant tree over decades.',
+          simplifiedTerms: [{ term: 'Diffusion', meaning: 'The natural movement of gas particles from high to low concentration.' }],
+        },
+        {
+          point: 'Step 3: Chlorophyll absorbs light energy, driving chemical bond formation.',
+          explanation: 'Chemical bonds require energy to form; light energy is converted into chemical energy stored in glucose.',
+          example: 'Charging a phone battery stores electrical energy as chemical energy for later use.',
+          simplifiedTerms: [{ term: 'Chemical Energy', meaning: 'Energy stored within the bonds of chemical substances.' }],
+        },
+        {
+          point: 'Outputs: Glucose sugar is produced for energy; oxygen gas is released into the air.',
+          explanation: 'Glucose is kept by the plant for life processes, while oxygen is released as a gift to the atmosphere.',
+          example: 'Walking through a dense forest in the morning feels refreshing because trees are actively producing oxygen.',
+          simplifiedTerms: [{ term: 'Products', meaning: 'The new substances formed at the end of a chemical reaction.' }],
+        },
+      ],
+      quiz: {
+        question: 'In the photosynthesis word equation, which substances are the two primary reactants on the left side?',
+        options: [
+          'Carbon dioxide and Water',
+          'Glucose and Oxygen',
+          'Chlorophyll and Sunlight',
+          'Starch and Minerals',
+        ],
+        correctIndex: 0,
+        explanation: 'The two reactants that enter the photosynthetic reaction are Carbon Dioxide (from air) and Water (from soil).',
+      },
+    },
+    {
+      id: 4,
+      stepTitle: '4. Why Photosynthesis Matters to Life on Earth',
+      spokenExplanation:
+        "Why does photosynthesis matter so much to our planet? Think of a maize plant growing on a farm or a leafy mango tree in a garden. The plant uses the glucose it makes to build new leaves, strong roots, and sweet fruits or seeds. When a farmer harvests maize, the food energy stored in that grain came directly from the sun via photosynthesis. Furthermore, almost all the oxygen in our atmosphere that humans and animals breathe every second is produced by green plants and ocean algae during photosynthesis. Without photosynthesis, food chains would collapse, and living creatures would run out of oxygen. This makes plants the primary producers of life on Earth! In your own words, can you explain two different ways photosynthesis supports animal and human life?",
+      chalkboard: {
+        heading: 'WHY PHOTOSYNTHESIS MATTERS TO OUR PLANET',
+        bulletPoints: [
+          'Primary Food Production: Produces the food energy that forms the base of terrestrial and aquatic food chains.',
+          'Atmospheric Oxygen: Supplies and replenishes oxygen gas (O₂) required for aerobic respiration by animals and humans.',
+          'Carbon Cycle Balance: Removes carbon dioxide from the atmosphere, helping regulate planetary temperature.',
+          'Biomass & Fuel: Forms plant biomass (timber, grains, fruits) and the ancient fossil fuels used in industry.',
+        ],
+        chalkColor: 'pink',
+        highlightNote: '⚡ ECOLOGICAL KEY: Green plants are "Producers"—the sole organisms converting radiant sun energy into edible biomass.',
+      },
+      conversationalCheck: {
+        question: 'Can you explain two different ways photosynthesis directly supports human life every single day?',
+        hint: 'Think about what humans breathe in, and where the energy in our food originally came from.',
+      },
+      explanationBreakdown: [
+        {
+          point: 'Primary Food Production: Produces the food energy that forms the base of terrestrial and aquatic food chains.',
+          explanation: 'Every grain of rice, ear of corn, or fruit exists because plant cells manufactured glucose from sunlight.',
+          example: 'A cow eats grass that photosynthesized, and humans drink milk or eat beef derived from that energy.',
+          simplifiedTerms: [{ term: 'Food Chain', meaning: 'The sequence of who eats whom in an ecosystem to obtain energy.' }],
+        },
+        {
+          point: 'Atmospheric Oxygen: Supplies and replenishes oxygen gas (O₂) required for aerobic respiration by animals and humans.',
+          explanation: 'Plants continuously replenish the oxygen we consume with every breath.',
+          example: 'Forests and ocean phytoplankton are often called the "lungs of the planet" because they generate oxygen.',
+          simplifiedTerms: [{ term: 'Aerobic Respiration', meaning: 'Using oxygen to release energy from food inside living cells.' }],
+        },
+      ],
+      quiz: {
+        question: 'Why are green plants described as the primary producers in an ecosystem?',
+        options: [
+          'They manufacture organic food energy directly from sunlight and inorganic substances',
+          'They consume other organisms to produce minerals',
+          'They absorb finished food from human agricultural fertilizers',
+          'They produce heat energy through mechanical friction',
+        ],
+        correctIndex: 0,
+        explanation: 'Green plants are producers because they synthesize organic biomass (glucose/starch) from sunlight, water, and CO2, supporting all other consumers in the food chain.',
+      },
+    },
+  ],
+};
+
 export const DEFAULT_PHYSICS_LESSON: ClassroomLesson = {
   id: 'lesson_newtons_laws',
   title: "Newton's Laws of Motion: The Dynamics of Force and Acceleration",
@@ -14,7 +259,7 @@ export const DEFAULT_PHYSICS_LESSON: ClassroomLesson = {
       id: 1,
       stepTitle: '1. Foundations: Scope & Definitions',
       spokenExplanation:
-        "Welcome to today's masterclass! Let us write down the core foundation on our classroom chalkboard. Sir Isaac Newton proved that velocity changes only when an unbalanced external force acts on an object. Remember, inertia is a mass's natural resistance to changes in motion.",
+        "Welcome to today's masterclass in classical physics. Imagine you are trying to push a stalled car versus kicking a light football. Why is it so much harder to get the car moving? The answer lies in inertia and mass. Inertia is an object's natural reluctance to change its state of motion: a heavy object stubbornly wants to keep doing whatever it was doing! Sir Isaac Newton discovered that an object's velocity only changes when an unbalanced external force acts on it. A force is simply a push or a pull that has both a strength and a direction. When that net force is applied, it causes acceleration in that exact same direction. Think of pushing a shopping cart: the harder you push forward, the faster its forward speed changes. Let us check your intuition: if a book is resting motionless on your study desk, are there forces acting on it, and what is its net acceleration?",
       chalkboard: {
         heading: "NEWTON'S SECOND LAW: SCOPE & DEFINITION",
         bulletPoints: [
@@ -26,6 +271,24 @@ export const DEFAULT_PHYSICS_LESSON: ClassroomLesson = {
         chalkColor: 'yellow',
         highlightNote: '⚡ EXAM KEY: Force is a VECTOR quantity. Direction and signs (+/-) matter!',
       },
+      conversationalCheck: {
+        question: 'If a book sits motionless on your desk, does it have inertia, and why is its acceleration zero?',
+        hint: 'Think about whether upward and downward forces cancel each other out.',
+      },
+      explanationBreakdown: [
+        {
+          point: 'Force (F): Push or pull causing acceleration, measured in Newtons (N).',
+          explanation: 'Force is an interaction that changes or tends to change an object\'s velocity or shape.',
+          example: 'Pushing a child on a playground swing applies an external force that increases their speed.',
+          simplifiedTerms: [{ term: 'Force', meaning: 'A push or pull that can change how fast or where an object moves.' }],
+        },
+        {
+          point: 'Inertia: Inherent property of matter directly proportional to inertial mass (m).',
+          explanation: 'Inertia is mass\'s stubborn resistance: heavier things are harder to start moving and harder to stop.',
+          example: 'When a bus brakes suddenly, passengers lean forward because their bodies naturally want to keep moving.',
+          simplifiedTerms: [{ term: 'Inertia', meaning: 'An object\'s natural resistance to any change in its motion.' }],
+        },
+      ],
       quiz: {
         question: 'Which of the following is an accurate definition of inertia?',
         options: [
@@ -41,9 +304,9 @@ export const DEFAULT_PHYSICS_LESSON: ClassroomLesson = {
     },
     {
       id: 2,
-      stepTitle: '2. The Governing Mathematical Formulation',
+      stepTitle: '2. The Governing Mathematical Formulation: F = ma',
       spokenExplanation:
-        'Now let us write the fundamental equation of classical mechanics on the board. When net force is non-zero, acceleration is directly proportional to that force and inversely proportional to mass.',
+        "Now examine the mathematical relationship written on our chalkboard: F equals m times a. This is not just an abstract formula; it tells us how the universe behaves whenever something speeds up, slows down, or changes direction. F represents the net force in Newtons. m is the mass in kilograms, and a is the acceleration in meters per second squared. Notice the two key relationships: first, acceleration is directly proportional to net force. If you double your pushing force on a cart, it accelerates twice as fast. Second, acceleration is inversely proportional to mass. If you load that same cart with heavy bricks so its mass doubles, the exact same push will only accelerate it half as fast! Remember, in all physics calculations, mass must always be in kilograms, never grams, because one Newton is defined as one kilogram-meter per second squared. What would happen to the acceleration of a rocket if its engines produced four times as much thrust while burning fuel reduced its mass to half?",
       chalkboard: {
         heading: 'MATHEMATICAL DYNAMICS: F = ma',
         bulletPoints: [
@@ -56,6 +319,30 @@ export const DEFAULT_PHYSICS_LESSON: ClassroomLesson = {
         chalkColor: 'cyan',
         highlightNote: '⚡ SI UNITS: Mass must always be converted to kilograms (kg), never grams!',
       },
+      conversationalCheck: {
+        question: 'If you push a toy car and a real car with the exact same strength, why does the toy car accelerate much faster?',
+        hint: 'Think about how mass affects acceleration when the applied force is identical.',
+      },
+      explanationBreakdown: [
+        {
+          point: 'Net Force Law: F_net = m · a = Δp / Δt',
+          explanation: 'The acceleration of an object is directly proportional to net force and inversely proportional to mass.',
+          example: 'Pressing the accelerator pedal in a sports car increases force, making it surge forward faster.',
+          simplifiedTerms: [{ term: 'Acceleration', meaning: 'The rate at which an object changes its velocity over time.' }],
+        },
+        {
+          point: 'F = Net external force in Newtons [kg·m/s²]',
+          explanation: 'One Newton is the exact force needed to accelerate a 1 kilogram mass at 1 meter per second squared.',
+          example: 'Holding a medium-sized apple in your open palm exerts approximately 1 Newton of downward force due to gravity.',
+          simplifiedTerms: [{ term: 'Newton (N)', meaning: 'The standard international unit used to measure force.' }],
+        },
+        {
+          point: 'm = Mass of body in kilograms [kg]',
+          explanation: 'Mass is the amount of matter in the object; more mass means greater resistance to changes in motion.',
+          example: 'A bowling ball has far more mass than a soccer ball of similar size.',
+          simplifiedTerms: [{ term: 'Mass', meaning: 'The quantity of matter contained within a physical body.' }],
+        },
+      ],
       quiz: {
         question: 'If the net force on an object is doubled while its mass is halved, its acceleration:',
         options: [

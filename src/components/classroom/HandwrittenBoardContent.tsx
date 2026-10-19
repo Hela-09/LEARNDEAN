@@ -9,6 +9,9 @@ import {
   FastForward,
   CheckCircle2,
   Sparkles,
+  Volume2,
+  Lightbulb,
+  BookOpen,
 } from 'lucide-react';
 
 export type BoardMode = 'blackboard' | 'whiteboard';
@@ -27,6 +30,7 @@ interface HandwrittenBoardContentProps {
   // External play/pause state from parent classroom
   isClassroomPlaying?: boolean;
   isClassroomPaused?: boolean;
+  speechProgress?: number; // 0.0 to 1.0 for synchronized point-by-point teaching
 }
 
 export default function HandwrittenBoardContent({
@@ -41,8 +45,20 @@ export default function HandwrittenBoardContent({
   onWritingComplete,
   isClassroomPlaying = true,
   isClassroomPaused = false,
+  speechProgress = 0,
 }: HandwrittenBoardContentProps) {
   const { heading, bulletPoints = [], equation, workedExample, diagram, highlightNote } = step.chalkboard;
+
+  // Active Point Explanation Synchronization (highlights the exact board note currently being explained)
+  const activeExplainingPointIndex = useMemo(() => {
+    if (!isActiveStep) return -1;
+    const bulletsLen = bulletPoints.length;
+    if (bulletsLen === 0) return 0;
+    // Map speechProgress (0 to 1) across the bullet points and equations
+    const totalSlots = bulletsLen + (equation ? 1 : 0) + (workedExample ? 1 : 0);
+    const p = Math.max(0, Math.min(0.999, speechProgress || 0));
+    return Math.floor(p * totalSlots);
+  }, [isActiveStep, bulletPoints.length, equation, workedExample, speechProgress]);
 
   // Local writing playback state (allows manual pause, resume, replay of writing specifically)
   const [isLocalPaused, setIsLocalPaused] = useState<boolean>(false);
@@ -346,59 +362,142 @@ export default function HandwrittenBoardContent({
         )}
       </div>
 
-      {/* Bullet Points: Progressively written sentence by sentence */}
+      {/* Bullet Points: Progressively written sentence by sentence & visually synchronized with speech */}
       <div className="space-y-3 pt-2">
         {bulletPoints.map((point, bIdx) => {
           // If this bullet is not yet reached, don't show
           if (bIdx > visibleBulletsCount) return null;
 
           const isCurrentBulletBeingWritten = bIdx === visibleBulletsCount && !hasCompletedWriting;
+          const isPointBeingExplained =
+            isActiveStep &&
+            (isClassroomPlaying || isClassroomPaused) &&
+            activeExplainingPointIndex === bIdx;
+
           const displayedText = isCurrentBulletBeingWritten
             ? point.slice(0, activeBulletCharIndex)
             : point;
 
+          const breakdown = step.explanationBreakdown?.[bIdx];
+
+          let highlightClasses = '';
+          if (isCurrentBulletBeingWritten) {
+            highlightClasses = isWhiteboard
+              ? 'bg-blue-50/70 border border-blue-200/60'
+              : 'bg-white/10 ring-1 ring-yellow-300/40';
+          } else if (isPointBeingExplained) {
+            highlightClasses = isWhiteboard
+              ? 'border-l-4 border-blue-600 bg-blue-100/60 shadow-xs ring-1 ring-blue-500/20'
+              : 'border-l-4 border-yellow-300 bg-yellow-400/15 shadow-[0_0_15px_rgba(253,224,71,0.25)] ring-1 ring-yellow-300/30';
+          }
+
           return (
             <div
               key={bIdx}
-              className={`flex items-start gap-2.5 sm:gap-3 p-2 rounded-xl transition-colors duration-200 ${
-                isCurrentBulletBeingWritten
-                  ? isWhiteboard
-                    ? 'bg-blue-50/70 border border-blue-200/60'
-                    : 'bg-white/10 ring-1 ring-yellow-300/40'
-                  : ''
-              }`}
+              className={`p-2.5 rounded-xl transition-all duration-300 space-y-1.5 ${highlightClasses}`}
             >
-              <span className={`font-mono font-bold text-base sm:text-lg select-none ${bulletSymbolColor}`}>
-                ☞
-              </span>
-              <p
-                className={`text-sm sm:text-base md:text-lg font-mono leading-relaxed ${textSecondaryColor} flex-1`}
-                style={{
-                  textShadow: !isWhiteboard ? '0 0 1px rgba(255,255,255,0.6)' : 'none',
-                }}
-              >
-                <span>{displayedText}</span>
+              <div className="flex items-start gap-2.5 sm:gap-3">
+                <span className={`font-mono font-bold text-base sm:text-lg select-none ${bulletSymbolColor}`}>
+                  ☞
+                </span>
+                <p
+                  className={`text-sm sm:text-base md:text-lg font-mono leading-relaxed ${textSecondaryColor} flex-1`}
+                  style={{
+                    textShadow: !isWhiteboard ? '0 0 1px rgba(255,255,255,0.6)' : 'none',
+                  }}
+                >
+                  <span>{displayedText}</span>
 
-                {/* Chalk or Marker Tip Cursor on active bullet */}
-                {isCurrentBulletBeingWritten && (
+                  {/* Chalk or Marker Tip Cursor on active bullet */}
+                  {isCurrentBulletBeingWritten && (
+                    <span
+                      className={`inline-block w-2 h-4 ml-1 align-middle rounded-xs ${
+                        isWhiteboard ? 'bg-blue-700' : 'bg-white shadow-[0_0_6px_#ffffff]'
+                      } animate-pulse`}
+                    />
+                  )}
+                </p>
+
+                {/* Teacher Explaining Active Badge */}
+                {isPointBeingExplained && (
                   <span
-                    className={`inline-block w-2 h-4 ml-1 align-middle rounded-xs ${
-                      isWhiteboard ? 'bg-blue-700' : 'bg-white shadow-[0_0_6px_#ffffff]'
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 shrink-0 ${
+                      isWhiteboard
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'bg-yellow-400/25 text-yellow-300 border border-yellow-300/40'
                     } animate-pulse`}
-                  />
+                    title="Teacher is currently explaining this point aloud"
+                  >
+                    <Volume2 size={11} />
+                    <span className="hidden sm:inline">Teacher Explaining</span>
+                  </span>
                 )}
-              </p>
+              </div>
+
+              {/* In-depth term breakdown & real-world example callout when available */}
+              {breakdown && isPointBeingExplained && (
+                <div
+                  className={`mt-2 p-2.5 rounded-xl text-xs space-y-1.5 animate-fadeIn ${
+                    isWhiteboard
+                      ? 'bg-white/90 border border-blue-200 text-slate-800'
+                      : 'bg-black/45 border border-white/20 text-slate-200'
+                  }`}
+                >
+                  {breakdown.simplifiedTerms && breakdown.simplifiedTerms.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-amber-500 flex items-center gap-1">
+                        <BookOpen size={11} /> Term Meaning:
+                      </span>
+                      {breakdown.simplifiedTerms.map((st, sIdx) => (
+                        <span
+                          key={sIdx}
+                          className="px-2 py-0.5 rounded-md bg-black/10 dark:bg-white/10 font-mono text-[11px]"
+                        >
+                          <strong className={isWhiteboard ? 'text-blue-700' : 'text-yellow-300'}>
+                            {st.term}
+                          </strong>
+                          : {st.meaning}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {breakdown.example && (
+                    <div className="text-[11px] flex items-start gap-1 pt-0.5">
+                      <span className="text-emerald-500 dark:text-emerald-400 font-bold shrink-0">
+                        🌱 Relatable Example:
+                      </span>
+                      <span>{breakdown.example}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* Mathematical Law / Equation Box (Revealed with styled borders) */}
+      {/* Mathematical Law / Equation Box (Revealed with styled borders & highlighted when explained) */}
       {equation && showEquation && (
-        <div className={`my-4 p-4 rounded-2xl flex flex-col items-center justify-center transition-all animate-fadeIn ${equationBoxStyle}`}>
-          <span className="text-[10px] font-mono tracking-widest uppercase mb-1 font-bold opacity-80">
-            [ MATHEMATICAL LAW / FORMULA ]
-          </span>
+        <div
+          className={`my-4 p-4 rounded-2xl flex flex-col items-center justify-center transition-all animate-fadeIn ${
+            isActiveStep && activeExplainingPointIndex >= bulletPoints.length
+              ? isWhiteboard
+                ? 'border-2 border-blue-600 bg-blue-50/90 shadow-md ring-2 ring-blue-500/20'
+                : 'border-2 border-yellow-300 bg-yellow-400/15 shadow-[0_0_20px_rgba(253,224,71,0.3)] ring-1 ring-yellow-300/40'
+              : equationBoxStyle
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap justify-center">
+            <span className="text-[10px] font-mono tracking-widest uppercase font-bold opacity-80">
+              [ MATHEMATICAL LAW / FORMULA / EQUATION ]
+            </span>
+            {isActiveStep && activeExplainingPointIndex >= bulletPoints.length && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white animate-pulse flex items-center gap-1">
+                <Volume2 size={10} /> Explaining Equation
+              </span>
+            )}
+          </div>
           <div className="text-lg sm:text-2xl font-mono font-black text-center tracking-wider px-2">
             {equation}
           </div>

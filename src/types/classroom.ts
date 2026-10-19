@@ -44,7 +44,20 @@ export interface ClassroomQuiz {
 
 export interface ConversationalCheck {
   question: string;
-  hint: string;
+  hint?: string;
+  expectedConcept?: string;
+}
+
+export interface SimplifiedTerm {
+  term: string;
+  meaning: string;
+}
+
+export interface StepExplanationBreakdown {
+  point: string;
+  explanation: string;
+  example?: string;
+  simplifiedTerms?: SimplifiedTerm[];
 }
 
 export interface ClassroomStep {
@@ -54,6 +67,7 @@ export interface ClassroomStep {
   chalkboard: ChalkboardContent;
   quiz?: ClassroomQuiz;
   conversationalCheck?: ConversationalCheck;
+  explanationBreakdown?: StepExplanationBreakdown[];
 }
 
 export interface ClassroomLesson {

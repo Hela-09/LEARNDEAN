@@ -524,6 +524,7 @@ export default function ChalkboardView({
                   writingSpeed={1.0}
                   isClassroomPlaying={isPlaying}
                   isClassroomPaused={isPaused}
+                  speechProgress={isCurrentActiveStep ? progress : 1}
                 />
               );
             })}

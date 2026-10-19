@@ -447,6 +447,29 @@
         "timestamp": { "type": "string" }
       },
       "required": ["eventType", "loginMethod", "email", "timestamp"]
+    },
+    "ClassroomSubmission": {
+      "title": "ClassroomSubmission",
+      "description": "Student theory assignment submissions, handwritten image working, marks, and feedback",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "assignmentId": { "type": "string" },
+        "subject": { "type": "string" },
+        "topicTitle": { "type": "string" },
+        "studentAnswers": { "type": "object" },
+        "totalScore": { "type": "number" },
+        "totalMarks": { "type": "number" },
+        "percentage": { "type": "number" },
+        "grade": { "type": "string" },
+        "overallFeedback": { "type": "string" },
+        "questionResults": { "type": "object" },
+        "isProvisional": { "type": "boolean" },
+        "submittedAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["uid", "assignmentId", "submittedAt"]
     }
   },
   "firestore": {
@@ -557,6 +580,10 @@
     "auth_events/{docId}": {
       "schema": { "$ref": "#/entities/AuthEvent" },
       "description": "Authentication event tracking logs for logins, failures, and logouts."
+    },
+    "classroom_submissions/{docId}": {
+      "schema": { "$ref": "#/entities/ClassroomSubmission" },
+      "description": "Classroom Theory Assignment Submissions, Student Image Working & Verified AI Feedback"
     }
   }
 }

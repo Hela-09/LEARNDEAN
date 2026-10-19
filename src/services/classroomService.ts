@@ -5,7 +5,11 @@ import {
   StudentAnswerItem,
   TheoryAssignmentSubmissionResult,
 } from '../types/classroom';
-import { DEFAULT_PHYSICS_LESSON, generateCuratedCurriculumLesson } from '../utils/classroomDefaults';
+import {
+  DEFAULT_PHYSICS_LESSON,
+  DEFAULT_PHOTOSYNTHESIS_LESSON,
+  generateCuratedCurriculumLesson,
+} from '../utils/classroomDefaults';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import {
@@ -57,6 +61,24 @@ export async function fetchClassroomLesson(
 ): Promise<ClassroomLesson> {
   // If not a custom subtopic and matches an official verified syllabus topic, we can check for verified steps
   if (!subtopic) {
+    const normTop = (topic || '').toLowerCase().trim();
+    const normSub = (subject || '').toLowerCase().trim();
+    if (
+      normTop === 'photosynthesis' ||
+      normTop.includes('photosynthesis') ||
+      (normSub.includes('bio') && normTop.includes('photo'))
+    ) {
+      const photoLesson: ClassroomLesson = {
+        ...DEFAULT_PHOTOSYNTHESIS_LESSON,
+        level: level || 'Secondary Education',
+        grade: grade || '',
+        age,
+        curriculum: curriculum || '',
+      };
+      saveLessonToHistory(photoLesson);
+      return photoLesson;
+    }
+
     const verifiedMatch = findMatchingVerifiedSyllabusTopic(subject, topic);
     if (verifiedMatch && verifiedMatch.steps && verifiedMatch.steps.length > 0) {
       const verifiedLesson: ClassroomLesson = {

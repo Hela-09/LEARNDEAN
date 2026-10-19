@@ -45,8 +45,12 @@ export function useChalkboardSpeech(): UseChalkboardSpeechReturn {
 
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const timerRef = useRef<any>(null);
+  const keepAliveTimerRef = useRef<any>(null);
   const chalkSoundIntervalRef = useRef<any>(null);
   const onCompleteRef = useRef<(() => void) | null>(null);
+  const sentenceQueueRef = useRef<string[]>([]);
+  const currentSentenceIdxRef = useRef<number>(0);
+  const isCancelledRef = useRef<boolean>(false);
   const charProgressRef = useRef<number>(0);
   const textLengthRef = useRef<number>(0);
 
@@ -105,9 +109,14 @@ export function useChalkboardSpeech(): UseChalkboardSpeechReturn {
   }, []);
 
   const clearSpeechAndTimers = useCallback(() => {
+    isCancelledRef.current = true;
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
+    }
+    if (keepAliveTimerRef.current) {
+      clearInterval(keepAliveTimerRef.current);
+      keepAliveTimerRef.current = null;
     }
     if (chalkSoundIntervalRef.current) {
       clearInterval(chalkSoundIntervalRef.current);
@@ -174,21 +183,29 @@ export function useChalkboardSpeech(): UseChalkboardSpeechReturn {
     [speed, triggerChalkStrokeSound]
   );
 
-  // Play spoken explanation
+  // Play spoken explanation using sentence queueing to eliminate browser cutoff on long explanations
   const play = useCallback(
     (text: string, onComplete?: () => void) => {
       clearSpeechAndTimers();
+      isCancelledRef.current = false;
       setCurrentText(text);
       setProgress(0);
       setIsPlaying(true);
       setIsPaused(false);
       onCompleteRef.current = onComplete || null;
-      textLengthRef.current = text.length || 1;
-      charProgressRef.current = 0;
 
-      // Estimate speaking duration based on ~145 words per minute
+      // Split text into natural sentences (. ! ? or newlines)
+      const rawSentences = text.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g);
+      const sentences = rawSentences && rawSentences.length > 0
+        ? rawSentences.map((s) => s.trim()).filter((s) => s.length > 0)
+        : [text.trim()];
+
+      sentenceQueueRef.current = sentences;
+      currentSentenceIdxRef.current = 0;
+
+      // Estimate speaking duration based on ~140 words per minute
       const wordCount = text.split(/\s+/).filter(Boolean).length;
-      const estimatedSec = Math.max(5, (wordCount / 2.4));
+      const estimatedSec = Math.max(6, wordCount / 2.3);
 
       // If user has muted voice or speech synthesis is not supported:
       if (isMuted || typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -196,66 +213,103 @@ export function useChalkboardSpeech(): UseChalkboardSpeechReturn {
         return;
       }
 
-      const utterance = new SpeechSynthesisUtterance(text);
-      utteranceRef.current = utterance;
-      utterance.rate = speed;
-      utterance.pitch = 1.0;
-      if (selectedVoice) {
-        utterance.voice = selectedVoice;
-      }
-
-      let soundCounter = 0;
-
-      utterance.onstart = () => {
-        setIsPlaying(true);
-        setIsPaused(false);
-      };
-
-      utterance.onboundary = (event) => {
-        if (event.name === 'word' || event.name === 'sentence') {
-          const charIdx = event.charIndex;
-          const ratio = Math.min(0.98, Math.max(0.05, charIdx / textLengthRef.current));
-          setProgress(ratio);
-          charProgressRef.current = ratio;
-
-          soundCounter++;
-          if (soundCounter % 2 === 0) {
-            triggerChalkStrokeSound();
+      // Chrome keep-alive ping: periodic pause/resume to prevent browser speech garbage collection stall
+      keepAliveTimerRef.current = setInterval(() => {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+            window.speechSynthesis.pause();
+            window.speechSynthesis.resume();
           }
         }
-      };
+      }, 7000);
 
-      utterance.onpause = () => {
-        setIsPaused(true);
-      };
+      const totalSentences = sentences.length;
+      let soundCounter = 0;
 
-      utterance.onresume = () => {
-        setIsPaused(false);
-      };
+      const speakSentence = (index: number) => {
+        if (isCancelledRef.current) return;
+        if (index >= totalSentences) {
+          // All sentences finished speaking!
+          if (keepAliveTimerRef.current) {
+            clearInterval(keepAliveTimerRef.current);
+            keepAliveTimerRef.current = null;
+          }
+          setProgress(1);
+          setIsPlaying(false);
+          setIsPaused(false);
+          if (onCompleteRef.current) {
+            const cb = onCompleteRef.current;
+            onCompleteRef.current = null;
+            cb();
+          }
+          return;
+        }
 
-      utterance.onend = () => {
-        setProgress(1);
-        setIsPlaying(false);
-        setIsPaused(false);
-        if (onCompleteRef.current) {
-          const cb = onCompleteRef.current;
-          onCompleteRef.current = null;
-          cb();
+        currentSentenceIdxRef.current = index;
+        const sentenceText = sentences[index];
+        const sentenceLen = Math.max(1, sentenceText.length);
+
+        const utterance = new SpeechSynthesisUtterance(sentenceText);
+        utteranceRef.current = utterance;
+        utterance.rate = speed;
+        utterance.pitch = 1.0;
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+        }
+
+        utterance.onstart = () => {
+          if (isCancelledRef.current) return;
+          setIsPlaying(true);
+          setIsPaused(false);
+        };
+
+        utterance.onboundary = (event) => {
+          if (isCancelledRef.current) return;
+          if (event.name === 'word' || event.name === 'sentence') {
+            const charIdx = event.charIndex || 0;
+            const intraProgress = Math.min(0.98, charIdx / sentenceLen);
+            const totalProgress = Math.min(
+              0.99,
+              Math.max(0.02, (index + intraProgress) / totalSentences)
+            );
+            setProgress(totalProgress);
+
+            soundCounter++;
+            if (soundCounter % 2 === 0) {
+              triggerChalkStrokeSound();
+            }
+          }
+        };
+
+        utterance.onend = () => {
+          if (isCancelledRef.current) return;
+          const nextIdx = index + 1;
+          const progressAfterSentence = Math.min(0.99, nextIdx / totalSentences);
+          setProgress(progressAfterSentence);
+          speakSentence(nextIdx);
+        };
+
+        utterance.onerror = (e) => {
+          if (isCancelledRef.current) return;
+          if (e.error === 'interrupted' || e.error === 'canceled') return;
+          // On non-fatal error, try next sentence or fallback
+          const nextIdx = index + 1;
+          if (nextIdx < totalSentences) {
+            speakSentence(nextIdx);
+          } else {
+            startFallbackAnimation(text, estimatedSec, index / totalSentences);
+          }
+        };
+
+        try {
+          window.speechSynthesis.speak(utterance);
+        } catch {
+          startFallbackAnimation(text, estimatedSec, index / totalSentences);
         }
       };
 
-      utterance.onerror = (e) => {
-        // Fall back to timer animation if speech blocked or error
-        if (e.error !== 'interrupted' && e.error !== 'canceled') {
-          startFallbackAnimation(text, estimatedSec, charProgressRef.current);
-        }
-      };
-
-      try {
-        window.speechSynthesis.speak(utterance);
-      } catch {
-        startFallbackAnimation(text, estimatedSec, 0);
-      }
+      // Begin with first sentence
+      speakSentence(0);
     },
     [clearSpeechAndTimers, isMuted, selectedVoice, speed, startFallbackAnimation, triggerChalkStrokeSound]
   );

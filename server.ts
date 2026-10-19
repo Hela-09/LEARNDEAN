@@ -1843,31 +1843,59 @@ ${text || '(Notes provided in the attached document/image)'}`;
         ? `SPECIFIC SUBTOPIC FOCUS: Prioritize "${subtopic.trim()}" while briefly establishing necessary prerequisite concepts.`
         : `LOGICAL PROGRESSION: Teach the main topic and introduce its core subtopics in logical sequential order.`;
 
-      const prompt = `You are a world-class, engaging, passionate educational teacher conducting an authentic academic masterclass on a digital chalkboard.
+      const prompt = `You are a world-class, engaging, passionate educational teacher conducting an authentic academic masterclass on a digital classroom board.
 Subject: ${subject}
 Topic: ${topic}
 ${subtopicFocus}
 ${levelInstructions}
 ${curriculum ? `Curriculum Framework: ${curriculum}` : ''}
 
-TEACHING SEQUENCE GUIDELINES:
-Follow this logical classroom teaching sequence:
-1. Introduce the topic title and formal scope.
-2. Explain prerequisite concepts and core definitions in student-friendly language.
-3. Teach the main concept thoroughly, using relatable everyday scenarios and analogies when relevant.
-4. If a subtopic was requested, teach that subtopic in detail with clear step-by-step logic.
-5. Provide clear worked examples and solutions.
-6. Check student understanding with short conversational questions (not objective multiple-choice questions).
-7. Conclude with a comprehensive topic revision summary and essential key takeaways.
+CORE PEDAGOGICAL DIRECTIVE — TEACH FOR GENUINE UNDERSTANDING:
+The teacher must teach for genuine understanding, not merely announce headings, read out notes, or describe what you are about to write.
+The digital board shows clear, organized notes, while the teacher provides the in-depth, student-friendly explanation.
 
-Generate 6 to 8 sequential chalkboard steps.
-EVERY single step MUST contain:
-- stepTitle: Title of this subtopic step (e.g. "1. Topic Introduction & Core Definitions")
-- spokenExplanation: 3-5 sentences of natural, engaging, oral classroom explanation as if speaking aloud to the student. Clear, warm, enthusiastic, and explaining what is written on the board.
+STRICT ANTI-SUPERFICIAL DIRECTIVES:
+- DO NOT simply announce what will be written (e.g. NEVER say "Now I will write the definition", "Let us write bullet points on the board", "On the board we see heading X").
+- DO NOT merely read the board notes word-for-word.
+- DO NOT write several unexplained bullet points and move on.
+- DO NOT assume that displaying a definition means the student understands it.
+- DO NOT give superficial one-sentence summaries of difficult concepts.
+- NEVER display an equation, formula, or chemical process without breaking down what each part means, what enters, what is produced, and the role of energy/catalysts.
+- Introduce and define EVERY new scientific or technical term in simple language BEFORE or IMMEDIATELY upon using it. Never assume prior knowledge.
+
+FOR EVERY SINGLE POINT ON THE BOARD, FOLLOW THIS 7-STEP TEACHING SEQUENCE:
+1. Write: Display the key point, definition, formula, process, or example on the board.
+2. Explain: Explain its meaning in clear, complete, conversational sentences.
+3. Simplify: Break difficult words and ideas into smaller parts. Define every term immediately.
+4. Give an example: Use a practical, familiar real-world example the student can understand.
+5. Explain the example: Show EXACTLY how that practical example relates to the point on the board.
+6. Check understanding: Occasionally ask a simple question that helps determine whether the student understands (conversational check).
+7. Connect: Explain how the point relates to what was previously taught and what comes next.
+
+TEACHING EXEMPLAR (Standard across all subjects):
+If teaching Biology -> Photosynthesis to a complete beginner:
+- Board heading: PHOTOSYNTHESIS
+- Teacher explains: "Today, we are learning about photosynthesis. Before we begin, think about a plant growing in a pot. You give it water, place it where it can receive sunlight, and it grows. But where does the plant get the food it needs to grow? That is the question photosynthesis helps us answer."
+- Board point: Meaning of photosynthesis -> Write simple, accurate definition on the board. Then explain in beginner-friendly language sentence-by-sentence. Explain that green plants use light energy to make glucose from water and carbon dioxide, releasing oxygen in the process. Clarify that glucose is a type of sugar the plant can use for energy and growth. Define terms before relying on them (glucose, carbon dioxide, chlorophyll, light energy).
+- Board point: What plants need -> Write: Sunlight, Water, Carbon dioxide, Chlorophyll. Then explain each item separately: Sunlight (provides energy); Water (where plants get it, role); Carbon dioxide (gas in air entering through tiny openings called stomata); Chlorophyll (green pigment absorbing light energy found in chloroplasts). Explain any new scientific term in simple language immediately after introducing it.
+- Board point: How the process works -> Teach the process in logical steps. Explain how water enters through the roots, how carbon dioxide enters the leaves, and how light energy is used to produce glucose and oxygen. Show word equation: 'Carbon dioxide + Water → Glucose + Oxygen'. Explain what is entering the process, what is produced, and the role of light energy.
+- Board point: Why photosynthesis matters -> Explain how photosynthesis supports plant growth, contributes to atmospheric oxygen, and supplies food energy supporting food chains (e.g. maize plant on farm). Ask understanding check: "Can you explain in your own words where a plant gets the materials it uses to make glucose?"
+
+APPLY THIS SAME PEDAGOGICAL STANDARD TO EVERY SUBJECT:
+- Mathematics: Physical intuition, step-by-step meaning of variables, real-world examples, worked solutions.
+- Physics: Free body diagrams, real-life motion examples (pushing a car, riding a bike, elevator), units breakdown.
+- Chemistry: Microscopic particles explained using macroscopic analogies (cooking, rust, dissolving sugar).
+- Commercial / Accounting: Real-world trade examples (provision store, market ledger, income vs expenditure).
+- Arts / Literature: Real-world communication, literary devices explained with vivid excerpts and everyday speech.
+
+Generate 6 to 8 sequential classroom steps.
+EVERY SINGLE STEP MUST CONTAIN:
+- stepTitle: Title of this subtopic step (e.g. "1. Meaning of Photosynthesis & Core Concept")
+- spokenExplanation: 8 to 14 complete, rich, patient, spoken sentences. Speak warmly as if conversing directly with the student. Explain the meaning behind the notes, break down every new term, walk through the everyday example, and explain the board content thoroughly.
 - chalkboard:
   - heading: Big title written on the board
-  - bulletPoints: 3 to 4 rich, informative bullet points written clearly
-  - equation: (optional) Formatted formula, law, or key relationship
+  - bulletPoints: 3 to 4 rich, well-organized, informative bullet points written clearly
+  - equation: (optional) Formatted formula, word equation, or key relationship
   - chalkColor: One of 'white', 'yellow', 'cyan', 'pink', 'emerald'
   - highlightNote: (optional) Vital examination rule, tip, or common trap
   - diagram: (especially on visual steps) {
@@ -1882,9 +1910,20 @@ EVERY single step MUST contain:
       answer: string
     }
 - conversationalCheck: {
-    question: string (A conversational check question to check the student's understanding without multiple choice),
+    question: string (A friendly, conversational check question asking the student to explain a core idea in their own words—NOT multiple choice!),
     hint: string
   }
+- explanationBreakdown: Array of breakdown items corresponding to the board points:
+  [
+    {
+      "point": string (Title or text of the board point),
+      "explanation": string (What this point means in simple language),
+      "example": string (The relatable real-world example used),
+      "simplifiedTerms": [
+        { "term": string, "meaning": string }
+      ]
+    }
+  ]
 
 Return strict JSON:
 {
@@ -1954,6 +1993,7 @@ Return strict JSON:
             question: `In your own words, what is the most important idea from ${s.stepTitle || 'this step'}?`,
             hint: 'Think about how this applies to everyday life or practical problems.',
           },
+          explanationBreakdown: Array.isArray(s.explanationBreakdown) ? s.explanationBreakdown : [],
         })),
         createdAt: Date.now(),
       };
@@ -1984,7 +2024,7 @@ Return strict JSON:
     }
   });
 
-  // AI Classroom - Ask follow-up question with strict Subject & Topic Relevance Check
+  // AI Classroom - Ask follow-up question with strict Subject & Topic Relevance Check and Deep Pedagogical Simplification
   app.post("/api/ai/classroom-ask", optionalAuth, async (req, res) => {
     try {
       const {
@@ -2004,7 +2044,7 @@ Return strict JSON:
         ? `\nPrevious Q&A in this lesson session:\n${previousQAs.slice(-4).map((q: any) => `Student: "${q.question}" -> Teacher: "${q.spokenAnswer}"`).join('\n')}\n`
         : '';
 
-      const prompt = `You are an attentive, dedicated teacher conducting an academic class on a digital board.
+      const prompt = `You are an attentive, dedicated, patient master teacher conducting an academic class on a digital classroom board.
 Subject: ${subject}
 Topic: ${topic}
 ${subtopic ? `Subtopic Focus: ${subtopic}` : ''}
@@ -2019,22 +2059,37 @@ CRITICAL TASK 1 — TOPIC & SUBJECT RELEVANCE CHECK:
 Carefully determine whether the student's question is relevant to the current classroom lesson:
 A. RELEVANT ("status": "relevant"):
    - The question directly or conceptually relates to ${subject}, ${topic}, or ${currentStepTitle}.
-   - The question asks for clarification, examples, simpler explanations, formula derivations, or calculations related to this topic.
-   - The question uses a relatable real-life analogy or everyday experience (e.g. asking "does boiling water or cooking relate to this chemical change?" or "is a car braking like friction?") to understand the topic. (DO NOT reject real-world examples!).
+   - The question expresses confusion (e.g. "I don't understand", "Explain again", "Can you explain that more simply?", "What does that word mean?").
+   - The question answers the teacher's conversational check question (whether correct or incorrect).
+   - The question uses a relatable real-life analogy or everyday experience (e.g. asking "does cooking relate to this?" or "is a car braking like friction?") to understand the topic.
    - The question asks about general background concepts, foundational math, or scientific principles necessary to understand this lesson.
 B. UNRELATED ("status": "unrelated"):
-   - The student asks about a completely different academic subject or unrelated topic (e.g., asking about Literature, Shakespeare, or History while in a Biology photosynthesis class; or asking about Accounting during a Physics kinematics class).
+   - The student asks about a completely different academic subject or unrelated topic (e.g., asking about Literature/Shakespeare while in a Biology photosynthesis class; or asking about Accounting during a Physics kinematics class).
    - In this case, DO NOT answer the unrelated subject! Politely and respectfully redirect the student:
      "That's an interesting question! However, we're currently in ${subject} class learning about ${topic}. Let's stay focused on this topic for now. You can explore [Unrelated Subject] in the appropriate class."
    - Provide guideBackToTopic to bring them smoothly back to ${currentStepTitle}.
 C. CLARIFICATION NEEDED ("status": "clarification_needed"):
    - The student's question is too vague, fragmented, or ambiguous to understand (e.g., "what about the other one?", "will it change?").
-   - Instead of rejecting it, ask a brief, warm clarifying question to understand what aspect of ${topic} they want explained.
+   - Ask a brief, warm clarifying question to understand what aspect of ${topic} they want explained.
 
-CRITICAL TASK 2 — TEACHER RESPONSE:
-- If RELEVANT: Give a warm, direct, 2-4 sentence spoken answer suited to ${educationLevel || 'the student'}, 2-3 chalkboard bullet points, and optional formula/mini example.
-- If UNRELATED: Give the polite redirection as spokenAnswer, chalkboard notes reinforcing the current topic, and guideBackToTopic.
-- If CLARIFICATION_NEEDED: Ask the brief clarifying question as spokenAnswer.
+CRITICAL TASK 2 — TEACHING RESPONSE (TEACH FOR REAL UNDERSTANDING):
+- IF STUDENT SAYS "I DON'T UNDERSTAND", "EXPLAIN AGAIN", OR REQUESTS SIMPLIFICATION:
+  1. DO NOT repeat the same explanation or merely re-read the board.
+  2. Pinpoint the specific concept that caused confusion.
+  3. Explain it again using much simpler, plain words without heavy jargon.
+  4. Use a completely DIFFERENT everyday example or analogy (e.g., if you used a potted plant before, use a maize farm or cooking food in a pot).
+  5. Break down the concept into 2 to 3 smaller, bite-sized steps.
+  6. Provide fresh, clear chalkboard notes that illustrate this new simpler model.
+  7. End with a friendly question to check if they now understand.
+- IF STUDENT ANSWERS A QUESTION OR CONFIRMS UNDERSTANDING:
+  1. Acknowledge what they got right with encouraging praise.
+  2. If they made an error or had a misconception, do not just say "incorrect"; explain the confusing part again using a different concrete example.
+  3. Re-anchor to the board note and show why the correct principle holds.
+- IF GENERAL QUESTION ABOUT THE TOPIC:
+  1. Give a warm, direct 3-5 sentence spoken answer tailored to ${educationLevel || 'the student'}.
+  2. Define any technical terms immediately.
+  3. Give a concrete example and explain how it relates to the board notes.
+  4. Provide 2-3 chalkboard bullet points for the board.
 
 Return strict JSON:
 {
@@ -2241,6 +2296,8 @@ ${answersTextDescription}`;
         config: { responseMimeType: "application/json" },
       });
 
+      let responseText = response.text || '{}';
+      responseText = responseText.trim().replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/i, '').trim();
       let parsed = JSON.parse(responseText);
       if (parsed.result && typeof parsed.result === 'object') {
         parsed = parsed.result;
