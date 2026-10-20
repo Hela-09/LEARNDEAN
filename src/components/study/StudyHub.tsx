@@ -60,6 +60,8 @@ import Quiz, { QuizProps } from '../Quiz';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import JambPrep from '../jamb/JambPrep';
+import StudyFeaturesGrid from './StudyFeaturesGrid';
+import { ExamOfficialLogo, EXAM_BOARDS } from '../common/ExamBranding';
 
 interface StudyHubProps {
   setView?: (v: any) => void;
@@ -271,6 +273,33 @@ export default function StudyHub({ setView }: StudyHubProps) {
     }
 
     setCurrentStep('subject');
+  };
+
+  // Shortcut handler for feature cards (JAMB, WAEC, NECO)
+  const handleSelectExamByShortName = (shortName: 'JAMB' | 'WAEC' | 'NECO') => {
+    if (shortName === 'JAMB') {
+      setCurrentStep('jamb_direct');
+      return;
+    }
+    if (!selectedCountry) return;
+    for (const stg of selectedCountry.educationStages) {
+      for (const grd of stg.grades) {
+        const match = grd.exams.find(
+          (e) =>
+            e.shortName.toUpperCase().includes(shortName) ||
+            e.name.toUpperCase().includes(shortName) ||
+            e.id.toUpperCase().includes(shortName.toLowerCase())
+        );
+        if (match) {
+          setSelectedLevel(stg);
+          setSelectedGrade(grd);
+          setSelectedExam(match);
+          setCurrentStep('subject');
+          return;
+        }
+      }
+    }
+    showToast(`Exploring ${shortName} curriculum for ${selectedCountry.name}`);
   };
 
   // Handle selecting a single subject (shows topics & study materials)
@@ -829,6 +858,17 @@ export default function StudyHub({ setView }: StudyHubProps) {
 
       <div className="max-w-7xl mx-auto w-full p-3 sm:p-5 md:p-8 space-y-6">
         
+        {/* COMPACT RESPONSIVE STUDY FEATURES GRID */}
+        <StudyFeaturesGrid
+          onSelectExam={handleSelectExamByShortName}
+          onOpenOfflineHub={() => {
+            sessionStorage.setItem('open_offline_hub', 'true');
+            if (setView) setView('home');
+            else navigate('/home');
+          }}
+          setView={setView}
+        />
+
         {/* GLOBAL STUDY HEADER & BREADCRUMB PIPELINE */}
         <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 sm:p-6 md:p-8 border border-slate-200/90 dark:border-slate-700 shadow-sm relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1236,17 +1276,26 @@ export default function StudyHub({ setView }: StudyHubProps) {
                       </span>
                     </div>
 
-                    <div>
-                      <h3 className="text-xl font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {exm.name}
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                        {exm.examBoard}
-                      </p>
+                    <div className="flex items-start gap-3 pt-1">
+                      <div className="shrink-0 drop-shadow-xs">
+                        <ExamOfficialLogo board={exm.id} className="w-12 h-12" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight">
+                          {exm.name}
+                        </h3>
+                        <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mt-0.5">
+                          {exm.examBoard}
+                        </p>
+                      </div>
                     </div>
 
                     <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                       {exm.description}
+                    </p>
+
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 italic">
+                      Curriculum-aligned practice. Not officially affiliated with or endorsed by this examination body.
                     </p>
                   </div>
 

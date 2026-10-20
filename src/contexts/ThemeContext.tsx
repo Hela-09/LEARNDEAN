@@ -1,4 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
+import { auth, db } from '../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -44,6 +47,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return 'light';
   });
 
+  // Apply theme to HTML root element and sync resolvedTheme
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -85,6 +89,36 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [theme]);
 
+  // Sync theme preference from Firestore on user sign in
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const snap = await getDoc(userDocRef);
+          if (snap.exists()) {
+            const data = snap.data();
+            if (
+              data.themePreference &&
+              (data.themePreference === 'light' ||
+                data.themePreference === 'dark' ||
+                data.themePreference === 'system')
+            ) {
+              setThemeState(data.themePreference as Theme);
+              try {
+                localStorage.setItem('zetadu_theme', data.themePreference);
+              } catch (_) {}
+            }
+          }
+        } catch (e) {
+          console.warn('Could not sync theme from Firestore:', e);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
     try {
@@ -92,18 +126,32 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('zetadu_theme', newTheme);
       }
     } catch (_) {}
+
+    // Persist to user Firestore profile if authenticated
+    if (auth.currentUser) {
+      try {
+        setDoc(
+          doc(db, 'users', auth.currentUser.uid),
+          { themePreference: newTheme },
+          { merge: true }
+        ).catch(() => {});
+      } catch (_) {}
+    }
   }, []);
 
   const toggleTheme = useCallback(() => {
     setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
   }, [resolvedTheme, setTheme]);
 
-  const contextValue = useMemo<ThemeContextType>(() => ({
-    theme,
-    resolvedTheme,
-    setTheme,
-    toggleTheme,
-  }), [theme, resolvedTheme, setTheme, toggleTheme]);
+  const contextValue = useMemo<ThemeContextType>(
+    () => ({
+      theme,
+      resolvedTheme,
+      setTheme,
+      toggleTheme,
+    }),
+    [theme, resolvedTheme, setTheme, toggleTheme]
+  );
 
   return (
     <ThemeContext.Provider value={contextValue}>
@@ -119,5 +167,3 @@ export function useTheme(): ThemeContextType {
   }
   return context;
 }
-
-export default ThemeProvider;

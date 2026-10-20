@@ -35,6 +35,7 @@ import JambNovelSection from './JambNovelSection';
 import { MyJambSubjectsSection } from './MyJambSubjectsSection';
 import { AllJambSubjectsSection } from './AllJambSubjectsSection';
 import { JambCourseCombinationSection } from './JambCourseCombinationSection';
+import { JambOfficialLogo } from '../common/ExamBranding';
 
 interface JambPrepProps {
   onBack?: () => void;
@@ -476,31 +477,37 @@ export default function JambPrep({ onBack, setView, initialTab }: JambPrepProps)
   // -----------------------------------------------------------------
   return (
     <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-8 space-y-4 sm:space-y-6 w-full min-w-0">
-      {/* Top Header with Status & History */}
+      {/* Top Header with Authentic JAMB Branding, Status & History */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3.5">
           <button
             type="button"
             onClick={() => {
               if (onBack) onBack();
               else appNavigateBack(navigate, { fallback: '/learn' });
             }}
-            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer shrink-0"
             title="Back"
             aria-label="Back"
           >
             <ArrowLeft size={20} />
           </button>
+          <div className="shrink-0 drop-shadow-xs">
+            <JambOfficialLogo className="w-12 h-12 sm:w-14 sm:h-14" />
+          </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 uppercase tracking-wider">
-                UTME 2025/2026 Ready
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 uppercase tracking-wider">
+                OFFICIAL UTME CBT
               </span>
-              <span className="text-xs text-slate-500">Official Syllabus & Question Bank</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Unified Tertiary Matriculation Examination</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1">
-              JAMB Prep Portal
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-0.5">
+              Joint Admissions and Matriculation Board (JAMB)
             </h1>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
+              Independent UTME preparation & CBT simulator. Not officially affiliated with or endorsed by JAMB.
+            </p>
           </div>
         </div>
 

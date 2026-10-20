@@ -23,12 +23,19 @@
 }
 
 :root.dark, html.dark {
-  --bg-app: #0b1120;
-  --surface-card: #1e293b;
-  --surface-card-subtle: #0f172a;
-  --border-subtle: #334155;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
+  --bg-app: #000000;
+  --surface-card: #0a0a0a;
+  --surface-card-subtle: #121212;
+  --border-subtle: #262626;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --color-slate-950: #000000;
+  --color-slate-900: #000000;
+  --color-slate-850: #080808;
+  --color-slate-800: #111111;
+  --color-slate-750: #171717;
+  --color-slate-700: #262626;
+  --color-slate-600: #3a3a3a;
   color-scheme: dark;
 }
 
@@ -67,14 +74,14 @@ p, h1, h2, h3, h4, h5, h6, span, a, button, label {
 html.dark body,
 body.dark,
 :root.dark body {
-  background-color: #0b1120;
-  color: #f8fafc;
+  background-color: #000000;
+  color: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) body {
-    background-color: #0b1120;
-    color: #f8fafc;
+    background-color: #000000;
+    color: #ffffff;
   }
 }
 

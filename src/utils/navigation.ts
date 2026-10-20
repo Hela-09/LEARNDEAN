@@ -16,6 +16,7 @@ export const VIEW_TO_PATH: Record<ViewType, string> = {
   jamb: '/jamb',
   novels: '/novels',
   classroom: '/classroom',
+  study: '/study',
 };
 
 export const PATH_TO_VIEW: Record<string, ViewType> = {

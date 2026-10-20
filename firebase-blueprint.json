@@ -470,6 +470,18 @@
         "updatedAt": { "type": "number" }
       },
       "required": ["uid", "assignmentId", "submittedAt"]
+    },
+    "UserPreferences": {
+      "title": "UserPreferences",
+      "description": "User profile, customized homepage quick links, appearance theme and academic preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "themePreference": { "type": "string" },
+        "homepageQuickLinks": { "type": "array" }
+      },
+      "required": ["uid"]
     }
   },
   "firestore": {
@@ -584,6 +596,10 @@
     "classroom_submissions/{docId}": {
       "schema": { "$ref": "#/entities/ClassroomSubmission" },
       "description": "Classroom Theory Assignment Submissions, Student Image Working & Verified AI Feedback"
+    },
+    "users/{userId}": {
+      "schema": { "$ref": "#/entities/UserPreferences" },
+      "description": "User profile documents with customized homepage links, academic settings, and theme preferences."
     }
   }
 }

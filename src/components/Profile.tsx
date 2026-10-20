@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { getLevelInfo } from '../lib/achievements';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, Award, Trophy, Target, Flame, CheckCircle, Clock, BookOpen, Search, BrainCircuit, PenTool, MessageSquare, Settings, HelpCircle, Info, LogOut, ChevronRight, Bookmark, FileText, Download, Moon, Sun, Monitor, Bell, Shield, Trash2, Edit3, Image as ImageIcon, MapPin, GraduationCap, ArrowLeft, Camera, Check, X, AlertCircle, Phone, Mail, Copy, CheckCircle2, ShieldAlert, Zap, DollarSign, Layers, TrendingUp, RefreshCw, Lock, KeyRound } from 'lucide-react';
+import { User, Award, Trophy, Target, Flame, CheckCircle, Clock, BookOpen, Search, BrainCircuit, PenTool, MessageSquare, Settings, HelpCircle, Info, LogOut, ChevronRight, Bookmark, FileText, Download, Moon, Sun, Monitor, Bell, Shield, Trash2, Edit3, Image as ImageIcon, MapPin, GraduationCap, ArrowLeft, Camera, Check, X, AlertCircle, Phone, Mail, Copy, CheckCircle2, ShieldAlert, Zap, DollarSign, Layers, TrendingUp, RefreshCw, Lock, KeyRound, Sliders } from 'lucide-react';
 import { collection, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { db } from '../lib/firebase';
@@ -16,6 +16,9 @@ import { practiceHistoryService, SavedPracticeSession } from '../services/practi
 import UserAvatar from './UserAvatar';
 import ProfilePictureModal from './ProfilePictureModal';
 import Logo, { LearnDeanBirdEmblem, LearnDeanLDEmblem } from './Logo';
+import { useTheme } from '../contexts/ThemeContext';
+import CustomizeHomepageModal from './home/CustomizeHomepageModal';
+import { getHomepageQuickLinks } from '../services/homepagePreferencesService';
 
 interface ProfileProps {
   setView: (view: ViewType) => void;
@@ -24,8 +27,23 @@ interface ProfileProps {
 
 export default function Profile({ setView, initialSection }: ProfileProps) {
   const { user, userProfile, refreshProfile, settings, updateSettings, isSuperAdmin, signOut, getToken } = useAuth();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [showCustomizeHomeModal, setShowCustomizeHomeModal] = useState(false);
+  const [userQuickLinks, setUserQuickLinks] = useState<string[]>([]);
+
+  useEffect(() => {
+    getHomepageQuickLinks(user?.uid).then(setUserQuickLinks);
+    const handleLinksUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ links: string[] }>;
+      if (customEvent.detail && Array.isArray(customEvent.detail.links)) {
+        setUserQuickLinks(customEvent.detail.links);
+      }
+    };
+    window.addEventListener('learndean-homepage-links-updated', handleLinksUpdated);
+    return () => window.removeEventListener('learndean-homepage-links-updated', handleLinksUpdated);
+  }, [user?.uid]);
 
   const { section } = useParams<{ section?: string }>();
   const navigate = useNavigate();
@@ -441,6 +459,82 @@ export default function Profile({ setView, initialSection }: ProfileProps) {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Theme & Appearance (System, Light, Pure Black Dark) */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row md:items-start justify-between gap-4">
+              <div>
+                <p className="font-medium text-slate-800 dark:text-white">Theme & Appearance</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Choose your interface theme. Dark mode utilizes pure black (#000000) for OLED battery savings and true black contrast.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 w-full md:w-80 shrink-0">
+                <button
+                  type="button"
+                  id="theme-option-system"
+                  onClick={() => setTheme('system')}
+                  className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
+                    theme === 'system'
+                      ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/30'
+                      : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                  }`}
+                >
+                  <Monitor size={18} className="mb-1" />
+                  <span className="text-xs font-bold">System</span>
+                  <span className="text-[10px] text-slate-400 mt-0.5">Follow device</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="theme-option-light"
+                  onClick={() => setTheme('light')}
+                  className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
+                    theme === 'light'
+                      ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/30'
+                      : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                  }`}
+                >
+                  <Sun size={18} className="mb-1 text-amber-500" />
+                  <span className="text-xs font-bold">Light</span>
+                  <span className="text-[10px] text-slate-400 mt-0.5">Clean light</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="theme-option-dark"
+                  onClick={() => setTheme('dark')}
+                  className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
+                    theme === 'dark'
+                      ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/30'
+                      : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                  }`}
+                >
+                  <Moon size={18} className="mb-1 text-blue-400" />
+                  <span className="text-xs font-bold">Dark</span>
+                  <span className="text-[10px] text-slate-400 mt-0.5">Pure Black</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Customize Homepage Quick Links */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <p className="font-medium text-slate-800 dark:text-white">Customize Homepage Quick Links</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Select which feature shortcuts appear on your homepage and rearrange their order ({userQuickLinks.length} active)
+                </p>
+              </div>
+              <button
+                type="button"
+                id="settings-customize-homepage-btn"
+                onClick={() => setShowCustomizeHomeModal(true)}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs shrink-0"
+              >
+                <Sliders size={14} />
+                <span>Manage Quick Links</span>
+              </button>
             </div>
 
             {/* Font Size */}
@@ -1740,6 +1834,12 @@ export default function Profile({ setView, initialSection }: ProfileProps) {
       <ProfilePictureModal
         isOpen={showPhotoModal}
         onClose={() => setShowPhotoModal(false)}
+      />
+      <CustomizeHomepageModal
+        isOpen={showCustomizeHomeModal}
+        onClose={() => setShowCustomizeHomeModal(false)}
+        currentLinks={userQuickLinks}
+        onSaved={(newLinks) => setUserQuickLinks(newLinks)}
       />
     </div>
   );

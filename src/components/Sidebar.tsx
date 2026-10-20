@@ -82,7 +82,7 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
 
   return (
     <aside
-      className="w-64 h-full bg-slate-900 text-white flex flex-col shrink-0 border-r border-slate-800 select-none"
+      className="w-64 h-full bg-slate-900 dark:bg-black text-white flex flex-col shrink-0 border-r border-slate-800 dark:border-neutral-800 select-none"
       role="navigation"
       aria-label="Desktop main navigation"
     >
