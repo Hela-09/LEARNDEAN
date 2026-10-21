@@ -13,6 +13,7 @@ import {
   Target,
   School,
   Sparkles,
+  HelpCircle,
 } from 'lucide-react';
 import { ExamOfficialLogo } from '../common/ExamBranding';
 import { LearnDeanEmblem } from '../Logo';
@@ -40,7 +41,10 @@ export default function StudyFeaturesGrid({
 }: StudyFeaturesGridProps) {
   const navigate = useNavigate();
 
-  const handleNavigate = (path: string) => {
+  const handleNavigate = (path: string, viewName?: string) => {
+    if (setView && viewName) {
+      setView(viewName);
+    }
     navigate(path);
   };
 
@@ -48,7 +52,7 @@ export default function StudyFeaturesGrid({
     {
       id: 'jamb',
       title: 'JAMB CBT Prep',
-      subtitle: 'UTME Past Questions & Timer',
+      subtitle: 'UTME Past Questions & Drills',
       category: 'Exam Board',
       badge: 'Official CBT',
       customIcon: <ExamOfficialLogo board="jamb" className="w-8 h-8 sm:w-9 sm:h-9" />,
@@ -56,14 +60,14 @@ export default function StudyFeaturesGrid({
         if (onSelectExam) {
           onSelectExam('JAMB');
         } else {
-          handleNavigate('/jamb');
+          handleNavigate('/jamb', 'jamb');
         }
       },
     },
     {
       id: 'waec',
       title: 'WAEC WASSCE',
-      subtitle: 'Senior Certificate Exam',
+      subtitle: 'Senior School Certificate',
       category: 'Exam Board',
       badge: 'SSCE Prep',
       customIcon: <ExamOfficialLogo board="waec" className="w-8 h-8 sm:w-9 sm:h-9" />,
@@ -71,14 +75,14 @@ export default function StudyFeaturesGrid({
         if (onSelectExam) {
           onSelectExam('WAEC');
         } else {
-          handleNavigate('/study');
+          handleNavigate('/study', 'study');
         }
       },
     },
     {
       id: 'neco',
       title: 'NECO SSCE',
-      subtitle: 'National Certificate Exam',
+      subtitle: 'National Examination Council',
       category: 'Exam Board',
       badge: 'National',
       customIcon: <ExamOfficialLogo board="neco" className="w-8 h-8 sm:w-9 sm:h-9" />,
@@ -86,106 +90,106 @@ export default function StudyFeaturesGrid({
         if (onSelectExam) {
           onSelectExam('NECO');
         } else {
-          handleNavigate('/study');
+          handleNavigate('/study', 'study');
         }
       },
     },
     {
       id: 'classroom',
       title: 'AI Classroom',
-      subtitle: 'Chalkboard Teacher & Voice',
+      subtitle: 'Digital Chalkboard & Voice',
       category: 'Learning',
       badge: 'Chalkboard',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
           <LearnDeanEmblem className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       ),
-      action: () => handleNavigate('/classroom'),
+      action: () => handleNavigate('/classroom', 'classroom'),
     },
     {
       id: 'journey',
       title: 'Study Journey',
-      subtitle: '6-Step Mastery Roadmap',
+      subtitle: '6-Step Topic Mastery',
       category: 'Learning',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
           <Compass className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       ),
-      action: () => handleNavigate('/study-journey'),
+      action: () => handleNavigate('/study-journey', 'journey'),
+    },
+    {
+      id: 'practice',
+      title: 'Practice Drills',
+      subtitle: 'Instant Answers & Solutions',
+      category: 'Practice',
+      customIcon: (
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
+          <PenTool className="w-5 h-5 sm:w-6 sm:h-6" />
+        </div>
+      ),
+      action: () => handleNavigate('/practice', 'practice'),
     },
     {
       id: 'library',
       title: 'Syllabus Library',
-      subtitle: 'Official Textbooks & Notes',
+      subtitle: 'Official Topics & Notes',
       category: 'Curriculum',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
           <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       ),
-      action: () => handleNavigate('/subjects'),
+      action: () => handleNavigate('/subjects', 'subjects'),
     },
     {
       id: 'flashcards',
       title: 'Active Recall',
-      subtitle: 'Curriculum Flashcards',
+      subtitle: 'Formula & Fact Cards',
       category: 'Practice',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-violet-50 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
           <Layers className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       ),
-      action: () => handleNavigate('/flashcards'),
+      action: () => handleNavigate('/flashcards', 'flashcards'),
     },
     {
       id: 'upload_notes',
       title: 'Upload Notes',
-      subtitle: 'AI Notes & Flashcards',
+      subtitle: 'AI Notes & Study Sheets',
       category: 'Tools',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
           <FileUp className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       ),
-      action: () => handleNavigate('/upload-notes'),
-    },
-    {
-      id: 'daily_challenge',
-      title: 'Daily Challenge',
-      subtitle: '10-Question Streak Drill',
-      category: 'Practice',
-      customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center">
-          <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
-        </div>
-      ),
-      action: () => handleNavigate('/daily-challenge'),
+      action: () => handleNavigate('/upload-notes', 'upload_notes'),
     },
     {
       id: 'novels',
-      title: 'Literature & Novels',
-      subtitle: 'Prescribed Books & Tests',
+      title: 'Literature Novels',
+      subtitle: 'Set Books & Questions',
       category: 'Curriculum',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-pink-50 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
           <BookMarked className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       ),
-      action: () => handleNavigate('/novels'),
+      action: () => handleNavigate('/novels', 'novels'),
     },
     {
       id: 'weak_topics',
-      title: 'Weak Topics',
-      subtitle: 'Diagnostic Error Drills',
+      title: 'Diagnostic Review',
+      subtitle: 'Target Past Mistakes',
       category: 'Practice',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
           <Target className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       ),
-      action: () => handleNavigate('/weak-topics'),
+      action: () => handleNavigate('/weak-topics', 'weak_topics'),
     },
     {
       id: 'offline_hub',
@@ -193,7 +197,7 @@ export default function StudyFeaturesGrid({
       subtitle: 'Study Without Internet',
       category: 'Tools',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
           <WifiOff className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       ),
@@ -202,7 +206,7 @@ export default function StudyFeaturesGrid({
           onOpenOfflineHub();
         } else {
           sessionStorage.setItem('open_offline_hub', 'true');
-          handleNavigate('/home');
+          handleNavigate('/home', 'home');
         }
       },
     },
@@ -211,11 +215,10 @@ export default function StudyFeaturesGrid({
   return (
     <div className="space-y-3 w-full min-w-0" id="study-features-grid-section">
       <div className="flex items-center justify-between">
-        <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-          <Sparkles size={14} className="text-blue-600 dark:text-blue-400" />
-          Study Features & Practice Tools
+        <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+          Study Features & Exam Standards
         </h2>
-        <span className="text-[11px] font-semibold text-slate-400">12 Connected Features</span>
+        <span className="text-[11px] text-neutral-400 dark:text-neutral-500">12 Connected Features</span>
       </div>
 
       {/* Responsive Two-Column Mobile Grid, 3-col on sm, 4-col on md, 6-col on lg */}
@@ -226,20 +229,20 @@ export default function StudyFeaturesGrid({
             id={`study-feature-card-${card.id}`}
             type="button"
             onClick={card.action}
-            className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 dark:hover:border-blue-400 hover:shadow-md transition-all flex flex-col items-center justify-center text-center group cursor-pointer min-h-[115px] sm:min-h-[125px] w-full min-w-0 shadow-2xs relative overflow-hidden active:scale-[0.98]"
+            className="bg-white dark:bg-[#0a0a0a] rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all flex flex-col items-center justify-center text-center group cursor-pointer min-h-[115px] sm:min-h-[125px] w-full min-w-0 shadow-2xs relative overflow-hidden active:scale-[0.98]"
           >
             {card.badge && (
-              <span className="absolute top-2 right-2 text-[8px] sm:text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
+              <span className="absolute top-2 right-2 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
                 {card.badge}
               </span>
             )}
             <div className="mb-2 shrink-0 group-hover:scale-105 transition-transform">
               {card.customIcon}
             </div>
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1 max-w-full">
+            <h3 className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white transition-colors line-clamp-1 max-w-full">
               {card.title}
             </h3>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5 max-w-full">
+            <p className="text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 line-clamp-1 mt-0.5 max-w-full">
               {card.subtitle}
             </p>
           </button>

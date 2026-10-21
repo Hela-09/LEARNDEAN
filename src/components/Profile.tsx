@@ -477,13 +477,13 @@ export default function Profile({ setView, initialSection }: ProfileProps) {
                   onClick={() => setTheme('system')}
                   className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
                     theme === 'system'
-                      ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/30'
-                      : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-bold shadow-xs'
+                      : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400 dark:hover:border-neutral-600'
                   }`}
                 >
                   <Monitor size={18} className="mb-1" />
                   <span className="text-xs font-bold">System</span>
-                  <span className="text-[10px] text-slate-400 mt-0.5">Follow device</span>
+                  <span className="text-[10px] opacity-70 mt-0.5">Follow device</span>
                 </button>
 
                 <button
@@ -492,13 +492,13 @@ export default function Profile({ setView, initialSection }: ProfileProps) {
                   onClick={() => setTheme('light')}
                   className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
                     theme === 'light'
-                      ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/30'
-                      : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-bold shadow-xs'
+                      : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400 dark:hover:border-neutral-600'
                   }`}
                 >
-                  <Sun size={18} className="mb-1 text-amber-500" />
+                  <Sun size={18} className="mb-1" />
                   <span className="text-xs font-bold">Light</span>
-                  <span className="text-[10px] text-slate-400 mt-0.5">Clean light</span>
+                  <span className="text-[10px] opacity-70 mt-0.5">Clean light</span>
                 </button>
 
                 <button
@@ -507,13 +507,13 @@ export default function Profile({ setView, initialSection }: ProfileProps) {
                   onClick={() => setTheme('dark')}
                   className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center transition-all cursor-pointer ${
                     theme === 'dark'
-                      ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-700 dark:text-blue-300 ring-2 ring-blue-500/30'
-                      : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 border-neutral-900 dark:border-white font-bold shadow-xs'
+                      : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-400 dark:hover:border-neutral-600'
                   }`}
                 >
-                  <Moon size={18} className="mb-1 text-blue-400" />
+                  <Moon size={18} className="mb-1" />
                   <span className="text-xs font-bold">Dark</span>
-                  <span className="text-[10px] text-slate-400 mt-0.5">Pure Black</span>
+                  <span className="text-[10px] opacity-70 mt-0.5">Pure Black</span>
                 </button>
               </div>
             </div>

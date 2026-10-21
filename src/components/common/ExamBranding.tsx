@@ -351,33 +351,31 @@ export const ExamBoardHeaderBanner: React.FC<{
 
   return (
     <div
-      className={`p-4 sm:p-5 rounded-2xl border ${info.colorScheme.bgLight} ${info.colorScheme.bgDark} ${info.colorScheme.borderLight} ${info.colorScheme.borderDark} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${className}`}
+      className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl border bg-white dark:bg-[#0a0a0a] border-neutral-200 dark:border-neutral-800 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${className}`}
     >
       <div className="flex items-center gap-3.5 min-w-0">
-        <div className="shrink-0 drop-shadow-sm">
+        <div className="shrink-0 drop-shadow-xs">
           <ExamOfficialLogo board={board} className="w-12 h-12 sm:w-14 sm:h-14" />
         </div>
         <div className="min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-0.5">
-            <span
-              className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${info.colorScheme.badgeBg}`}
-            >
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700">
               {info.badge}
             </span>
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
               {info.shortName}
             </span>
           </div>
-          <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-tight">
+          <h2 className="text-base sm:text-lg font-black text-neutral-900 dark:text-white leading-tight">
             {info.name}
           </h2>
-          <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+          <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-0.5">
             {info.examTitle}
           </p>
         </div>
       </div>
       <div className="sm:self-center shrink-0">
-        <p className="text-[10px] text-slate-400 dark:text-slate-500 max-w-xs italic text-left sm:text-right leading-tight">
+        <p className="text-[10px] text-neutral-400 dark:text-neutral-500 max-w-xs italic text-left sm:text-right leading-tight">
           {info.disclaimer}
         </p>
       </div>

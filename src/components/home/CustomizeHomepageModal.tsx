@@ -215,12 +215,12 @@ export default function CustomizeHomepageModal({
               {selectedFeatures.map((feat) => (
                 <div
                   key={feat.id}
-                  className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center text-center shadow-2xs"
+                  className="bg-white dark:bg-[#0a0a0a] p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col items-center justify-center text-center shadow-2xs"
                 >
-                  <div className="w-9 h-9 mb-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <div className="w-9 h-9 mb-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
                     {renderFeatureIcon(feat.iconName, 'w-5 h-5')}
                   </div>
-                  <span className="text-xs font-bold text-slate-800 dark:text-white truncate max-w-full">
+                  <span className="text-xs font-bold text-neutral-900 dark:text-white truncate max-w-full">
                     {feat.label}
                   </span>
                 </div>
@@ -230,7 +230,7 @@ export default function CustomizeHomepageModal({
 
           {/* Section 1: Active Homepage Features (Reorder & Remove) */}
           <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
               Active on Homepage ({selectedFeatures.length}) — Use arrows to reorder
             </h3>
 
@@ -238,20 +238,20 @@ export default function CustomizeHomepageModal({
               {selectedFeatures.map((feat, index) => (
                 <div
                   key={feat.id}
-                  className="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3 shadow-2xs"
+                  className="p-3 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3 shadow-2xs"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-6 h-6 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-black flex items-center justify-center shrink-0">
+                    <span className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-bold flex items-center justify-center shrink-0">
                       {index + 1}
                     </span>
-                    <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
                       {renderFeatureIcon(feat.iconName, 'w-4 h-4')}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+                      <p className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white truncate">
                         {feat.label}
                       </p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate hidden sm:block">
+                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate hidden sm:block">
                         {feat.shortDescription}
                       </p>
                     </div>
@@ -262,7 +262,7 @@ export default function CustomizeHomepageModal({
                       type="button"
                       onClick={() => handleMoveUp(index)}
                       disabled={index === 0}
-                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                       title="Move Up"
                       aria-label="Move Up"
                     >
@@ -272,7 +272,7 @@ export default function CustomizeHomepageModal({
                       type="button"
                       onClick={() => handleMoveDown(index)}
                       disabled={index === selectedFeatures.length - 1}
-                      className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                       title="Move Down"
                       aria-label="Move Down"
                     >
@@ -282,7 +282,7 @@ export default function CustomizeHomepageModal({
                       type="button"
                       onClick={() => handleToggle(feat.id)}
                       disabled={selectedFeatures.length <= 1}
-                      className="px-2.5 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer ml-1"
+                      className="px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-semibold disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer ml-1"
                       title="Remove from Homepage"
                     >
                       Remove
@@ -296,7 +296,7 @@ export default function CustomizeHomepageModal({
           {/* Section 2: Available Features to Add */}
           {unselectedFeatures.length > 0 && (
             <div className="space-y-3 pt-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                 Available to Add ({unselectedFeatures.length})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -305,22 +305,22 @@ export default function CustomizeHomepageModal({
                     key={feat.id}
                     type="button"
                     onClick={() => handleToggle(feat.id)}
-                    className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 flex items-center justify-between text-left transition-all cursor-pointer group"
+                    className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 flex items-center justify-between text-left transition-all cursor-pointer group"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-slate-200/70 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 group-hover:bg-blue-50 dark:group-hover:bg-blue-950/60 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <div className="w-8 h-8 rounded-xl bg-neutral-200/70 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center shrink-0 group-hover:bg-neutral-300 dark:group-hover:bg-neutral-700 transition-colors">
                         {renderFeatureIcon(feat.iconName, 'w-4 h-4')}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        <p className="text-xs font-bold text-neutral-900 dark:text-white truncate">
                           {feat.label}
                         </p>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                        <p className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate">
                           {feat.shortDescription}
                         </p>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold shrink-0 ml-2 shadow-2xs group-hover:scale-105 transition-transform">
+                    <span className="px-2.5 py-1 rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[11px] font-bold shrink-0 ml-2 shadow-2xs group-hover:scale-105 transition-transform">
                       + Add
                     </span>
                   </button>
@@ -331,15 +331,15 @@ export default function CustomizeHomepageModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900 shrink-0">
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+        <div className="p-4 sm:p-5 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between gap-3 bg-neutral-50 dark:bg-[#080808] shrink-0">
+          <p className="text-xs text-neutral-500 dark:text-neutral-400">
             {user ? 'Saved to your account' : 'Saved to this device'}
           </p>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-bold transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -347,7 +347,7 @@ export default function CustomizeHomepageModal({
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
             >
               <Check size={14} />
               <span>{isSaving ? 'Saving...' : 'Save Preferences'}</span>

@@ -57,8 +57,8 @@ body {
   min-width: 320px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-slate-50);
-  color: var(--color-slate-900);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 

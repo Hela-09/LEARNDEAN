@@ -870,23 +870,23 @@ export default function StudyHub({ setView }: StudyHubProps) {
         />
 
         {/* GLOBAL STUDY HEADER & BREADCRUMB PIPELINE */}
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-5 sm:p-6 md:p-8 border border-slate-200/90 dark:border-slate-700 shadow-sm relative overflow-hidden">
+        <div className="bg-white dark:bg-[#0a0a0a] rounded-3xl p-5 sm:p-6 md:p-8 border border-neutral-200/90 dark:border-neutral-800 shadow-2xs relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                <span className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
                   <School size={16} />
                   School & Exam Hub
                 </span>
-                <span className="text-slate-300 dark:text-slate-600">·</span>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <span className="text-neutral-300 dark:text-neutral-700">·</span>
+                <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   {selectedCountry ? `${selectedCountry.flag} ${selectedCountry.name}` : 'Global Education'}
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 dark:text-white tracking-tight">
                 LearnDean Study & Practice Hub
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
+              <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 mt-1 max-w-2xl">
                 Explore classes, subjects, official curriculum topics, and practice with single or combined multi-subject exam drills.
               </p>
             </div>
@@ -894,18 +894,18 @@ export default function StudyHub({ setView }: StudyHubProps) {
             {/* Quick Country Switcher & Progress Badges */}
             <div className="flex items-center gap-2 shrink-0 flex-wrap">
               {/* Completed Topics Stat */}
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
-                <CheckCircle2 size={14} className="text-emerald-600" />
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-bold">
+                <CheckCircle2 size={14} className="text-neutral-600 dark:text-neutral-400" />
                 <span>{completedTopics.length} Mastered</span>
               </div>
 
               {selectedCountry && (
                 <button
                   onClick={() => setCurrentStep('continent')}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 text-xs font-bold text-slate-800 dark:text-white transition-all cursor-pointer shadow-xs"
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 text-xs font-bold text-neutral-800 dark:text-white transition-all cursor-pointer shadow-2xs"
                   title="Explore All Continents & Countries"
                 >
-                  <Compass size={15} className="text-blue-600 dark:text-blue-400" />
+                  <Compass size={15} className="text-neutral-700 dark:text-neutral-300" />
                   <span>Change Country ({selectedCountry.flag})</span>
                 </button>
               )}
@@ -914,7 +914,7 @@ export default function StudyHub({ setView }: StudyHubProps) {
 
           {/* 5-STAGE FLOW BREADCRUMB PIPELINE: Country -> Education Level -> Exam/Class -> Subjects -> Practice */}
           <nav 
-            className="flex items-center gap-1.5 mt-5 pt-4 border-t border-slate-100 dark:border-slate-700/80 text-xs font-semibold overflow-x-auto pb-1"
+            className="flex items-center gap-1.5 mt-5 pt-4 border-t border-neutral-100 dark:border-neutral-800 text-xs font-semibold overflow-x-auto pb-1"
             aria-label="Education Hub Breadcrumbs"
           >
             {/* Country */}
@@ -929,8 +929,8 @@ export default function StudyHub({ setView }: StudyHubProps) {
               }}
               className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
                 currentStep === 'country'
-                  ? 'bg-blue-600 text-white font-bold'
-                  : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                  ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-bold'
+                  : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
               }`}
             >
               <span>{selectedCountry ? selectedCountry.flag : '🌍'}</span>
@@ -940,7 +940,7 @@ export default function StudyHub({ setView }: StudyHubProps) {
             {/* Education Level */}
             {selectedCountry && (
               <>
-                <ChevronRight size={13} className="text-slate-400 shrink-0" />
+                <ChevronRight size={13} className="text-neutral-400 shrink-0" />
                 <button
                   onClick={() => {
                     setCurrentStep('level');
@@ -952,8 +952,8 @@ export default function StudyHub({ setView }: StudyHubProps) {
                   }}
                   className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
                     currentStep === 'level'
-                      ? 'bg-blue-600 text-white font-bold'
-                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-bold'
+                      : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
                   }`}
                 >
                   <span>{selectedLevel ? selectedLevel.name.split('(')[0] : 'Education Level'}</span>
@@ -964,7 +964,7 @@ export default function StudyHub({ setView }: StudyHubProps) {
             {/* Exam / Class */}
             {selectedLevel && (
               <>
-                <ChevronRight size={13} className="text-slate-400 shrink-0" />
+                <ChevronRight size={13} className="text-neutral-400 shrink-0" />
                 <button
                   onClick={() => {
                     setCurrentStep('grade');
@@ -975,8 +975,8 @@ export default function StudyHub({ setView }: StudyHubProps) {
                   }}
                   className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 truncate max-w-[150px] ${
                     currentStep === 'grade' || currentStep === 'exam'
-                      ? 'bg-blue-600 text-white font-bold'
-                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-bold'
+                      : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
                   }`}
                 >
                   {selectedGrade ? selectedGrade.name.split('/')[0] : 'Class / Grade'}
@@ -987,7 +987,7 @@ export default function StudyHub({ setView }: StudyHubProps) {
             {/* Subjects */}
             {selectedGrade && selectedExam && (
               <>
-                <ChevronRight size={13} className="text-slate-400 shrink-0" />
+                <ChevronRight size={13} className="text-neutral-400 shrink-0" />
                 <button
                   onClick={() => {
                     setCurrentStep('subject');
@@ -996,8 +996,8 @@ export default function StudyHub({ setView }: StudyHubProps) {
                   }}
                   className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer shrink-0 truncate max-w-[130px] ${
                     currentStep === 'subject'
-                      ? 'bg-blue-600 text-white font-bold'
-                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 font-bold'
+                      : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white'
                   }`}
                 >
                   {selectedExam.shortName} Subjects
@@ -1008,8 +1008,8 @@ export default function StudyHub({ setView }: StudyHubProps) {
             {/* Topics / Practice */}
             {selectedSubject && (
               <>
-                <ChevronRight size={13} className="text-slate-400 shrink-0" />
-                <span className="px-2.5 py-1 rounded-lg bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 font-bold truncate max-w-[150px]">
+                <ChevronRight size={13} className="text-neutral-400 shrink-0" />
+                <span className="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100 font-bold truncate max-w-[150px]">
                   {selectedSubject.name}
                 </span>
               </>
