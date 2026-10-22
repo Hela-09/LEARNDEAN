@@ -369,209 +369,80 @@ export default function Home({ setView }: HomeProps) {
         </div>
       </div>
 
-      {/* AI Classroom Chalkboard Feature Banner */}
-      <div
-        id="home-classroom-banner"
-        onClick={() => setView('classroom')}
-        className="w-full bg-[#111915] p-4 sm:p-5 rounded-3xl border border-neutral-800 shadow-md hover:border-neutral-600 transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group text-white relative overflow-hidden"
-      >
-        <div className="flex items-center gap-3.5 min-w-0 z-10">
-          <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-neutral-700 text-neutral-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-            <GraduationCap size={26} />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded bg-neutral-800 text-neutral-200 font-mono text-[10px] font-bold tracking-wider uppercase border border-neutral-700">
-                ACTIVE
-              </span>
-              <span className="text-neutral-400 font-mono text-xs">Digital Chalkboard</span>
-            </div>
-            <h3 className="text-base sm:text-lg font-bold font-mono tracking-wide text-white group-hover:text-neutral-200 transition-colors truncate mt-0.5">
-              AI Classroom: Step-by-Step Chalkboard Teacher
-            </h3>
-            <p className="text-xs text-neutral-400 truncate max-w-xl">
-              Watch formulas, diagrams, and worked problems written in chalk while the AI teacher explains aloud.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 z-10 shrink-0 self-end sm:self-auto">
-          <span className="px-4 py-2 rounded-xl bg-white text-neutral-900 hover:bg-neutral-100 font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs transition-all group-hover:translate-x-0.5">
-            <span>Enter Classroom</span>
-            <ArrowRight size={15} />
-          </span>
-        </div>
-      </div>
-
-      {/* Quick Search Bar Banner on Home */}
-      <div
-        id="home-search-banner"
-        onClick={() => {
-          const event = new CustomEvent('open-zetadu-search');
-          window.dispatchEvent(event);
-        }}
-        className="w-full bg-white dark:bg-[#0a0a0a] p-3.5 sm:p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-2xs hover:border-neutral-400 dark:hover:border-neutral-600 transition-all cursor-pointer flex items-center justify-between gap-4 group"
-      >
-        <div className="flex items-center gap-3 text-neutral-600 dark:text-neutral-400 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform border border-neutral-200 dark:border-neutral-800">
-            <Search size={18} />
-          </div>
-          <div className="truncate">
-            <p className="text-sm font-bold text-neutral-900 dark:text-white transition-colors">
-              Find Subjects, Topics, Flashcards & Practice Questions
-            </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-              Type to search any subject syllabus, flashcards, or practice questions instantly...
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <kbd className="hidden md:inline-block px-2 py-1 text-xs font-mono bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 rounded-lg border border-neutral-200 dark:border-neutral-700">
-            ⌘K
-          </kbd>
-          <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-            Search <ArrowRight size={14} />
-          </span>
-        </div>
-      </div>
-
-      {/* Main Content Grid: Continue Study & Quick Navigation */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 w-full min-w-0">
-        {/* Left Column: Quick Navigation Cards */}
-        <div className="lg:col-span-8 flex flex-col gap-5 sm:gap-6 min-w-0">
-          {/* Study Hub Shortcut Card */}
-          <div
-            onClick={() => setView('study')}
-            className="bg-white dark:bg-[#0a0a0a] rounded-3xl p-5 sm:p-6 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all cursor-pointer group shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-          >
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <School size={26} />
-              </div>
-              <div className="min-w-0">
+      {/* Continue Study Section */}
+      <div className="w-full min-w-0">
+        <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-neutral-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 w-full min-w-0 shadow-2xs">
+          <h3 className="font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+            <Clock size={18} className="text-neutral-500" /> Continue Study
+          </h3>
+          {activeJourney && activeJourney.status === 'in_progress' ? (
+            <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 transition-all">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 uppercase">
-                    CURRICULUM & EXAMS
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white transition-colors mt-0.5">
-                  Explore Study & Exam Hub
-                </h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                  WAEC, NECO, and JAMB UTME syllabus questions and comprehensive study guides.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center text-neutral-900 dark:text-neutral-100 font-bold text-xs gap-1 group-hover:translate-x-1 transition-transform shrink-0">
-              <span>Open Hub</span>
-              <ChevronRight size={16} />
-            </div>
-          </div>
-
-          {/* Practice & Active Recall Shortcut Card */}
-          <div
-            onClick={() => setView('practice')}
-            className="bg-white dark:bg-[#0a0a0a] rounded-3xl p-5 sm:p-6 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all cursor-pointer group shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-          >
-            <div className="flex items-center gap-4 min-w-0">
-              <div className="w-12 h-12 rounded-2xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <PenTool size={24} />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 uppercase">
-                    PRACTICE QUESTIONS
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white transition-colors mt-0.5">
-                  Interactive Practice & Quizzes
-                </h3>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                  Test your understanding with instant solutions and detailed explanations.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center text-neutral-900 dark:text-neutral-100 font-bold text-xs gap-1 group-hover:translate-x-1 transition-transform shrink-0">
-              <span>Start Practice</span>
-              <ChevronRight size={16} />
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Continue Study */}
-        <div className="lg:col-span-4 flex flex-col gap-6 min-w-0">
-          <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-neutral-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 w-full min-w-0 shadow-2xs">
-            <h3 className="font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-              <Clock size={18} className="text-neutral-500" /> Continue Study
-            </h3>
-            {activeJourney && activeJourney.status === 'in_progress' ? (
-              <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 rounded-lg">
-                      <Compass size={14} />
-                    </div>
-                    <span className="font-bold text-xs uppercase text-neutral-700 dark:text-neutral-300">
-                      Study Journey
-                    </span>
+                  <div className="p-1.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 rounded-lg">
+                    <Compass size={14} />
                   </div>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
-                    Step {activeJourney.step} of 6
+                  <span className="font-bold text-xs uppercase text-neutral-700 dark:text-neutral-300">
+                    Study Journey
                   </span>
                 </div>
-                <h4 className="font-bold text-neutral-900 dark:text-white truncate text-base mb-0.5">
-                  {activeJourney.topic}
-                </h4>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
-                  {activeJourney.subject} • {activeJourney.examType}
-                </p>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setView('journey')}
-                    className="flex-1 py-2 px-3 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 text-xs font-bold shadow-2xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                  >
-                    <span>Continue</span>
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
+                  Step {activeJourney.step} of 6
+                </span>
               </div>
-            ) : recentPractice ? (
-              <div
-                onClick={() => setView('practice')}
-                className="group p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 cursor-pointer transition-colors"
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 rounded-lg">
-                    <PenTool size={16} />
-                  </div>
-                  <span className="font-bold text-sm text-neutral-900 dark:text-white">
-                    Unfinished Practice
-                  </span>
-                </div>
-                <h4 className="font-bold text-neutral-900 dark:text-white truncate">
-                  {recentPractice.subject || 'General'}
-                </h4>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Pick up where you left off</p>
+              <h4 className="font-bold text-neutral-900 dark:text-white truncate text-base mb-0.5">
+                {activeJourney.topic}
+              </h4>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+                {activeJourney.subject} • {activeJourney.examType}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setView('journey')}
+                  className="flex-1 py-2 px-3 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100 text-xs font-bold shadow-2xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                >
+                  <span>Continue</span>
+                  <ChevronRight size={14} />
+                </button>
               </div>
-            ) : (
-              <div
-                onClick={() => setView('classroom')}
-                className="group p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 cursor-pointer transition-colors"
-              >
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 rounded-lg">
-                    <GraduationCap size={16} />
-                  </div>
-                  <span className="font-bold text-sm text-neutral-900 dark:text-white">AI Classroom</span>
+            </div>
+          ) : recentPractice ? (
+            <div
+              onClick={() => setView('practice')}
+              className="group p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 cursor-pointer transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 rounded-lg">
+                  <PenTool size={16} />
                 </div>
-                <h4 className="font-bold text-neutral-900 dark:text-white truncate">
-                  Digital Chalkboard Lesson
-                </h4>
-                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
-                  Interactive step-by-step teaching with voice
-                </p>
+                <span className="font-bold text-sm text-neutral-900 dark:text-white">
+                  Unfinished Practice
+                </span>
               </div>
-            )}
-          </div>
+              <h4 className="font-bold text-neutral-900 dark:text-white truncate">
+                {recentPractice.subject || 'General'}
+              </h4>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">Pick up where you left off</p>
+            </div>
+          ) : (
+            <div
+              onClick={() => setView('classroom')}
+              className="group p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 cursor-pointer transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 rounded-lg">
+                  <GraduationCap size={16} />
+                </div>
+                <span className="font-bold text-sm text-neutral-900 dark:text-white">AI Classroom</span>
+              </div>
+              <h4 className="font-bold text-neutral-900 dark:text-white truncate">
+                Digital Chalkboard Lesson
+              </h4>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                Interactive step-by-step teaching with voice
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

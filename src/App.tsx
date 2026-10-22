@@ -223,7 +223,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-[100dvh] font-sans bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+    <div className="min-h-[100dvh] font-sans bg-slate-50 text-slate-900 dark:bg-black dark:text-slate-100">
       <div className="flex h-[100dvh] overflow-hidden w-full relative">
         {/* Sidebar container */}
         <div className="hidden md:flex relative z-50">
@@ -236,7 +236,7 @@ export default function App() {
           </div>
         )}
 
-        <main className={`flex-1 flex flex-col min-h-0 relative overflow-x-hidden ${currentView === 'tutor' ? 'p-0 overflow-hidden' : 'p-3 sm:p-5 md:p-8 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-8 overflow-y-auto'}`}>
+        <main className={`flex-1 flex flex-col min-h-0 relative w-full min-w-0 max-w-full overflow-x-hidden ${currentView === 'tutor' ? 'p-0 overflow-hidden' : 'p-3 sm:p-5 md:p-8 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-8 overflow-y-auto'}`}>
           <header className={`flex justify-between items-center shrink-0 gap-2 sm:gap-3 md:gap-4 flex-nowrap relative z-30 ${currentView === 'tutor' ? 'hidden' : 'mb-3 sm:mb-4 md:mb-6'}`}>
             {/* LearnDean Logo & Name on the Left */}
             <div 
