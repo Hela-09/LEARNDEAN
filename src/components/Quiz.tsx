@@ -47,6 +47,7 @@ import { jambOfflineDb } from '../services/jambOfflineDb';
 import { jambQuestionEngine } from '../services/jambQuestionEngine';
 import { getUnifiedQuestionsForPractice, JAMB_SUBJECTS } from '../data/jambQuestions';
 import { practiceHistoryService, PracticeHistorySession } from '../services/practiceHistoryService';
+import { notificationService } from '../services/notificationService';
 
 export interface Question {
   id?: string;
@@ -238,6 +239,7 @@ export default function Quiz({
 
   // Shortfall / Exact Question Count modal state
   const timerRemainingRef = useRef<number>(timerRemaining);
+  const sessionDeadlineRef = useRef<number | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Keep timerRemainingRef in sync
@@ -712,8 +714,26 @@ export default function Quiz({
     setTopic(data.topic || '');
     setDifficulty(data.difficulty || 'Medium');
     setAmount(data.amount || 20);
-    setTimerDuration(data.timerDuration || 30);
-    setTimerRemaining(data.timerRemaining !== undefined ? data.timerRemaining : (data.timerDuration * 60));
+    const durMinutes = data.timerDuration || 30;
+    setTimerDuration(durMinutes);
+    const untimed = !!data.isUntimed;
+    setIsUntimed(untimed);
+
+    if (untimed) {
+      setTimerRemaining(0);
+      sessionDeadlineRef.current = null;
+    } else if (data.deadline) {
+      sessionDeadlineRef.current = data.deadline;
+      const remainingSecs = Math.max(0, Math.round((data.deadline - Date.now()) / 1000));
+      setTimerRemaining(remainingSecs);
+      timerRemainingRef.current = remainingSecs;
+    } else {
+      const remainingSecs = data.timerRemaining !== undefined ? data.timerRemaining : (durMinutes * 60);
+      setTimerRemaining(remainingSecs);
+      timerRemainingRef.current = remainingSecs;
+      sessionDeadlineRef.current = Date.now() + (remainingSecs * 1000);
+    }
+
     setQuestions(data.questions || []);
     setCurrentQIndex(data.currentQIndex || 0);
     setAnswers(data.answers || {});
@@ -866,6 +886,7 @@ export default function Quiz({
       amount: validQuestions.length || amount || 20,
       timerDuration: timerDuration || 15,
       timerRemaining: typeof timerRemainingRef.current === 'number' ? timerRemainingRef.current : (timerDuration || 15) * 60,
+      deadline: sessionDeadlineRef.current || (Date.now() + ((typeof timerRemainingRef.current === 'number' ? timerRemainingRef.current : (timerDuration || 15) * 60) * 1000)),
       questions: validQuestions,
       currentQIndex: typeof currentQIndex === 'number' ? currentQIndex : 0,
       answers: answers || {},
@@ -925,7 +946,7 @@ export default function Quiz({
     persistSessionToFirebase();
   }, [answers, markedForReview, currentQIndex, hasRestored, setupMode, questions.length, isSubmitted, persistSessionToFirebase]);
 
-  // Timer effect
+  // Timer effect with accurate wall-clock deadline tracking
   useEffect(() => {
     if (setupMode || isSubmitted || questions.length === 0 || viewMode !== 'practice') {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -941,29 +962,50 @@ export default function Quiz({
       };
     }
 
+    if (!sessionDeadlineRef.current) {
+      sessionDeadlineRef.current = Date.now() + ((timerRemainingRef.current || (timerDuration * 60)) * 1000);
+    }
+
     timerRef.current = setInterval(() => {
-      setTimerRemaining(prev => {
-        if (prev <= 1) {
+      if (sessionDeadlineRef.current) {
+        const remaining = Math.max(0, Math.round((sessionDeadlineRef.current - Date.now()) / 1000));
+        setTimerRemaining(remaining);
+        timerRemainingRef.current = remaining;
+        try {
+          sessionStorage.setItem('practice_timer_remaining', String(remaining));
+        } catch (_) {}
+
+        if (remaining <= 0) {
           if (timerRef.current) {
             clearInterval(timerRef.current);
             timerRef.current = null;
           }
           handleTimeUp();
-          return 0;
         }
-        const updated = prev - 1;
-        timerRemainingRef.current = updated;
-        try {
-          sessionStorage.setItem('practice_timer_remaining', String(updated));
-        } catch (_) {}
-        return updated;
-      });
+      } else {
+        setTimerRemaining(prev => {
+          if (prev <= 1) {
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
+            handleTimeUp();
+            return 0;
+          }
+          const updated = prev - 1;
+          timerRemainingRef.current = updated;
+          try {
+            sessionStorage.setItem('practice_timer_remaining', String(updated));
+          } catch (_) {}
+          return updated;
+        });
+      }
     }, 1000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [setupMode, isSubmitted, questions.length, viewMode, isUntimed, user]);
+  }, [setupMode, isSubmitted, questions.length, viewMode, isUntimed, timerDuration, user]);
 
   const clearSession = () => {
     isExitingRef.current = true;
@@ -1143,89 +1185,64 @@ export default function Quiz({
     setLoading(true);
     setGenerationErrorNotice(null);
     try {
-      let loadedQuestions: Question[] = [];
-      let poolIsLow = false;
-      let unanswered = 0;
-
       const isOfflineEnv = typeof navigator === 'undefined' || !navigator.onLine;
-
       if (isOfflineEnv) {
-        // Load ONLY from existing IndexedDB offline database!
-        try {
-          const res = await jambOfflineDb.getOfflinePracticeQuestions({
-            subject: subjectId || subject.toLowerCase(),
-            topic: topic || undefined,
-            count: amount,
-            order: 'random'
-          });
-          const qList = res.questions || [];
-          if (qList.length === 0) {
-            setLoading(false);
-            return;
-          }
-          loadedQuestions = qList.map((q, idx) => ({
-            id: q.id,
-            question: q.passage ? `${q.passage}\n\n${q.question}` : q.question,
-            options: q.options,
-            correctAnswer: q.correctAnswer,
-            correctAnswerIndex: q.correctAnswer,
-            explanation: q.explanation || 'Refer to official syllabus and curriculum guide.',
-            difficulty: 'medium',
-            sourceType: (q as any).sourceType || 'past_question',
-            isAIgenerated: false,
-            topic: q.topic || 'General',
-            subject: q.subjectName || subject,
-            subjectId: q.subject || subjectId,
-            year: q.year,
-            questionNumber: q.questionNumber || (idx + 1)
-          }));
-        } catch (offlineErr) {
-          console.warn("Failed to load questions from offline DB:", offlineErr);
-        }
-      } else {
-        // 1. First retrieve questions from offline/unified bank via jambService
-        try {
-          const res = await jambService.getPracticeQuestions({
-            subject: subjectId || subject.toLowerCase(),
-            topic: topic || undefined,
-            count: amount,
-            order: 'random'
-          });
-          loadedQuestions = res.questions;
-          poolIsLow = res.isPoolLow;
-          unanswered = res.unansweredCount;
-        } catch (err) {
-          console.warn("Failed to get practice questions from jambService, falling back:", err);
-          loadedQuestions = getUnifiedQuestionsForPractice({
-            subject: subjectId || subject.toLowerCase(),
-            topic: topic || undefined,
-            count: amount,
-            order: 'random'
-          });
-        }
+        throw new Error("An active internet connection is required to generate AI practice questions. Please connect and try again.");
       }
 
-      // 2. Strict exact count enforcement: when offline or questions available, start immediately!
-      if (loadedQuestions.length < amount) {
-        if (isOfflineEnv || loadedQuestions.length > 0) {
-          // Start immediately with all available downloaded questions
-          setAmount(loadedQuestions.length);
-        } else {
-          setPoolShortfallState({
-            requested: amount,
-            available: loadedQuestions.length,
-            shortfall: amount - loadedQuestions.length,
-            subjects: [subjectId || subject],
-            pendingQuestions: loadedQuestions
-          });
-          setIsPoolLow(true);
-          return;
-        }
+      // Generate AI Practice questions independently via server Gemini endpoint
+      // NEVER use JAMB, WAEC, NECO, or other CBT question banks as a fallback.
+      const requestedCount = amount || 20;
+      const response = await fetch('/api/generate-questions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(user && (user as any).token ? { Authorization: `Bearer ${(user as any).token}` } : {})
+        },
+        body: JSON.stringify({
+          subject: subject || 'General Studies',
+          topic: topic || 'General',
+          difficulty: difficulty || 'Medium',
+          amount: requestedCount,
+          educationLevel: level || 'Secondary',
+          practiceMode: practiceMode || 'Custom Practice',
+          examType: 'AI_PRACTICE'
+        }),
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to generate AI questions.');
       }
 
-      const exactQuestions = loadedQuestions.slice(0, amount);
+      const data = await response.json();
+      const generatedList = Array.isArray(data.questions) ? data.questions : [];
+
+      if (generatedList.length === 0) {
+        throw new Error('AI question generation returned no questions. Please try again.');
+      }
+
+      const exactQuestions: Question[] = generatedList.map((q: any, idx: number) => ({
+        id: q.id || `ai-q-${Date.now()}-${idx + 1}`,
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer ?? 0,
+        correctAnswerIndex: q.correctAnswer ?? 0,
+        explanation: q.explanation || 'Refer to curriculum and lesson notes.',
+        difficulty: difficulty || 'medium',
+        sourceType: 'ai_generated',
+        isAIgenerated: true,
+        topic: topic || 'General',
+        subject: subject || 'AI Practice',
+        subjectId: subjectId || 'ai_practice',
+        questionNumber: idx + 1
+      }));
+
+      const finalAmount = exactQuestions.length;
+      setAmount(finalAmount);
       setIsPoolLow(false);
-      setUnansweredPoolCount(unanswered);
+      setUnansweredPoolCount(0);
       setQuestions(exactQuestions);
       setPoolShortfallState(null);
       setScore(0);
@@ -1233,22 +1250,25 @@ export default function Quiz({
       setAnswers({});
       setMarkedForReview({});
       setAwardedQuestionIndices(new Set());
-      setTimerRemaining(timerDuration * 60);
+      const durSecs = timerDuration * 60;
+      setTimerRemaining(durSecs);
+      sessionDeadlineRef.current = isUntimed ? null : (Date.now() + (durSecs * 1000));
       setTimeUsedSeconds(0);
       activateSession();
       setIsSubmitted(false);
       setViewMode('practice');
 
       // Initialize persistent session immediately
-      const validLoadedQuestions = loadedQuestions.map(q => cleanFirestoreData(q));
       const initialSession: Record<string, any> = {
         setupMode: false,
         difficulty: difficulty || 'Medium',
-        amount: validLoadedQuestions.length || amount || 20,
+        amount: finalAmount,
         practiceMode: practiceMode || 'standard',
         timerDuration: timerDuration || 15,
-        timerRemaining: (timerDuration || 15) * 60,
-        questions: validLoadedQuestions,
+        timerRemaining: durSecs,
+        deadline: sessionDeadlineRef.current,
+        isUntimed,
+        questions: exactQuestions,
         currentQIndex: 0,
         answers: {},
         markedForReview: {},
@@ -1256,6 +1276,7 @@ export default function Quiz({
         score: 0,
         updatedAt: Date.now()
       };
+
       if (user?.uid) initialSession.uid = user.uid;
       if (level) initialSession.level = level;
       if (selectedClass) initialSession.selectedClass = selectedClass;
@@ -1264,9 +1285,10 @@ export default function Quiz({
       if (topic) initialSession.topic = topic;
 
       cachedInternalSession = initialSession;
+      jambOfflineDb.saveActiveSession(initialSession).catch(() => {});
       try {
         localStorage.setItem('practice_session', JSON.stringify(initialSession));
-      } catch (e) {}
+      } catch (_) {}
 
       if (user) {
         try {
@@ -1281,20 +1303,20 @@ export default function Quiz({
 
         try {
           const metadata: Record<string, any> = {
-            amount: validLoadedQuestions.length,
-            questions: validLoadedQuestions
+            amount: finalAmount,
+            questions: exactQuestions
           };
           if (subject) metadata.subject = subject;
           if (topic) metadata.topic = topic;
           if (difficulty) metadata.difficulty = difficulty;
 
-          const resolvedSubject = subject || subjectId || 'JAMB Practice';
+          const resolvedSubject = subject || subjectId || 'AI Practice';
           const aiHistoryPayload: Record<string, any> = {
             uid: user.uid,
             type: 'question_generation',
             subject: resolvedSubject,
-            content: `Generated ${validLoadedQuestions.length} questions for ${resolvedSubject}${topic ? ' - ' + topic : ''}`,
-            details: `Practice session generated with ${validLoadedQuestions.length} questions`,
+            content: `Generated ${finalAmount} AI practice questions for ${resolvedSubject}${topic ? ' - ' + topic : ''}`,
+            details: `AI Practice session generated with ${finalAmount} questions`,
             metadata,
             createdAt: serverTimestamp(),
             timestamp: new Date().toISOString()
@@ -1311,8 +1333,8 @@ export default function Quiz({
         setGenerationErrorNotice("Question generation was stopped by user.");
         return;
       }
-      console.warn("Question generation error:", err);
-      setGenerationErrorNotice(err.message || 'An error occurred while generating questions. Please try again.');
+      console.warn("AI Question generation error:", err);
+      setGenerationErrorNotice(err.message || 'An error occurred while generating AI practice questions. Please try again.');
     } finally {
       setLoading(false);
       abortControllerRef.current = null;
@@ -1570,6 +1592,17 @@ export default function Quiz({
         console.warn("Silent save jamb attempt warning:", err);
       }
     }
+
+    // Deliver in-app completion notification and browser push
+    try {
+      notificationService.addNotification({
+        uid: user?.uid || 'guest',
+        title: 'Practice Session Completed',
+        message: `You completed practice on ${resolvedSubName} with a score of ${finalScore}/${questions.length} (${Math.round((finalScore / (questions.length || 1)) * 100)}%).`,
+        type: 'task_complete',
+        route: '/practice'
+      }).catch(notifErr => console.warn('Practice finish notification warning:', notifErr));
+    } catch (_) {}
 
     await clearSession();
   };

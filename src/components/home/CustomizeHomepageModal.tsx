@@ -215,12 +215,12 @@ export default function CustomizeHomepageModal({
               {selectedFeatures.map((feat) => (
                 <div
                   key={feat.id}
-                  className="bg-white dark:bg-[#0a0a0a] p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col items-center justify-center text-center shadow-2xs"
+                  className="bg-white dark:bg-[#0a0a0a] p-2.5 sm:p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col items-center justify-center text-center shadow-2xs aspect-square"
                 >
-                  <div className="w-9 h-9 mb-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-                    {renderFeatureIcon(feat.iconName, 'w-5 h-5')}
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 mb-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
+                    {renderFeatureIcon(feat.iconName, 'w-4 h-4 sm:w-5 sm:h-5')}
                   </div>
-                  <span className="text-xs font-bold text-neutral-900 dark:text-white truncate max-w-full">
+                  <span className="text-[11px] sm:text-xs font-bold text-neutral-900 dark:text-white line-clamp-2 leading-tight text-center max-w-full px-0.5">
                     {feat.label}
                   </span>
                 </div>

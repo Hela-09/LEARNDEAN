@@ -63,7 +63,7 @@ export function getContextualFallback(pathname: string): string {
 
   // Sub-routes with clear parent relationships
   if (clean.startsWith('/practice/')) return '/practice';
-  if (clean === '/practice') return '/study';
+  if (clean === '/practice') return '/learn';
 
   if (clean.startsWith('/subjects/')) return '/subjects';
   if (clean.startsWith('/library/')) return '/library';
@@ -136,23 +136,22 @@ export function getSectionForPath(path: string): 'home' | 'learn' | 'classroom' 
     return 'classroom';
   }
 
-  // Study: includes /study, /jamb, and /practice ("Practice is inside Study")
+  // Study: includes /study and /jamb (Official exam CBT, syllabus, novel studies)
   if (
     clean.startsWith('/study') ||
-    clean.startsWith('/jamb') ||
-    clean.startsWith('/practice')
+    clean.startsWith('/jamb')
   ) {
     return 'study';
   }
 
+  // Learn: includes /learn, /practice (AI Practice), /library, /subjects, /novels, /flashcards, etc.
   if (
     clean === '/learn' ||
+    clean.startsWith('/practice') ||
     clean.startsWith('/library') ||
     clean.startsWith('/subjects') ||
     clean.startsWith('/novels') ||
     clean.startsWith('/flashcards') ||
-    clean.startsWith('/classroom') ||
-    clean.startsWith('/ai-classroom') ||
     clean.startsWith('/study-journey') ||
     clean.startsWith('/journey') ||
     clean.startsWith('/weak-topics')
@@ -204,9 +203,8 @@ export function navigateToRootSection(
     return;
   }
 
-  // Clear any active quiz/practice session so it never restores unexpectedly
-  clearActivePracticeSession();
-
+  // Active practice sessions and lessons are preserved across section navigation
+  // and will only be cleared when explicitly submitted or ended by the student.
   const currentPath = window.location.pathname;
 
   // If already at the main root page of this section, scroll to top

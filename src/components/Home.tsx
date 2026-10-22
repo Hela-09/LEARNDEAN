@@ -356,12 +356,12 @@ export default function Home({ setView }: HomeProps) {
               key={feat.id}
               id={`quick-action-${feat.id}`}
               onClick={() => handleFeatureClick(feat)}
-              className="bg-white dark:bg-[#0a0a0a] p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-900/40 transition-all flex flex-col items-center justify-center text-center group cursor-pointer aspect-square min-w-0 shadow-2xs active:scale-[0.98]"
+              className="bg-white dark:bg-[#0a0a0a] p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-900/40 transition-all flex flex-col items-center justify-center text-center group cursor-pointer aspect-square min-w-0 shadow-2xs active:scale-[0.98]"
             >
-              <div className="w-11 h-11 mb-2.5 bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 mb-2 bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
                 {renderFeatureIcon(feat.iconName)}
               </div>
-              <h3 className="font-bold text-neutral-900 dark:text-white text-xs sm:text-sm line-clamp-1 max-w-full">
+              <h3 className="font-bold text-neutral-900 dark:text-white text-xs sm:text-sm line-clamp-2 leading-snug text-center max-w-full px-1">
                 {feat.label}
               </h3>
             </button>

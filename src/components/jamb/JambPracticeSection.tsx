@@ -61,7 +61,11 @@ export default function JambPracticeSection({ initialSubjectId, onStartPractice 
     ? Math.min(100, Math.max(1, Number(customQuestionCount)))
     : (practiceMode === 'cbt' ? 40 : questionCount);
 
+  const [isLaunching, setIsLaunching] = useState(false);
+
   const handleLaunch = () => {
+    if (isLaunching) return;
+    setIsLaunching(true);
     const isUntimedMode = practiceMode === 'study' || isUntimed;
     const dur = isUntimedMode ? 0 : (practiceMode === 'cbt' ? 45 : timerMinutes);
 
@@ -452,10 +456,11 @@ export default function JambPracticeSection({ initialSubjectId, onStartPractice 
             id="jamb-launch-practice-btn"
             type="button"
             onClick={handleLaunch}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-extrabold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            disabled={isLaunching}
+            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 text-sm font-extrabold shadow-sm flex items-center justify-center gap-2.5 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
           >
-            <Play size={18} className="fill-current text-white" />
-            <span>Start Practice</span>
+            <Play size={18} className="fill-current text-white dark:text-neutral-900" />
+            <span>{isLaunching ? 'Launching Practice...' : 'Launch Practice'}</span>
           </button>
         </div>
       </div>

@@ -82,12 +82,12 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
 
   return (
     <aside
-      className="w-64 h-full bg-slate-900 dark:bg-black text-white flex flex-col shrink-0 border-r border-slate-800 dark:border-neutral-800 select-none"
+      className="w-64 h-full bg-neutral-950 dark:bg-black text-white flex flex-col shrink-0 border-r border-neutral-800 dark:border-neutral-800 select-none"
       role="navigation"
       aria-label="Desktop main navigation"
     >
       {/* Brand Header */}
-      <div className="p-4 pb-3 flex items-center justify-between shrink-0 border-b border-slate-800/80">
+      <div className="p-4 pb-3 flex items-center justify-between shrink-0 border-b border-neutral-800">
         <div
           onClick={() => handleNavClick('/home')}
           className="flex items-center space-x-3 cursor-pointer group min-w-0"
@@ -97,11 +97,11 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <h2 className="text-base font-bold text-white leading-tight truncate">LearnDean</h2>
-              <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-blue-600 text-white leading-tight">
+              <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-neutral-800 text-neutral-200 border border-neutral-700 leading-tight">
                 PRO
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-tight truncate">Smart Prep System</p>
+            <p className="text-[11px] text-neutral-400 leading-tight truncate">Smart Prep System</p>
           </div>
         </div>
       </div>
@@ -112,14 +112,14 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
           type="button"
           id="sidebar-search-btn"
           onClick={() => window.dispatchEvent(new CustomEvent('open-zetadu-search'))}
-          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 text-slate-400 hover:text-slate-200 text-xs transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-850 border border-neutral-800 text-neutral-400 hover:text-white text-xs transition-all cursor-pointer group"
           title="Search LearnDean (⌘K)"
         >
           <div className="flex items-center gap-2">
-            <Search size={15} className="group-hover:text-blue-400 transition-colors" />
+            <Search size={15} className="group-hover:text-white transition-colors" />
             <span className="font-medium">Search...</span>
           </div>
-          <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-slate-900 text-slate-400 rounded border border-slate-700">
+          <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-neutral-950 text-neutral-400 rounded border border-neutral-800">
             ⌘K
           </kbd>
         </button>
@@ -127,7 +127,7 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
 
       {/* Main Navigation Items (Icon beside label, consistent outlined style) */}
       <nav className="flex-1 px-3 py-1 space-y-1.5 overflow-y-auto overscroll-contain">
-        <p className="px-2 pt-1 pb-1 text-[10px] font-black uppercase tracking-wider text-slate-500">
+        <p className="px-2 pt-1 pb-1 text-[10px] font-black uppercase tracking-wider text-neutral-500">
           Navigation
         </p>
 
@@ -141,10 +141,10 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
               key={item.id}
               id={`sidebar-nav-${item.id}-btn`}
               onClick={() => handleNavClick(item.rootPath)}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-150 relative group cursor-pointer ${
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-150 relative group cursor-pointer border ${
                 isActive
-                  ? 'bg-blue-600 text-white font-bold shadow-sm shadow-blue-900/50'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white font-medium'
+                  ? 'bg-neutral-850 text-white font-bold border-neutral-700 shadow-xs'
+                  : 'text-neutral-400 hover:bg-neutral-900 hover:text-white font-medium border-transparent'
               }`}
               title={item.label}
               aria-label={item.label}
@@ -157,10 +157,10 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
                     className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-transform ${
                       isActive
                         ? 'text-white scale-105'
-                        : 'text-emerald-400 group-hover:scale-105'
+                        : 'text-neutral-300 group-hover:scale-105'
                     }`}
                   >
-                    <LearnDeanEmblem className="w-5 h-5" active={isActive} monochrome={isActive} />
+                    <LearnDeanEmblem className="w-5 h-5" active={isActive} monochrome={true} />
                   </div>
                 ) : (
                   Icon && (
@@ -170,7 +170,7 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
                       className={`shrink-0 transition-transform duration-150 ${
                         isActive
                           ? 'text-white scale-[1.04]'
-                          : 'text-slate-400 group-hover:text-slate-200'
+                          : 'text-neutral-400 group-hover:text-neutral-200'
                       }`}
                     />
                   )
@@ -206,8 +206,8 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
           }}
           className={`w-full flex items-center justify-between p-2 rounded-xl border transition-all cursor-pointer group ${
             location.pathname.startsWith('/profile') || location.pathname.startsWith('/settings')
-              ? 'bg-slate-800 border-blue-500/50 text-white'
-              : 'bg-slate-800/50 hover:bg-slate-800 border-slate-700/40 text-slate-300'
+              ? 'bg-neutral-850 border-neutral-700 text-white'
+              : 'bg-neutral-900 hover:bg-neutral-850 border-neutral-800 text-neutral-300'
           }`}
           title="Account & Profile Settings"
           aria-label="Account Settings"
@@ -224,19 +224,19 @@ export default function Sidebar({ currentView, setCurrentView }: SidebarProps) {
               <p className="text-xs font-bold text-white truncate leading-tight">
                 {userProfile?.name || user?.displayName || 'Student Profile'}
               </p>
-              <p className="text-[10px] text-slate-400 truncate leading-tight">
+              <p className="text-[10px] text-neutral-400 truncate leading-tight">
                 {user?.email || 'Account Settings'}
               </p>
             </div>
           </div>
-          <Settings size={15} className="text-slate-400 group-hover:text-blue-400 shrink-0 transition-colors" />
+          <Settings size={15} className="text-neutral-400 group-hover:text-white shrink-0 transition-colors" />
         </button>
 
         {isInstallable && (
           <button
             type="button"
             onClick={triggerInstall}
-            className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-semibold py-2 px-3 rounded-xl transition-all shadow-md text-xs cursor-pointer"
+            className="w-full flex items-center justify-center space-x-2 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold py-2 px-3 rounded-xl transition-all shadow-xs text-xs cursor-pointer border border-neutral-700"
             title="Install LearnDean App"
             aria-label="Install App"
           >

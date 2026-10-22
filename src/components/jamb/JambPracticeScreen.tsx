@@ -31,6 +31,8 @@ import {
 } from '../../utils/jambSubjectMatcher';
 import { jambService } from '../../services/jambService';
 import { jambQuestionEngine } from '../../services/jambQuestionEngine';
+import { notificationService } from '../../services/notificationService';
+import { useAuth } from '../../contexts/AuthContext';
 import JambCalculator from './JambCalculator';
 
 export interface JambPracticeConfig {
@@ -67,6 +69,7 @@ export interface JambPracticeScreenProps {
 }
 
 export default function JambPracticeScreen({ config, onExit, onRetake }: JambPracticeScreenProps) {
+  const { user } = useAuth();
   // Synchronous initial question bank retrieval (Never shows blank/loading on launch)
   const [questions, setQuestions] = useState<any[]>(() => {
     if (config.reviewSession?.questions && config.reviewSession.questions.length > 0) {
@@ -397,6 +400,17 @@ export default function JambPracticeScreen({ config, onExit, onRetake }: JambPra
       answers: answersMap,
       questions: questions as any
     }).catch(err => console.warn('Could not save practice attempt:', err));
+
+    // Deliver in-app notification & browser push
+    try {
+      notificationService.addNotification({
+        uid: user?.uid || 'guest',
+        title: 'JAMB Practice Finished',
+        message: `You completed practice for ${currentSubjectMeta.name} with a score of ${correctCount}/${total} (${pct}%).`,
+        type: 'task_complete',
+        route: '/study'
+      }).catch(notifErr => console.warn('Notification warning:', notifErr));
+    } catch (_) {}
 
     if (autoTimedOut) {
       setToastMessage("Time is up! Your JAMB practice has been submitted.");

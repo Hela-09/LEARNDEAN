@@ -76,7 +76,7 @@ export default function BottomNav({ currentView, setCurrentView }: BottomNavProp
   return (
     <nav
       id="mobile-bottom-nav"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-t border-slate-200/90 dark:border-neutral-800 pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)] select-none overflow-x-hidden"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-t border-neutral-200 dark:border-neutral-800 pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.6)] select-none overflow-x-hidden"
       role="navigation"
       aria-label="Main mobile navigation"
     >
@@ -100,8 +100,8 @@ export default function BottomNav({ currentView, setCurrentView }: BottomNavProp
                 <div
                   className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-200 overflow-hidden shrink-0 ${
                     isActive
-                      ? 'shadow-md shadow-blue-500/30 ring-2 ring-blue-500 scale-[1.05]'
-                      : 'shadow-xs border border-blue-200/50 dark:border-blue-800/40 group-hover:scale-105'
+                      ? 'shadow-sm ring-2 ring-neutral-900 dark:ring-white scale-[1.05]'
+                      : 'shadow-2xs border border-neutral-200 dark:border-neutral-800 group-hover:scale-105'
                   }`}
                 >
                   <LearnDeanEmblem
@@ -121,8 +121,8 @@ export default function BottomNav({ currentView, setCurrentView }: BottomNavProp
                       strokeWidth={isActive ? 2.3 : 1.85}
                       className={`transition-all duration-200 ${
                         isActive
-                          ? 'text-blue-600 dark:text-blue-400 scale-[1.03]'
-                          : 'text-slate-400 dark:text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'
+                          ? 'text-neutral-900 dark:text-white scale-[1.03]'
+                          : 'text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-700 dark:group-hover:text-neutral-300'
                       }`}
                     />
                   )}
@@ -135,10 +135,10 @@ export default function BottomNav({ currentView, setCurrentView }: BottomNavProp
                   isCenter ? 'mt-0.5' : 'mt-1'
                 } ${
                   isActive
-                    ? 'font-bold text-blue-600 dark:text-blue-400'
+                    ? 'font-bold text-neutral-900 dark:text-white'
                     : isCenter
-                    ? 'font-semibold text-blue-600/80 dark:text-blue-400/80 group-hover:text-blue-600 dark:group-hover:text-blue-300'
-                    : 'font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200'
+                    ? 'font-semibold text-neutral-700 dark:text-neutral-300 group-hover:text-neutral-900 dark:group-hover:text-white'
+                    : 'font-medium text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-200'
                 }`}
               >
                 {item.label}
@@ -149,7 +149,7 @@ export default function BottomNav({ currentView, setCurrentView }: BottomNavProp
                 {isActive ? (
                   <motion.div
                     layoutId="bottomNavActiveDot"
-                    className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400"
+                    className="w-1.5 h-1.5 rounded-full bg-neutral-900 dark:bg-white"
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                   />
                 ) : (

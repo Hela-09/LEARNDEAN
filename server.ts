@@ -690,6 +690,8 @@ Always prioritize accuracy, completeness, and clarity. Analyze the entire image 
       const { subject, topic, difficulty, amount, educationLevel, country, practiceMode, examType } = req.body;
       const ai = getGeminiClient();
       
+      const targetCount = Math.min(100, Math.max(1, parseInt(amount, 10) || 5));
+
       let modeInstruction = "";
       if (examType === 'JAMB' || practiceMode?.includes('JAMB')) {
         modeInstruction = "These questions MUST strictly adhere to the official JAMB UTME syllabus and Nigerian university entrance examination standards. Every question must be a high-quality, authentic multiple choice question testing comprehension, analysis, or syllabus concepts. Options must consist of exactly 4 plausible choices (A, B, C, D) with exactly one correct answer and a complete, clear pedagogical explanation.";
@@ -697,17 +699,6 @@ Always prioritize accuracy, completeness, and clarity. Analyze the entire image 
       else if (practiceMode === 'Mistake Practice') modeInstruction = "Focus heavily on common misconceptions and tricky edge cases where students frequently make mistakes.";
       else if (practiceMode === 'Random Practice') modeInstruction = "Mix topics across the entire subject randomly, ensuring a wide breadth of concepts.";
       else if (practiceMode === 'Topic Practice') modeInstruction = `Focus exclusively on the specific topic: ${topic}.`;
-      
-      const prompt = `Generate ${amount || 5} practice questions for a student.
-Subject: ${subject}
-Topic: ${topic}
-Difficulty: ${difficulty}
-Education Level: ${educationLevel || 'General'}
-Country/Curriculum: ${country || 'International'}
-Practice Mode: ${practiceMode || 'Custom Practice'}
-${modeInstruction}
-
-Each question must be a multiple choice question with 4 options, one correct answer, and an explanation.`;
 
       const config = {
         responseMimeType: "application/json",
@@ -718,7 +709,7 @@ Each question must be a multiple choice question with 4 options, one correct ans
             properties: {
               question: { type: Type.STRING },
               options: { type: Type.ARRAY, items: { type: Type.STRING } },
-              correctAnswer: { type: Type.INTEGER, description: "0-indexed correct option" },
+              correctAnswer: { type: Type.INTEGER, description: "0-indexed correct option (0, 1, 2, or 3)" },
               explanation: { type: Type.STRING }
             },
             required: ["question", "options", "correctAnswer", "explanation"]
@@ -726,8 +717,6 @@ Each question must be a multiple choice question with 4 options, one correct ans
         }
       };
 
-      let usedModel = 'gemini-3-flash-preview';
-      let response: any = null;
       const modelCandidates = [
         'gemini-3-flash-preview',
         'gemini-3.8-flash',
@@ -735,55 +724,170 @@ Each question must be a multiple choice question with 4 options, one correct ans
         'gemini-3.1-flash-lite',
         'gemini-3.6-flash'
       ];
-      let lastModelError: any = null;
 
-      for (const m of modelCandidates) {
-        try {
-          usedModel = m;
-          response = await ai.models.generateContent({
-            model: m,
-            contents: prompt,
-            config
-          });
-          if (response?.text) break;
-        } catch (err: any) {
-          lastModelError = err;
+      // Helper to generate a single batch of questions using Gemini
+      const generateBatch = async (batchCount: number, existingQuestionsCount: number) => {
+        const batchPrompt = `Generate exactly ${batchCount} unique practice questions for a student.
+Subject: ${subject || 'General Studies'}
+Topic: ${topic || 'Comprehensive Subject Topics'}
+Difficulty: ${difficulty || 'Medium'}
+Education Level: ${educationLevel || 'General'}
+Country/Curriculum: ${country || 'International'}
+Practice Mode: ${practiceMode || 'Custom Practice'}
+Batch Segment: Starting from question index ${existingQuestionsCount + 1}
+${modeInstruction}
+
+IMPORTANT RULES:
+1. Each question must be distinct and non-repetitive.
+2. Provide exactly 4 distinct options per question.
+3. correctAnswer must be an integer index (0 for first option, 1 for second, 2 for third, 3 for fourth).
+4. Provide a thorough, self-contained educational explanation.`;
+
+        let batchResponse: any = null;
+        let lastErr: any = null;
+        let usedBatchModel = modelCandidates[0];
+
+        for (const m of modelCandidates) {
+          try {
+            usedBatchModel = m;
+            batchResponse = await ai.models.generateContent({
+              model: m,
+              contents: batchPrompt,
+              config
+            });
+            if (batchResponse?.text) break;
+          } catch (err: any) {
+            lastErr = err;
+          }
+        }
+
+        if (!batchResponse?.text) {
+          throw lastErr || new Error("Failed to receive question generation response from Gemini");
+        }
+
+        const parsed = JSON.parse(batchResponse.text);
+        return {
+          questions: Array.isArray(parsed) ? parsed : [],
+          response: batchResponse,
+          model: usedBatchModel
+        };
+      };
+
+      const collectedQuestions: any[] = [];
+      const seenQuestionTexts = new Set<string>();
+      let primaryModelUsed = modelCandidates[0];
+      let totalInputTokens = 0;
+      let totalOutputTokens = 0;
+
+      // Determine batch sizes: maximum 20 per batch for high reliability and no truncated JSON
+      const batchSizes: number[] = [];
+      let remainingToGenerate = targetCount;
+      while (remainingToGenerate > 0) {
+        const currentBatch = Math.min(20, remainingToGenerate);
+        batchSizes.push(currentBatch);
+        remainingToGenerate -= currentBatch;
+      }
+
+      for (const bSize of batchSizes) {
+        const result = await generateBatch(bSize, collectedQuestions.length);
+        primaryModelUsed = result.model;
+        if (result.response?.usageMetadata) {
+          totalInputTokens += result.response.usageMetadata.promptTokenCount ?? 0;
+          totalOutputTokens += result.response.usageMetadata.candidatesTokenCount ?? 0;
+        }
+
+        for (const q of result.questions) {
+          if (!q || typeof q.question !== 'string' || !Array.isArray(q.options) || q.options.length < 2) continue;
+          const normKey = q.question.trim().toLowerCase();
+          if (!seenQuestionTexts.has(normKey)) {
+            seenQuestionTexts.add(normKey);
+            // Ensure 4 options
+            const safeOptions = q.options.map((opt: any) => String(opt || '').trim());
+            while (safeOptions.length < 4) {
+              safeOptions.push(`Option ${String.fromCharCode(65 + safeOptions.length)}`);
+            }
+            const safeAnswer = typeof q.correctAnswer === 'number' && q.correctAnswer >= 0 && q.correctAnswer < safeOptions.length
+              ? q.correctAnswer
+              : 0;
+
+            collectedQuestions.push({
+              question: q.question.trim(),
+              options: safeOptions.slice(0, 4),
+              correctAnswer: safeAnswer,
+              correctAnswerIndex: safeAnswer,
+              explanation: String(q.explanation || 'Refer to the curriculum syllabus.').trim()
+            });
+          }
         }
       }
 
-      if (!response?.text) {
-        throw lastModelError || new Error("No text from Gemini");
+      // If deduplication caused fewer than targetCount, do one top-up batch if difference > 0
+      if (collectedQuestions.length < targetCount) {
+        const shortfall = targetCount - collectedQuestions.length;
+        try {
+          const topUpResult = await generateBatch(shortfall, collectedQuestions.length);
+          for (const q of topUpResult.questions) {
+            if (collectedQuestions.length >= targetCount) break;
+            if (!q || typeof q.question !== 'string' || !Array.isArray(q.options)) continue;
+            const normKey = q.question.trim().toLowerCase();
+            if (!seenQuestionTexts.has(normKey)) {
+              seenQuestionTexts.add(normKey);
+              const safeOptions = q.options.map((opt: any) => String(opt || '').trim());
+              while (safeOptions.length < 4) {
+                safeOptions.push(`Option ${String.fromCharCode(65 + safeOptions.length)}`);
+              }
+              const safeAnswer = typeof q.correctAnswer === 'number' && q.correctAnswer >= 0 && q.correctAnswer < safeOptions.length
+                ? q.correctAnswer
+                : 0;
+              collectedQuestions.push({
+                question: q.question.trim(),
+                options: safeOptions.slice(0, 4),
+                correctAnswer: safeAnswer,
+                correctAnswerIndex: safeAnswer,
+                explanation: String(q.explanation || 'Refer to the curriculum syllabus.').trim()
+              });
+            }
+          }
+        } catch (topUpErr) {
+          console.warn("Top-up question batch warning:", topUpErr);
+        }
       }
 
-      const text = response.text;
-      if (!text) throw new Error("No text from Gemini");
-      const questions = JSON.parse(text);
-      res.json({ questions });
+      // Format final questions with unique IDs and explicit AI metadata
+      const finalQuestions = collectedQuestions.slice(0, targetCount).map((q, idx) => ({
+        ...q,
+        id: `ai-gen-${Date.now()}-${idx + 1}-${Math.random().toString(36).substring(2, 7)}`,
+        questionNumber: idx + 1,
+        isAIgenerated: true,
+        sourceType: 'ai_generated',
+        subject: subject || 'General Studies',
+        topic: topic || 'General',
+        difficulty: difficulty || 'Medium'
+      }));
 
-      // Track usage only upon successful generation using actual Gemini usage metadata
+      res.json({ questions: finalQuestions });
+
+      // Track usage only upon successful generation
       const user = (req as any).user;
       const uid = user?.uid || user?.user_id;
       if (uid) {
-        const inputTokens = response.usageMetadata?.promptTokenCount ?? 0;
-        const outputTokens = response.usageMetadata?.candidatesTokenCount ?? 0;
-        const totalTokens = response.usageMetadata?.totalTokenCount ?? (inputTokens + outputTokens);
         recordAiUsage({
           uid,
           email: user?.email,
           displayName: user?.name,
           category: 'practice',
-          model: usedModel,
-          inputTokens,
-          outputTokens,
-          totalTokens
+          model: primaryModelUsed,
+          inputTokens: totalInputTokens,
+          outputTokens: totalOutputTokens,
+          totalTokens: totalInputTokens + totalOutputTokens
         });
       }
     } catch (error: any) {
       if (error?.status === 503 || error?.message?.includes("503") || error?.status === "UNAVAILABLE" || error?.error?.code === 503 || error?.status === 429 || error?.message?.toLowerCase().includes("quota") || error?.message?.toLowerCase().includes("resource_exhausted")) {
-         res.status(503).json({ error: "High demand. Please try again." });
+         res.status(503).json({ error: "The AI practice generation service is experiencing high demand. Please try again shortly." });
       } else {
-         console.error("Generation API Error:", error);
-         res.status(500).json({ error: "Failed to generate questions" });
+         console.error("AI Question Generation API Error:", error);
+         res.status(500).json({ error: "Failed to generate AI questions. Please verify your connection." });
       }
     }
   });

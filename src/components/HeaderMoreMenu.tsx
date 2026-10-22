@@ -126,7 +126,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Home',
             subtitle: 'Study dashboard, streaks & daily tasks',
             icon: Home,
-            iconBg: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['dashboard', 'start', 'overview', 'main'],
             isActive: path === '/home' || path === '/',
             action: () => navigateToRootSection(navigate, '/home'),
@@ -136,7 +136,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Learn',
             subtitle: 'Curriculum syllabus, subject modules & lesson notes',
             icon: BookOpen,
-            iconBg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['curriculum', 'subjects', 'notes', 'topics', 'lessons'],
             isActive: path === '/learn',
             action: () => navigateToRootSection(navigate, '/learn'),
@@ -146,9 +146,9 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Study',
             subtitle: 'UTME exam prep, practice tests & novel studies',
             icon: GraduationCap,
-            iconBg: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             badge: 'PORTAL',
-            badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300',
+            badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
             keywords: ['jamb', 'utme', 'practice', 'cbt', 'study'],
             isActive: path.startsWith('/study') && !path.includes('study-journey'),
             action: () => navigateToRootSection(navigate, '/study'),
@@ -164,9 +164,9 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'JAMB Prep',
             subtitle: 'UTME past questions, exam syllabus & literature guides',
             icon: Award,
-            iconBg: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             badge: 'UTME',
-            badgeColor: 'bg-amber-400 text-slate-950',
+            badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
             keywords: ['cbt', 'exam', 'questions', 'answers', 'jamb', 'test'],
             isActive: path.startsWith('/jamb'),
             action: () => navigateToRootSection(navigate, '/jamb'),
@@ -176,7 +176,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Practice',
             subtitle: 'Subject quizzes, timed tests & CBT drills',
             icon: Sliders,
-            iconBg: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['quiz', 'timed', 'test', 'drills', 'questions'],
             isActive: path.startsWith('/practice'),
             action: () => navigateToRootSection(navigate, '/practice'),
@@ -186,7 +186,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Flashcards',
             subtitle: 'Spaced repetition decks for rapid memory recall',
             icon: Layers,
-            iconBg: 'bg-teal-100 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['revision', 'spaced repetition', 'cards', 'recall'],
             isActive: path.startsWith('/flashcards'),
             action: () => navigateToRootSection(navigate, '/flashcards'),
@@ -196,9 +196,9 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Daily Challenge',
             subtitle: 'Daily quick UTME question challenge to keep streaks',
             icon: Zap,
-            iconBg: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             badge: 'STREAK',
-            badgeColor: 'bg-orange-500 text-white',
+            badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
             keywords: ['challenge', 'streak', 'daily', 'drill'],
             isActive: path.startsWith('/daily-challenge'),
             action: () => navigateToRootSection(navigate, '/daily-challenge'),
@@ -213,10 +213,10 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             id: 'classroom',
             label: 'AI Classroom',
             subtitle: 'Digital chalkboard teacher with step-by-step voice explanations',
-            icon: () => <LearnDeanEmblem className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
-            iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40',
+            icon: () => <LearnDeanEmblem className="w-5 h-5 text-neutral-900 dark:text-white" monochrome={true} />,
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             badge: 'AI',
-            badgeColor: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white',
+            badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
             keywords: ['classroom', 'chalkboard', 'teacher', 'voice', 'explain', 'board', 'lesson', 'tutor'],
             isActive: path.startsWith('/classroom') || path.startsWith('/ai-classroom') || path.startsWith('/ai-tutor') || path.startsWith('/tutor'),
             action: () => navigateToRootSection(navigate, '/classroom'),
@@ -226,7 +226,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Upload Notes',
             subtitle: 'Convert class notes, PDFs & docs into summaries & quizzes',
             icon: FileUp,
-            iconBg: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['upload', 'notes', 'pdf', 'document', 'summary', 'convert'],
             isActive: path.startsWith('/upload-notes') || path.startsWith('/upload'),
             action: () => navigateToRootSection(navigate, '/upload-notes'),
@@ -236,7 +236,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Library',
             subtitle: 'Textbooks, curated subject guides & reference books',
             icon: Library,
-            iconBg: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['books', 'curriculum', 'read', 'literature', 'library'],
             isActive: path.startsWith('/library') || (path.startsWith('/subjects') && !path.includes('/novels')),
             action: () => navigateToRootSection(navigate, '/subjects'),
@@ -246,7 +246,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'JAMB Novels & Literature',
             subtitle: 'Prescribed novels, chapter breakdowns & stored questions',
             icon: BookMarked,
-            iconBg: 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['novels', 'lekki headmaster', 'life changer', 'literature', 'reading'],
             isActive: path.startsWith('/novels'),
             action: () => navigateToRootSection(navigate, '/novels'),
@@ -256,9 +256,9 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Offline Mode',
             subtitle: 'Download packs, questions & novels to study without data',
             icon: WifiOff,
-            iconBg: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             badge: 'OFFLINE',
-            badgeColor: 'bg-amber-500 text-white',
+            badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
             keywords: ['offline', 'download', 'no internet', 'pack', 'cache'],
             isActive: false,
             action: () => {
@@ -282,7 +282,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Progress & Mastery',
             subtitle: 'Study journey, topic accuracy & syllabus completion',
             icon: TrendingUp,
-            iconBg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['progress', 'journey', 'analytics', 'stats', 'streak', 'mastery'],
             isActive: path.startsWith('/study-journey') || path.startsWith('/journey'),
             action: () => navigateToRootSection(navigate, '/study-journey'),
@@ -292,7 +292,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Weak Topics Diagnostic',
             subtitle: 'Pinpoint and resolve topics where you lose marks',
             icon: Target,
-            iconBg: 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['weak', 'mistakes', 'errors', 'improve', 'score'],
             isActive: path.startsWith('/weak-topics'),
             action: () => navigateToRootSection(navigate, '/weak-topics'),
@@ -302,7 +302,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Bookmarks',
             subtitle: 'Saved challenging questions, notes & novel passages',
             icon: Bookmark,
-            iconBg: 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['saved', 'bookmarks', 'favorites', 'review'],
             isActive: path.includes('bookmarks'),
             action: () => {
@@ -314,7 +314,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Profile / Account',
             subtitle: 'Account details, target score & exam date',
             icon: User,
-            iconBg: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['account', 'user', 'name', 'email', 'avatar', 'profile'],
             isActive: path === '/profile',
             action: () => {
@@ -328,7 +328,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Settings',
             subtitle: 'Appearance, dark/light theme, font size & preferences',
             icon: Settings,
-            iconBg: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['settings', 'preferences', 'dark mode', 'theme', 'font'],
             isActive: path === '/settings',
             action: () => {
@@ -350,7 +350,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Help & Support',
             subtitle: 'User guide, UTME FAQs & customer assistance',
             icon: HelpCircle,
-            iconBg: 'bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300',
+            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
             keywords: ['help', 'support', 'faq', 'contact', 'guide'],
             isActive: false,
             action: onOpenHelp,
@@ -362,9 +362,9 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                   label: 'Admin Console',
                   subtitle: 'System management, user analytics & database controls',
                   icon: Shield,
-                  iconBg: 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300',
+                  iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
                   badge: 'ADMIN',
-                  badgeColor: 'bg-rose-600 text-white',
+                  badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
                   keywords: ['admin', 'console', 'database', 'users'],
                   isActive: path.startsWith('/admin'),
                   action: () => navigateToRootSection(navigate, '/admin'),
@@ -447,24 +447,24 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="fixed inset-y-0 right-0 w-full max-w-[340px] sm:max-w-[400px] bg-white dark:bg-slate-900 shadow-2xl flex flex-col border-l border-slate-200 dark:border-slate-800 z-50 select-none overflow-hidden"
+              className="fixed inset-y-0 right-0 w-full max-w-[340px] sm:max-w-[400px] bg-white dark:bg-black shadow-2xl flex flex-col border-l border-neutral-200 dark:border-neutral-800 z-50 select-none overflow-hidden"
               role="region"
               aria-label="LearnDean complete navigation menu"
             >
               {/* Drawer Header */}
-              <div className="p-4 sm:p-5 pb-3 border-b border-slate-200/90 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/80 dark:bg-slate-900/90 backdrop-blur-md">
+              <div className="p-4 sm:p-5 pb-3 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between shrink-0 bg-white dark:bg-black">
                 <div className="flex items-center space-x-3 min-w-0">
                   <Logo variant="icon" className="w-8 h-8 min-w-8 min-h-8 shrink-0" />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <h2 className="text-base font-extrabold text-slate-900 dark:text-white leading-tight truncate">
+                      <h2 className="text-base font-extrabold text-neutral-900 dark:text-white leading-tight truncate">
                         LearnDean
                       </h2>
-                      <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-blue-600 text-white uppercase tracking-wider leading-none">
+                      <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-neutral-900 dark:bg-neutral-800 text-white dark:text-neutral-200 border border-neutral-700 uppercase tracking-wider leading-none">
                         MENU
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400 font-medium truncate">
                       Complete app features & sections
                     </p>
                   </div>
@@ -478,7 +478,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                     setIsOpen(false);
                     setShowLogoutConfirm(false);
                   }}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/70 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="p-2 rounded-xl text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                   aria-label="Close navigation menu"
                   title="Close (Esc)"
                 >
@@ -487,11 +487,11 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
               </div>
 
               {/* Fast Real-Time Search Bar */}
-              <div className="p-3 sm:px-4 border-b border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 shrink-0">
+              <div className="p-3 sm:px-4 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-black shrink-0">
                 <div className="relative flex items-center">
                   <Search
                     size={16}
-                    className="absolute left-3.5 text-slate-400 dark:text-slate-500 pointer-events-none"
+                    className="absolute left-3.5 text-neutral-400 dark:text-neutral-500 pointer-events-none"
                   />
                   <input
                     ref={searchInputRef}
@@ -499,14 +499,14 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search features, tools, exam prep..."
-                    className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
+                    className="w-full pl-9 pr-8 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600 transition-all"
                     aria-label="Search navigation menu"
                   />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-2.5 p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                      className="absolute right-2.5 p-1 rounded-full text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
                       title="Clear search"
                     >
                       <X size={13} />
@@ -515,14 +515,14 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                 </div>
 
                 {searchQuery && (
-                  <div className="flex items-center justify-between mt-2 px-1 text-[10px] text-slate-400 dark:text-slate-500">
+                  <div className="flex items-center justify-between mt-2 px-1 text-[10px] text-neutral-400 dark:text-neutral-500">
                     <span>
                       Found {filteredCount} of {totalItemCount} features
                     </span>
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="text-blue-600 dark:text-blue-400 font-bold hover:underline cursor-pointer"
+                      className="text-neutral-900 dark:text-white font-bold hover:underline cursor-pointer"
                     >
                       Reset filter
                     </button>
@@ -534,12 +534,12 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
               <div className="flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 space-y-4 [scrollbar-gutter:stable]">
                 {/* Install PWA App Banner with Official LearnDean App Icon */}
                 {isInstallable && (
-                  <div className="p-3 rounded-2xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white flex items-center justify-between gap-3 shadow-md border border-blue-500/30">
+                  <div className="p-3 rounded-2xl bg-neutral-900 text-white flex items-center justify-between gap-3 shadow-md border border-neutral-750">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Logo variant="icon" className="w-9 h-9 rounded-xl shrink-0" />
                       <div className="min-w-0">
                         <p className="text-xs font-bold truncate">Install LearnDean</p>
-                        <p className="text-[10px] text-blue-200 truncate">Faster loading &amp; home screen access</p>
+                        <p className="text-[10px] text-neutral-400 truncate">Faster loading &amp; home screen access</p>
                       </div>
                     </div>
                     <button
@@ -548,7 +548,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                         setIsOpen(false);
                         triggerInstall();
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shrink-0 transition-all shadow-sm cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-neutral-100 text-neutral-900 font-bold text-xs flex items-center gap-1.5 shrink-0 transition-all shadow-xs cursor-pointer"
                     >
                       <Download size={13} />
                       <span>Install</span>
@@ -561,11 +561,11 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                     <div key={section.title} className="space-y-1.5">
                       {/* Section Category Header */}
                       <div className="px-2 pt-1 flex items-baseline justify-between">
-                        <p className="text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        <p className="text-[11px] font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                           {section.title}
                         </p>
                         {section.description && !searchQuery && (
-                          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">
                             {section.description}
                           </span>
                         )}
@@ -584,8 +584,8 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                               onClick={() => handleItemClick(item.action)}
                               className={`w-full flex items-center justify-between p-2.5 rounded-2xl text-left transition-all cursor-pointer group relative ${
                                 isActive
-                                  ? 'bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-bold'
-                                  : 'hover:bg-slate-100/90 dark:hover:bg-slate-800/90 text-slate-800 dark:text-slate-200 border border-transparent'
+                                  ? 'bg-neutral-100 dark:bg-neutral-850 border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white font-bold'
+                                  : 'hover:bg-neutral-100/90 dark:hover:bg-neutral-900/90 text-neutral-800 dark:text-neutral-200 border border-transparent'
                               }`}
                               aria-current={isActive ? 'page' : undefined}
                             >
@@ -603,12 +603,12 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
 
                                 {/* Label & Subtitle */}
                                 <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-1.5">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
                                     <p
-                                      className={`text-xs truncate ${
+                                      className={`text-xs ${
                                         isActive
-                                          ? 'font-extrabold text-blue-700 dark:text-blue-300'
-                                          : 'font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                                          ? 'font-extrabold text-neutral-900 dark:text-white'
+                                          : 'font-bold text-neutral-800 dark:text-neutral-100 group-hover:text-black dark:group-hover:text-white'
                                       }`}
                                     >
                                       {item.label}
@@ -616,14 +616,14 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                                     {item.badge && (
                                       <span
                                         className={`text-[9px] font-black px-1.5 py-0.2 rounded-md uppercase tracking-wider shrink-0 ${
-                                          item.badgeColor || 'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300'
+                                          item.badgeColor || 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700'
                                         }`}
                                       >
                                         {item.badge}
                                       </span>
                                     )}
                                   </div>
-                                  <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate leading-tight mt-0.5">
+                                  <p className="text-[10px] text-neutral-400 dark:text-neutral-500 leading-tight mt-0.5 break-words line-clamp-2">
                                     {item.subtitle}
                                   </p>
                                 </div>
@@ -632,11 +632,11 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                               {/* Trailing Chevron / Active Dot */}
                               <div className="ml-2 shrink-0 flex items-center">
                                 {isActive ? (
-                                  <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 mr-1" />
+                                  <div className="w-2 h-2 rounded-full bg-neutral-900 dark:bg-white mr-1" />
                                 ) : (
                                   <ChevronRight
                                     size={14}
-                                    className="text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 group-hover:translate-x-0.5 transition-all"
+                                    className="text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-500 dark:group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all"
                                   />
                                 )}
                               </div>
@@ -646,7 +646,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                       </div>
 
                       {sIdx < filteredSections.length - 1 && (
-                        <div className="border-b border-slate-100 dark:border-slate-800/80 pt-2 my-1" />
+                        <div className="border-b border-neutral-100 dark:border-neutral-800 pt-2 my-1" />
                       )}
                     </div>
                   ))
@@ -666,7 +666,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="px-3.5 py-1.5 rounded-xl bg-blue-600 text-white font-semibold text-xs hover:bg-blue-700 transition-colors cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-black font-semibold text-xs hover:bg-neutral-800 transition-colors cursor-pointer"
                     >
                       Show all features
                     </button>
@@ -675,7 +675,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
               </div>
 
               {/* Drawer Footer with User Account and Sign Out */}
-              <div className="p-3 sm:p-4 pb-[max(1rem,calc(0.75rem+env(safe-area-inset-bottom)))] border-t border-slate-200/90 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 shrink-0 space-y-2">
+              <div className="p-3 sm:p-4 pb-[max(1rem,calc(0.75rem+env(safe-area-inset-bottom)))] border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-black shrink-0 space-y-2">
                 {user ? (
                   <>
                     {/* User Profile Bar */}
@@ -689,7 +689,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                           navigateToRootSection(navigate, '/profile');
                         })
                       }
-                      className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 hover:border-blue-400 dark:hover:border-blue-500 transition-all cursor-pointer group"
+                      className="flex items-center justify-between p-2 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 transition-all cursor-pointer group"
                       title="View Student Profile"
                     >
                       <div className="flex items-center space-x-2.5 min-w-0">
@@ -698,40 +698,40 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                           displayName={userProfile?.name || user?.displayName}
                           email={user?.email}
                           size="sm"
-                          className="w-8 h-8 text-xs shrink-0 ring-1.5 ring-blue-500/20"
+                          className="w-8 h-8 text-xs shrink-0 ring-1.5 ring-neutral-300 dark:ring-neutral-700"
                         />
                         <div className="min-w-0 text-left">
-                          <p className="text-xs font-bold text-slate-900 dark:text-white truncate leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                          <p className="text-xs font-bold text-neutral-900 dark:text-white truncate leading-tight group-hover:text-black dark:group-hover:text-neutral-200 transition-colors">
                             {userProfile?.name || user?.displayName || 'Student Profile'}
                           </p>
-                          <p className="text-[10px] text-slate-400 truncate leading-tight">
+                          <p className="text-[10px] text-neutral-400 truncate leading-tight">
                             {user?.email || 'Tap to manage account'}
                           </p>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 shrink-0 mr-1">
+                      <span className="text-[10px] font-bold text-neutral-700 dark:text-neutral-300 shrink-0 mr-1">
                         View
                       </span>
                     </div>
 
                     {/* Sign Out Action with Confirmation */}
                     {showLogoutConfirm ? (
-                      <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 space-y-2">
-                        <p className="text-xs font-bold text-rose-800 dark:text-rose-200 text-center">
+                      <div className="p-2.5 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 space-y-2">
+                        <p className="text-xs font-bold text-neutral-900 dark:text-white text-center">
                           Sign out of LearnDean?
                         </p>
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
                             onClick={() => setShowLogoutConfirm(false)}
-                            className="flex-1 py-1.5 text-[11px] font-bold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 cursor-pointer"
+                            className="flex-1 py-1.5 text-[11px] font-bold rounded-xl border border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-800 cursor-pointer"
                           >
                             Cancel
                           </button>
                           <button
                             type="button"
                             onClick={handleLogout}
-                            className="flex-1 py-1.5 text-[11px] font-bold rounded-xl bg-rose-600 text-white hover:bg-rose-700 cursor-pointer"
+                            className="flex-1 py-1.5 text-[11px] font-bold rounded-xl bg-neutral-900 text-white dark:bg-white dark:text-black hover:bg-neutral-800 cursor-pointer"
                           >
                             Sign Out
                           </button>
@@ -741,7 +741,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                       <button
                         type="button"
                         onClick={() => setShowLogoutConfirm(true)}
-                        className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-bold transition-colors cursor-pointer"
+                        className="w-full flex items-center justify-center space-x-2 py-2 px-3 rounded-xl text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-xs font-bold transition-colors cursor-pointer"
                       >
                         <LogOut size={14} />
                         <span>Sign Out</span>
@@ -752,7 +752,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                   <button
                     type="button"
                     onClick={() => handleItemClick(() => navigateToRootSection(navigate, '/home'))}
-                    className="w-full py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors"
+                    className="w-full py-2 bg-neutral-900 dark:bg-white text-white dark:text-black rounded-xl text-xs font-bold hover:bg-neutral-800 transition-colors"
                   >
                     Sign In
                   </button>

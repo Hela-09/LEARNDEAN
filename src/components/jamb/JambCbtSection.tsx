@@ -155,7 +155,11 @@ export default function JambCbtSection({
     examLengthMode === '160' ? 160 :
     (60 + selectedElectives.length * 40); // 180 questions
 
+  const [isLaunching, setIsLaunching] = useState(false);
+
   const handleLaunch = () => {
+    if (isLaunching) return;
+    setIsLaunching(true);
     onStartCbt({
       subjects: allSelectedSubjects,
       amount: questionCount,
@@ -582,9 +586,9 @@ export default function JambCbtSection({
               <button
                 type="button"
                 onClick={() => setIsUntimed(false)}
-                className={`py-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                   !isUntimed
-                    ? 'border-blue-600 bg-blue-600 text-white'
+                    ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900'
                     : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                 }`}
               >
@@ -594,9 +598,9 @@ export default function JambCbtSection({
               <button
                 type="button"
                 onClick={() => setIsUntimed(true)}
-                className={`py-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`py-2.5 rounded-xl text-xs font-bold border flex items-center justify-center gap-1.5 cursor-pointer transition-colors ${
                   isUntimed
-                    ? 'border-blue-600 bg-blue-600 text-white'
+                    ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900'
                     : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                 }`}
               >
@@ -624,7 +628,7 @@ export default function JambCbtSection({
                   <Sparkles size={14} className="text-amber-500" />
                   Course Combo Question Breakdown:
                 </span>
-                <span className="text-blue-600 dark:text-blue-400 font-extrabold">{questionCount} Total</span>
+                <span className="text-neutral-900 dark:text-white font-extrabold">{questionCount} Total</span>
               </div>
               
               <div className="space-y-1.5 pt-1">
@@ -635,7 +639,7 @@ export default function JambCbtSection({
                   return (
                     <div key={sIdx} className="flex items-center justify-between bg-white dark:bg-slate-900 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-800 text-xs">
                       <span className="font-semibold text-slate-800 dark:text-slate-200">{subName}</span>
-                      <span className="font-mono font-bold text-blue-600 dark:text-blue-400">{sCount} questions</span>
+                      <span className="font-mono font-bold text-neutral-900 dark:text-neutral-100">{sCount} questions</span>
                     </div>
                   );
                 })}
@@ -656,7 +660,7 @@ export default function JambCbtSection({
               <CheckCircle2 size={14} className="text-emerald-500" />
               UTME Mock Summary ({allSelectedSubjects.length} Subjects)
             </span>
-            <span className="px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 text-xs font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700 text-xs font-bold">
               {questionCount} Questions (400 Marks)
             </span>
           </div>
@@ -686,10 +690,11 @@ export default function JambCbtSection({
             id="jamb-launch-cbt-exam-btn"
             type="button"
             onClick={handleLaunch}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-extrabold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2.5 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            disabled={isLaunching || allSelectedSubjects.length === 0}
+            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 text-sm font-extrabold shadow-sm flex items-center justify-center gap-2.5 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
           >
-            <Play size={18} className="fill-current text-white" />
-            <span>Start Practice</span>
+            <Play size={18} className="fill-current text-white dark:text-neutral-900" />
+            <span>{isLaunching ? 'Launching Practice...' : 'Launch Practice'}</span>
           </button>
         </div>
       </div>
