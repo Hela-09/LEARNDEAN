@@ -126,7 +126,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Home',
             subtitle: 'Study dashboard, streaks & daily tasks',
             icon: Home,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200',
             keywords: ['dashboard', 'start', 'overview', 'main'],
             isActive: path === '/home' || path === '/',
             action: () => navigateToRootSection(navigate, '/home'),
@@ -136,7 +136,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Learn',
             subtitle: 'Curriculum syllabus, subject modules & lesson notes',
             icon: BookOpen,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400',
             keywords: ['curriculum', 'subjects', 'notes', 'topics', 'lessons'],
             isActive: path === '/learn',
             action: () => navigateToRootSection(navigate, '/learn'),
@@ -146,9 +146,9 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Study',
             subtitle: 'UTME exam prep, practice tests & novel studies',
             icon: GraduationCap,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400',
             badge: 'PORTAL',
-            badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
+            badgeColor: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800',
             keywords: ['jamb', 'utme', 'practice', 'cbt', 'study'],
             isActive: path.startsWith('/study') && !path.includes('study-journey'),
             action: () => navigateToRootSection(navigate, '/study'),
@@ -164,9 +164,9 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'JAMB Prep',
             subtitle: 'UTME past questions, exam syllabus & literature guides',
             icon: Award,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400',
             badge: 'UTME',
-            badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
+            badgeColor: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800',
             keywords: ['cbt', 'exam', 'questions', 'answers', 'jamb', 'test'],
             isActive: path.startsWith('/jamb'),
             action: () => navigateToRootSection(navigate, '/jamb'),
@@ -176,7 +176,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Practice',
             subtitle: 'Subject quizzes, timed tests & CBT drills',
             icon: Sliders,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400',
             keywords: ['quiz', 'timed', 'test', 'drills', 'questions'],
             isActive: path.startsWith('/practice'),
             action: () => navigateToRootSection(navigate, '/practice'),
@@ -186,7 +186,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Flashcards',
             subtitle: 'Spaced repetition decks for rapid memory recall',
             icon: Layers,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400',
             keywords: ['revision', 'spaced repetition', 'cards', 'recall'],
             isActive: path.startsWith('/flashcards'),
             action: () => navigateToRootSection(navigate, '/flashcards'),
@@ -196,9 +196,9 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Daily Challenge',
             subtitle: 'Daily quick UTME question challenge to keep streaks',
             icon: Zap,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400',
             badge: 'STREAK',
-            badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
+            badgeColor: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800',
             keywords: ['challenge', 'streak', 'daily', 'drill'],
             isActive: path.startsWith('/daily-challenge'),
             action: () => navigateToRootSection(navigate, '/daily-challenge'),
@@ -213,10 +213,10 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             id: 'classroom',
             label: 'AI Classroom',
             subtitle: 'Digital chalkboard teacher with step-by-step voice explanations',
-            icon: () => <LearnDeanEmblem className="w-5 h-5 text-neutral-900 dark:text-white" monochrome={true} />,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            icon: () => <LearnDeanEmblem className="w-5 h-5 text-neutral-900 dark:text-white" monochrome={false} />,
+            iconBg: 'bg-slate-100 text-slate-800 dark:bg-slate-850 dark:text-slate-100 border border-slate-200/60 dark:border-slate-700/60',
             badge: 'AI',
-            badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
+            badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800',
             keywords: ['classroom', 'chalkboard', 'teacher', 'voice', 'explain', 'board', 'lesson', 'tutor'],
             isActive: path.startsWith('/classroom') || path.startsWith('/ai-classroom') || path.startsWith('/ai-tutor') || path.startsWith('/tutor'),
             action: () => navigateToRootSection(navigate, '/classroom'),
@@ -226,7 +226,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Upload Notes',
             subtitle: 'Convert class notes, PDFs & docs into summaries & quizzes',
             icon: FileUp,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-teal-50 text-teal-600 dark:bg-teal-950/60 dark:text-teal-400',
             keywords: ['upload', 'notes', 'pdf', 'document', 'summary', 'convert'],
             isActive: path.startsWith('/upload-notes') || path.startsWith('/upload'),
             action: () => navigateToRootSection(navigate, '/upload-notes'),
@@ -236,7 +236,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Library',
             subtitle: 'Textbooks, curated subject guides & reference books',
             icon: Library,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400',
             keywords: ['books', 'curriculum', 'read', 'literature', 'library'],
             isActive: path.startsWith('/library') || (path.startsWith('/subjects') && !path.includes('/novels')),
             action: () => navigateToRootSection(navigate, '/subjects'),
@@ -246,7 +246,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'JAMB Novels & Literature',
             subtitle: 'Prescribed novels, chapter breakdowns & stored questions',
             icon: BookMarked,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-amber-50/90 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
             keywords: ['novels', 'lekki headmaster', 'life changer', 'literature', 'reading'],
             isActive: path.startsWith('/novels'),
             action: () => navigateToRootSection(navigate, '/novels'),
@@ -256,9 +256,9 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Offline Mode',
             subtitle: 'Download packs, questions & novels to study without data',
             icon: WifiOff,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
             badge: 'OFFLINE',
-            badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
+            badgeColor: 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600',
             keywords: ['offline', 'download', 'no internet', 'pack', 'cache'],
             isActive: false,
             action: () => {
@@ -282,7 +282,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Progress & Mastery',
             subtitle: 'Study journey, topic accuracy & syllabus completion',
             icon: TrendingUp,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-violet-50 text-violet-600 dark:bg-violet-950/60 dark:text-violet-400',
             keywords: ['progress', 'journey', 'analytics', 'stats', 'streak', 'mastery'],
             isActive: path.startsWith('/study-journey') || path.startsWith('/journey'),
             action: () => navigateToRootSection(navigate, '/study-journey'),
@@ -292,7 +292,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Weak Topics Diagnostic',
             subtitle: 'Pinpoint and resolve topics where you lose marks',
             icon: Target,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400',
             keywords: ['weak', 'mistakes', 'errors', 'improve', 'score'],
             isActive: path.startsWith('/weak-topics'),
             action: () => navigateToRootSection(navigate, '/weak-topics'),
@@ -302,7 +302,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Bookmarks',
             subtitle: 'Saved challenging questions, notes & novel passages',
             icon: Bookmark,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-amber-50 text-amber-500 dark:bg-amber-950/60 dark:text-amber-400',
             keywords: ['saved', 'bookmarks', 'favorites', 'review'],
             isActive: path.includes('bookmarks'),
             action: () => {
@@ -314,7 +314,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Profile / Account',
             subtitle: 'Account details, target score & exam date',
             icon: User,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400',
             keywords: ['account', 'user', 'name', 'email', 'avatar', 'profile'],
             isActive: path === '/profile',
             action: () => {
@@ -328,7 +328,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Settings',
             subtitle: 'Appearance, dark/light theme, font size & preferences',
             icon: Settings,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
             keywords: ['settings', 'preferences', 'dark mode', 'theme', 'font'],
             isActive: path === '/settings',
             action: () => {
@@ -350,7 +350,7 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
             label: 'Help & Support',
             subtitle: 'User guide, UTME FAQs & customer assistance',
             icon: HelpCircle,
-            iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+            iconBg: 'bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400',
             keywords: ['help', 'support', 'faq', 'contact', 'guide'],
             isActive: false,
             action: onOpenHelp,
@@ -362,9 +362,9 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
                   label: 'Admin Console',
                   subtitle: 'System management, user analytics & database controls',
                   icon: Shield,
-                  iconBg: 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200',
+                  iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400',
                   badge: 'ADMIN',
-                  badgeColor: 'bg-neutral-200 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-300 dark:border-neutral-700',
+                  badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800',
                   keywords: ['admin', 'console', 'database', 'users'],
                   isActive: path.startsWith('/admin'),
                   action: () => navigateToRootSection(navigate, '/admin'),
@@ -532,6 +532,56 @@ export default function HeaderMoreMenu({ setCurrentView, onOpenHelp }: HeaderMor
 
               {/* Scrollable Categories List */}
               <div className="flex-1 overflow-y-auto overscroll-contain p-3 sm:p-4 space-y-4 [scrollbar-gutter:stable]">
+                {/* Fast Access: Student Profile & Global Search Shortcut */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    id="menu-drawer-profile-quick-btn"
+                    onClick={() => {
+                      setIsOpen(false);
+                      localStorage.removeItem('zetadu_profile_section');
+                      window.dispatchEvent(new CustomEvent('open-profile-section', { detail: { section: null } }));
+                      navigateToRootSection(navigate, '/profile');
+                    }}
+                    className="flex items-center gap-2 p-2.5 rounded-2xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-blue-400 dark:hover:border-blue-500 transition-all text-left group cursor-pointer shadow-2xs"
+                    title="Open Student Profile"
+                  >
+                    <UserAvatar
+                      photoURL={userProfile?.photoURL || user?.photoURL}
+                      displayName={userProfile?.name || user?.displayName}
+                      email={user?.email}
+                      size="sm"
+                      className="w-8 h-8 text-xs shrink-0 ring-1 ring-blue-500/30"
+                    />
+                    <div className="min-w-0 flex-1 truncate">
+                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium leading-none">Profile</p>
+                      <p className="text-xs font-bold text-neutral-900 dark:text-white truncate mt-0.5">
+                        {userProfile?.name || user?.displayName || 'My Profile'}
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    id="menu-drawer-search-quick-btn"
+                    onClick={() => {
+                      setIsOpen(false);
+                      window.dispatchEvent(new CustomEvent('open-zetadu-search'));
+                    }}
+                    className="flex items-center gap-2 p-2.5 rounded-2xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:border-blue-400 dark:hover:border-blue-500 transition-all text-left group cursor-pointer shadow-2xs"
+                    title="Search subjects, topics & questions (⌘K)"
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-200/50 dark:border-blue-900/50">
+                      <Search size={16} />
+                    </div>
+                    <div className="min-w-0 flex-1 truncate">
+                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium leading-none">Search</p>
+                      <p className="text-xs font-bold text-neutral-900 dark:text-white truncate mt-0.5">
+                        Catalog (⌘K)
+                      </p>
+                    </div>
+                  </button>
+                </div>
                 {/* Install PWA App Banner with Official LearnDean App Icon */}
                 {isInstallable && (
                   <div className="p-3 rounded-2xl bg-neutral-900 text-white flex items-center justify-between gap-3 shadow-md border border-neutral-750">

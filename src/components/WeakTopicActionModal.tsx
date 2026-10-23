@@ -104,11 +104,11 @@ export default function WeakTopicActionModal({
           <button
             id="weak-topic-practice-btn"
             onClick={handlePractice}
-            className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 text-left transition-all group cursor-pointer"
+            className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 text-left transition-all group cursor-pointer"
           >
             <div className="flex items-center gap-3.5 min-w-0 flex-1">
-              <div className="w-11 h-11 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <PenTool size={20} />
+              <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-800/60 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <PenTool size={20} strokeWidth={1.95} />
               </div>
               <div className="min-w-0 flex-1">
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm">
@@ -119,18 +119,18 @@ export default function WeakTopicActionModal({
                 </p>
               </div>
             </div>
-            <ArrowRight size={18} className="text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
+            <ArrowRight size={18} className="text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0" />
           </button>
 
           {/* Option 2: Study Flashcards */}
           <button
             id="weak-topic-flashcards-btn"
             onClick={handleFlashcards}
-            className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/20 text-left transition-all group cursor-pointer"
+            className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-sky-500 dark:hover:border-sky-500 hover:bg-sky-50/40 dark:hover:bg-sky-950/20 text-left transition-all group cursor-pointer"
           >
             <div className="flex items-center gap-3.5 min-w-0 flex-1">
-              <div className="w-11 h-11 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <Layers size={20} />
+              <div className="w-11 h-11 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-200/60 dark:border-sky-800/60 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <Layers size={20} strokeWidth={1.95} />
               </div>
               <div className="min-w-0 flex-1">
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm">
@@ -141,18 +141,18 @@ export default function WeakTopicActionModal({
                 </p>
               </div>
             </div>
-            <ArrowRight size={18} className="text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all shrink-0" />
+            <ArrowRight size={18} className="text-slate-400 group-hover:text-sky-600 group-hover:translate-x-0.5 transition-all shrink-0" />
           </button>
 
           {/* Option 3: Learn in AI Classroom */}
           <button
             id="weak-topic-tutor-btn"
             onClick={handleAskTutor}
-            className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 text-left transition-all group cursor-pointer"
+            className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 text-left transition-all group cursor-pointer"
           >
             <div className="flex items-center gap-3.5 min-w-0 flex-1">
-              <div className="w-11 h-11 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                <MessageSquare size={20} />
+              <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <MessageSquare size={20} strokeWidth={1.95} />
               </div>
               <div className="min-w-0 flex-1">
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm">
@@ -163,7 +163,7 @@ export default function WeakTopicActionModal({
                 </p>
               </div>
             </div>
-            <ArrowRight size={18} className="text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all shrink-0" />
+            <ArrowRight size={18} className="text-slate-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all shrink-0" />
           </button>
         </div>
 

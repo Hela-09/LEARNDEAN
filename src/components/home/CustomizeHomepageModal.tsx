@@ -30,6 +30,7 @@ import {
 } from '../../services/homepagePreferencesService';
 import { LearnDeanEmblem } from '../Logo';
 import { useAuth } from '../../contexts/AuthContext';
+import { getSemanticPaletteForFeature, renderThemedFeatureIcon } from '../../utils/iconTokens';
 
 interface CustomizeHomepageModalProps {
   isOpen: boolean;
@@ -37,37 +38,6 @@ interface CustomizeHomepageModalProps {
   currentLinks: string[];
   onSaved: (links: string[]) => void;
 }
-
-const renderFeatureIcon = (iconName: string, className = 'w-5 h-5') => {
-  switch (iconName) {
-    case 'classroom':
-      return <LearnDeanEmblem className={className} />;
-    case 'upload':
-      return <FileUp className={className} />;
-    case 'journey':
-      return <Compass className={className} />;
-    case 'library':
-      return <BookOpen className={className} />;
-    case 'practice':
-      return <PenTool className={className} />;
-    case 'study_hub':
-      return <School className={className} />;
-    case 'flashcards':
-      return <Layers className={className} />;
-    case 'jamb':
-      return <GraduationCap className={className} />;
-    case 'novels':
-      return <BookMarked className={className} />;
-    case 'offline':
-      return <WifiOff className={className} />;
-    case 'weak_topics':
-      return <Target className={className} />;
-    case 'challenge':
-      return <Zap className={className} />;
-    default:
-      return <Sparkles className={className} />;
-  }
-};
 
 export default function CustomizeHomepageModal({
   isOpen,
@@ -212,19 +182,22 @@ export default function CustomizeHomepageModal({
                   : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5'
               }`}
             >
-              {selectedFeatures.map((feat) => (
-                <div
-                  key={feat.id}
-                  className="bg-white dark:bg-[#0a0a0a] p-2.5 sm:p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col items-center justify-center text-center shadow-2xs aspect-square"
-                >
-                  <div className="w-8 h-8 sm:w-9 sm:h-9 mb-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
-                    {renderFeatureIcon(feat.iconName, 'w-4 h-4 sm:w-5 sm:h-5')}
+              {selectedFeatures.map((feat) => {
+                const palette = getSemanticPaletteForFeature(feat.iconName);
+                return (
+                  <div
+                    key={feat.id}
+                    className="bg-white dark:bg-[#0a0a0a] p-2.5 sm:p-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 flex flex-col items-center justify-center text-center shadow-2xs aspect-square"
+                  >
+                    <div className={`w-8 h-8 sm:w-9 sm:h-9 mb-1.5 rounded-xl border ${palette.bg} ${palette.border} flex items-center justify-center shrink-0`}>
+                      {renderThemedFeatureIcon(feat.iconName, { size: 18 })}
+                    </div>
+                    <span className="text-[11px] sm:text-xs font-bold text-neutral-900 dark:text-white line-clamp-2 leading-tight text-center max-w-full px-0.5">
+                      {feat.label}
+                    </span>
                   </div>
-                  <span className="text-[11px] sm:text-xs font-bold text-neutral-900 dark:text-white line-clamp-2 leading-tight text-center max-w-full px-0.5">
-                    {feat.label}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -235,61 +208,64 @@ export default function CustomizeHomepageModal({
             </h3>
 
             <div className="space-y-2">
-              {selectedFeatures.map((feat, index) => (
-                <div
-                  key={feat.id}
-                  className="p-3 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3 shadow-2xs"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-bold flex items-center justify-center shrink-0">
-                      {index + 1}
-                    </span>
-                    <div className="w-8 h-8 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center shrink-0">
-                      {renderFeatureIcon(feat.iconName, 'w-4 h-4')}
+              {selectedFeatures.map((feat, index) => {
+                const palette = getSemanticPaletteForFeature(feat.iconName);
+                return (
+                  <div
+                    key={feat.id}
+                    className="p-3 rounded-2xl bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-neutral-800 flex items-center justify-between gap-3 shadow-2xs"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="w-6 h-6 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 text-xs font-bold flex items-center justify-center shrink-0">
+                        {index + 1}
+                      </span>
+                      <div className={`w-8 h-8 rounded-xl border ${palette.bg} ${palette.border} flex items-center justify-center shrink-0`}>
+                        {renderThemedFeatureIcon(feat.iconName, { size: 16 })}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white truncate">
+                          {feat.label}
+                        </p>
+                        <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate hidden sm:block">
+                          {feat.shortDescription}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white truncate">
-                        {feat.label}
-                      </p>
-                      <p className="text-[11px] text-neutral-500 dark:text-neutral-400 truncate hidden sm:block">
-                        {feat.shortDescription}
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => handleMoveUp(index)}
-                      disabled={index === 0}
-                      className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                      title="Move Up"
-                      aria-label="Move Up"
-                    >
-                      <ArrowUp size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleMoveDown(index)}
-                      disabled={index === selectedFeatures.length - 1}
-                      className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                      title="Move Down"
-                      aria-label="Move Down"
-                    >
-                      <ArrowDown size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleToggle(feat.id)}
-                      disabled={selectedFeatures.length <= 1}
-                      className="px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-semibold disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer ml-1"
-                      title="Remove from Homepage"
-                    >
-                      Remove
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveUp(index)}
+                        disabled={index === 0}
+                        className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                        title="Move Up"
+                        aria-label="Move Up"
+                      >
+                        <ArrowUp size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveDown(index)}
+                        disabled={index === selectedFeatures.length - 1}
+                        className="p-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                        title="Move Down"
+                        aria-label="Move Down"
+                      >
+                        <ArrowDown size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleToggle(feat.id)}
+                        disabled={selectedFeatures.length <= 1}
+                        className="px-2.5 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-semibold disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer ml-1"
+                        title="Remove from Homepage"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -300,31 +276,34 @@ export default function CustomizeHomepageModal({
                 Available to Add ({unselectedFeatures.length})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {unselectedFeatures.map((feat) => (
-                  <button
-                    key={feat.id}
-                    type="button"
-                    onClick={() => handleToggle(feat.id)}
-                    className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 flex items-center justify-between text-left transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-neutral-200/70 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 flex items-center justify-center shrink-0 group-hover:bg-neutral-300 dark:group-hover:bg-neutral-700 transition-colors">
-                        {renderFeatureIcon(feat.iconName, 'w-4 h-4')}
+                {unselectedFeatures.map((feat) => {
+                  const palette = getSemanticPaletteForFeature(feat.iconName);
+                  return (
+                    <button
+                      key={feat.id}
+                      type="button"
+                      onClick={() => handleToggle(feat.id)}
+                      className="p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 flex items-center justify-between text-left transition-all cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-8 h-8 rounded-xl border ${palette.bg} ${palette.border} flex items-center justify-center shrink-0 transition-colors`}>
+                          {renderThemedFeatureIcon(feat.iconName, { size: 16 })}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-neutral-900 dark:text-white truncate">
+                            {feat.label}
+                          </p>
+                          <p className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate">
+                            {feat.shortDescription}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-neutral-900 dark:text-white truncate">
-                          {feat.label}
-                        </p>
-                        <p className="text-[10px] text-neutral-500 dark:text-neutral-400 truncate">
-                          {feat.shortDescription}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[11px] font-bold shrink-0 ml-2 shadow-2xs group-hover:scale-105 transition-transform">
-                      + Add
-                    </span>
-                  </button>
-                ))}
+                      <span className="px-2.5 py-1 rounded-lg bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[11px] font-bold shrink-0 ml-2 shadow-2xs group-hover:scale-105 transition-transform">
+                        + Add
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

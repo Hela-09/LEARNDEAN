@@ -236,7 +236,7 @@ export default function App() {
           </div>
         )}
 
-        <main className={`flex-1 flex flex-col min-h-0 relative w-full min-w-0 max-w-full overflow-x-hidden ${currentView === 'tutor' ? 'p-0 overflow-hidden' : 'p-3 sm:p-5 md:p-8 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-8 overflow-y-auto'}`}>
+        <main className={`flex-1 flex flex-col min-h-0 relative w-full min-w-0 max-w-full overflow-x-hidden ${currentView === 'tutor' ? 'p-0 overflow-hidden' : 'p-3 sm:p-5 md:p-8 pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-8 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]'}`}>
           <header className={`flex justify-between items-center shrink-0 gap-2 sm:gap-3 md:gap-4 flex-nowrap relative z-30 ${currentView === 'tutor' ? 'hidden' : 'mb-3 sm:mb-4 md:mb-6'}`}>
             {/* LearnDean Logo & Name on the Left */}
             <div 
@@ -263,38 +263,42 @@ export default function App() {
               </div>
             </div>
 
-            {/* Global Search Bar Trigger (Desktop & Tablet) */}
-            <div className="flex-1 max-w-xs md:max-w-sm lg:max-w-md mx-2 hidden sm:block">
-              <button
-                id="header-global-search-btn"
-                onClick={() => setIsSearchOpen(true)}
-                className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 text-slate-400 dark:text-slate-400 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
-                title="Search subjects, topics, flashcards, questions (⌘K)"
-              >
-                <div className="flex items-center gap-2 text-xs truncate">
-                  <Search size={15} className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0" />
-                  <span className="truncate">Search subjects, questions...</span>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded border border-slate-200 dark:border-slate-600">
-                    ⌘K
-                  </kbd>
-                </div>
-              </button>
-            </div>
+            {/* Global Search Bar Trigger (Desktop & Tablet) - Hidden on Home */}
+            {currentView !== 'home' && (
+              <div className="flex-1 max-w-xs md:max-w-sm lg:max-w-md mx-2 hidden sm:block">
+                <button
+                  id="header-global-search-btn"
+                  onClick={() => setIsSearchOpen(true)}
+                  className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 text-slate-400 dark:text-slate-400 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                  title="Search subjects, topics, flashcards, questions (⌘K)"
+                >
+                  <div className="flex items-center gap-2 text-xs truncate">
+                    <Search size={15} className="group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0" />
+                    <span className="truncate">Search subjects, questions...</span>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded border border-slate-200 dark:border-slate-600">
+                      ⌘K
+                    </kbd>
+                  </div>
+                </button>
+              </div>
+            )}
 
             {/* Right Header: Search (Mobile), ThemeToggle, Profile Avatar */}
             <div className="flex items-center gap-1.5 sm:gap-2 ml-auto shrink-0">
-              {/* Mobile Search Button */}
-              <button
-                id="mobile-header-search-btn"
-                onClick={() => setIsSearchOpen(true)}
-                className="sm:hidden p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
-                aria-label="Search"
-                title="Search LearnDean"
-              >
-                <Search size={18} />
-              </button>
+              {/* Mobile Search Button - Hidden on Home */}
+              {currentView !== 'home' && (
+                <button
+                  id="mobile-header-search-btn"
+                  onClick={() => setIsSearchOpen(true)}
+                  className="sm:hidden p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                  aria-label="Search"
+                  title="Search LearnDean"
+                >
+                  <Search size={18} />
+                </button>
+              )}
 
               {/* Notification Center Trigger */}
               <button
@@ -312,35 +316,37 @@ export default function App() {
                 )}
               </button>
 
-              {/* Theme Toggle Button */}
-              <ThemeToggle />
+              {/* Theme Toggle Button - Hidden on Home page */}
+              {currentView !== 'home' && <ThemeToggle />}
 
-              {/* Profile Avatar on the Right */}
-              <button
-                id="header-profile-btn"
-                onClick={() => {
-                  localStorage.removeItem('zetadu_profile_section');
-                  window.dispatchEvent(new CustomEvent('open-profile-section', { detail: { section: null } }));
-                  setCurrentView('profile');
-                }}
-                className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 border border-slate-200/90 dark:border-slate-700 text-left transition-all cursor-pointer group shadow-2xs"
-                aria-label="Student Profile"
-                title="View Student Profile"
-              >
-                <UserAvatar
-                  photoURL={userProfile?.photoURL || user?.photoURL}
-                  displayName={userProfile?.name || user?.displayName}
-                  email={user?.email}
-                  size="sm"
-                  className="ring-2 ring-blue-500/20"
-                />
-                <div className="hidden sm:block leading-tight text-left pr-0.5">
-                  <p className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Profile</p>
-                  <p className="text-xs font-bold text-slate-800 dark:text-white truncate max-w-[90px]">
-                    {userProfile?.name || user?.displayName || 'Student'}
-                  </p>
-                </div>
-              </button>
+              {/* Profile Avatar on the Right - Hidden on Home page */}
+              {currentView !== 'home' && (
+                <button
+                  id="header-profile-btn"
+                  onClick={() => {
+                    localStorage.removeItem('zetadu_profile_section');
+                    window.dispatchEvent(new CustomEvent('open-profile-section', { detail: { section: null } }));
+                    setCurrentView('profile');
+                  }}
+                  className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 border border-slate-200/90 dark:border-slate-700 text-left transition-all cursor-pointer group shadow-2xs"
+                  aria-label="Student Profile"
+                  title="View Student Profile"
+                >
+                  <UserAvatar
+                    photoURL={userProfile?.photoURL || user?.photoURL}
+                    displayName={userProfile?.name || user?.displayName}
+                    email={user?.email}
+                    size="sm"
+                    className="ring-2 ring-blue-500/20"
+                  />
+                  <div className="hidden sm:block leading-tight text-left pr-0.5">
+                    <p className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Profile</p>
+                    <p className="text-xs font-bold text-slate-800 dark:text-white truncate max-w-[90px]">
+                      {userProfile?.name || user?.displayName || 'Student'}
+                    </p>
+                  </div>
+                </button>
+              )}
 
               {/* Hamburger (☰) Navigation Drawer Menu */}
               <HeaderMoreMenu
@@ -404,6 +410,13 @@ export default function App() {
                     <Route path="/admin" element={<Admin />} />
                     <Route path="*" element={<Navigate to="/home" replace />} />
                   </Routes>
+
+                  {/* Guaranteed Permanent Bottom Space for Every Route & Page */}
+                  <div
+                    id="global-page-bottom-clearance"
+                    className="w-full h-24 sm:h-28 md:h-16 shrink-0 pointer-events-none select-none"
+                    aria-hidden="true"
+                  />
                 </motion.div>
               </AnimatePresence>
             </Suspense>

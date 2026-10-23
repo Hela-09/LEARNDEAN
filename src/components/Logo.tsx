@@ -49,24 +49,24 @@ export const LD_MONOGRAM_PATH = `${LD_L_PATH} ${LD_D_PATH}`;
 export function LearnDeanLDEmblem({
   className = "w-6 h-6",
   active = false,
-  monochrome = false,
-  background = 'transparent',
+  background = 'app-icon',
 }: {
   className?: string;
   active?: boolean;
   monochrome?: boolean;
   background?: LogoBackground;
+  logoStyle?: LogoStyle;
 }) {
-  const isDarkSurface = background === 'dark' || background === 'app-icon';
   const rawId = useId();
   const uid = rawId.replace(/[^a-zA-Z0-9]/g, '');
 
   const bgId = `ld-bg-${uid}`;
-  const lDarkId = `ld-l-dark-${uid}`;
-  const dDarkId = `ld-d-dark-${uid}`;
-  const lLightId = `ld-l-light-${uid}`;
-  const dLightId = `ld-d-light-${uid}`;
+  const lId = `ld-l-${uid}`;
+  const dId = `ld-d-${uid}`;
   const sparkId = `ld-spark-${uid}`;
+
+  // Whether a squircle backdrop should be drawn
+  const showBackdrop = background !== 'transparent';
 
   return (
     <svg
@@ -81,89 +81,73 @@ export function LearnDeanLDEmblem({
       style={{ display: 'block' }}
     >
       <defs>
+        {/* Permanent Luxurious Obsidian Sapphire Background */}
         <linearGradient id={bgId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#051636" />
-          <stop offset="45%" stopColor="#0A367E" />
-          <stop offset="85%" stopColor="#1463D5" />
-          <stop offset="100%" stopColor="#2563EB" />
+          <stop offset="0%" stopColor="#080D1A" />
+          <stop offset="45%" stopColor="#0F172A" />
+          <stop offset="100%" stopColor="#162038" />
         </linearGradient>
 
-        <linearGradient id={lLightId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#071A3D" />
-          <stop offset="60%" stopColor="#1E40AF" />
-          <stop offset="100%" stopColor="#2563EB" />
-        </linearGradient>
-
-        <linearGradient id={dLightId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0284C7" />
-          <stop offset="60%" stopColor="#2563EB" />
-          <stop offset="100%" stopColor="#4F46E5" />
-        </linearGradient>
-
-        <linearGradient id={lDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
+        {/* Permanent Pristine Platinum White 'L' */}
+        <linearGradient id={lId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="100%" stopColor="#E2E8F0" />
+          <stop offset="65%" stopColor="#F1F5F9" />
+          <stop offset="100%" stopColor="#CBD5E1" />
         </linearGradient>
 
-        <linearGradient id={dDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
+        {/* Permanent Vibrant Royal Azure & Electric Cobalt 'd' */}
+        <linearGradient id={dId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#38BDF8" />
-          <stop offset="50%" stopColor="#0EA5E9" />
-          <stop offset="100%" stopColor="#0284C7" />
+          <stop offset="45%" stopColor="#2563EB" />
+          <stop offset="100%" stopColor="#1D4ED8" />
         </linearGradient>
 
+        {/* Permanent Radiant Champagne Gold AI Intelligence Spark */}
         <linearGradient id={sparkId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FDE047" />
-          <stop offset="100%" stopColor="#F59E0B" />
+          <stop offset="50%" stopColor="#F59E0B" />
+          <stop offset="100%" stopColor="#D97706" />
         </linearGradient>
       </defs>
 
-      {/* Background Shapes with Solid Fallback */}
-      {background === 'primary' && (
-        <rect width="120" height="120" rx="28" fill="#FFFFFF" />
-      )}
-      {background === 'dark' && (
-        <rect width="120" height="120" rx="28" fill="#071A3D" />
-      )}
-      {background === 'app-icon' && (
+      {/* Background Squircle with Subtle Luxury Rim (shows in all themes & devices) */}
+      {showBackdrop && (
         <>
-          <rect width="120" height="120" rx="28" fill="#0B3C8A" />
+          <rect width="120" height="120" rx="28" fill="#0F172A" />
           <rect width="120" height="120" rx="28" fill={`url(#${bgId})`} />
+          <rect
+            x="0.75"
+            y="0.75"
+            width="118.5"
+            height="118.5"
+            rx="27.25"
+            stroke="rgba(255, 255, 255, 0.16)"
+            strokeWidth="1.5"
+          />
         </>
       )}
-      {background === 'light-blue' && (
-        <rect width="120" height="120" rx="28" fill="#EAF4FF" />
-      )}
 
-      {/* Main Elements */}
+      {/* Main Customized Ld Monogram - Permanent Colors in all themes */}
       <g>
-        {/* Letter 'L' (Foundation & Vertical Pillar) */}
+        {/* Letter 'L' (Foundation & Vertical Pillar) in Platinum White */}
         <path
           d={LD_L_PATH}
-          fill={
-            monochrome
-              ? "currentColor"
-              : isDarkSurface
-              ? `url(#${lDarkId})`
-              : `url(#${lLightId})`
-          }
+          fill={`url(#${lId})`}
+          style={{ fill: `url(#${lId})` }}
         />
 
-        {/* Letter 'd' (Bowl & Ascender) */}
+        {/* Letter 'd' (Bowl & Ascender) in Royal Azure Blue */}
         <path
           d={LD_D_PATH}
-          fill={
-            monochrome
-              ? "currentColor"
-              : isDarkSurface
-              ? `url(#${dDarkId})`
-              : `url(#${dLightId})`
-          }
+          fill={`url(#${dId})`}
+          style={{ fill: `url(#${dId})` }}
         />
 
-        {/* Golden Intelligence Spark */}
+        {/* Golden Intelligence Spark in Champagne Gold */}
         <path
           d={LD_SPARK_PATH}
-          fill={monochrome ? "currentColor" : `url(#${sparkId})`}
+          fill={`url(#${sparkId})`}
+          style={{ fill: `url(#${sparkId})` }}
         />
       </g>
     </svg>
@@ -215,54 +199,58 @@ export function LearnDeanBirdEmblem({
     >
       <defs>
         <linearGradient id={bgId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#051636" />
-          <stop offset="40%" stopColor="#0A367E" />
-          <stop offset="80%" stopColor="#1463D5" />
-          <stop offset="100%" stopColor="#2563EB" />
+          <stop offset="0%" stopColor="#0A0F1D" />
+          <stop offset="35%" stopColor="#0F172A" />
+          <stop offset="70%" stopColor="#1E293B" />
+          <stop offset="100%" stopColor="#1E3A8A" />
         </linearGradient>
 
         <linearGradient id={wingDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="35%" stopColor="#BAE6FD" />
-          <stop offset="75%" stopColor="#38BDF8" />
-          <stop offset="100%" stopColor="#0284C7" />
+          <stop offset="35%" stopColor="#F1F5F9" />
+          <stop offset="70%" stopColor="#CBD5E1" />
+          <stop offset="100%" stopColor="#94A3B8" />
         </linearGradient>
 
         <linearGradient id={wingLightId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#071A3D" />
-          <stop offset="45%" stopColor="#1E40AF" />
-          <stop offset="85%" stopColor="#2563EB" />
-          <stop offset="100%" stopColor="#0284C7" />
+          <stop offset="0%" stopColor="#0A0F1D" />
+          <stop offset="45%" stopColor="#0F172A" />
+          <stop offset="85%" stopColor="#1E293B" />
+          <stop offset="100%" stopColor="#334155" />
         </linearGradient>
 
         <linearGradient id={innerDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#F0F9FF" />
-          <stop offset="100%" stopColor="#7DD3FC" />
+          <stop offset="0%" stopColor="#F8FAFC" />
+          <stop offset="40%" stopColor="#E2E8F0" />
+          <stop offset="80%" stopColor="#94A3B8" />
+          <stop offset="100%" stopColor="#64748B" />
         </linearGradient>
 
         <linearGradient id={innerLightId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#1E3A8A" />
-          <stop offset="100%" stopColor="#3B82F6" />
+          <stop offset="0%" stopColor="#1E293B" />
+          <stop offset="60%" stopColor="#334155" />
+          <stop offset="100%" stopColor="#475569" />
         </linearGradient>
 
         <linearGradient id={headDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="100%" stopColor="#BAE6FD" />
+          <stop offset="100%" stopColor="#E2E8F0" />
         </linearGradient>
 
         <linearGradient id={headLightId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0F172A" />
-          <stop offset="100%" stopColor="#1D4ED8" />
+          <stop offset="0%" stopColor="#0A0F1D" />
+          <stop offset="100%" stopColor="#1E293B" />
         </linearGradient>
 
         <linearGradient id={goldId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FDE047" />
-          <stop offset="100%" stopColor="#F59E0B" />
+          <stop offset="0%" stopColor="#F5D061" />
+          <stop offset="50%" stopColor="#E5B942" />
+          <stop offset="100%" stopColor="#C4932F" />
         </linearGradient>
 
         <linearGradient id={pagesDarkId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="85%" stopColor="#F1F5F9" />
+          <stop offset="85%" stopColor="#F8FAFC" />
           <stop offset="100%" stopColor="#E2E8F0" />
         </linearGradient>
 
@@ -278,16 +266,16 @@ export function LearnDeanBirdEmblem({
         <rect width="120" height="120" rx="28" fill="#FFFFFF" />
       )}
       {background === 'dark' && (
-        <rect width="120" height="120" rx="28" fill="#071A3D" />
+        <rect width="120" height="120" rx="28" fill="#090D16" />
       )}
       {background === 'app-icon' && (
         <>
-          <rect width="120" height="120" rx="28" fill="#0A367E" />
+          <rect width="120" height="120" rx="28" fill="#0A0F1D" />
           <rect width="120" height="120" rx="28" fill={`url(#${bgId})`} />
         </>
       )}
       {background === 'light-blue' && (
-        <rect width="120" height="120" rx="28" fill="#EAF4FF" />
+        <rect width="120" height="120" rx="28" fill="#F1F5F9" />
       )}
 
       {/* Bird and Open Book Artboard */}
@@ -466,15 +454,12 @@ export const LearnDeanBirdLogo = LearnDeanBirdEmblem;
 
 /**
  * Universal LearnDean Emblem:
- * Dynamically renders the active brand mark ('bird' or 'ld').
- * Falls back to the user's settings, or default 'bird'.
+ * Customized Ld monogram that shows in all themes and devices and never changes color.
  */
 export function LearnDeanEmblem({
   className = "w-6 h-6",
   active = false,
-  monochrome = false,
-  background = 'transparent',
-  logoStyle,
+  background = 'app-icon',
 }: {
   className?: string;
   active?: boolean;
@@ -482,20 +467,10 @@ export function LearnDeanEmblem({
   background?: LogoBackground;
   logoStyle?: LogoStyle;
 }) {
-  let authStyle: LogoStyle | undefined;
-  try {
-    const auth = useAuth();
-    authStyle = auth?.settings?.logoStyle;
-  } catch (_) {
-    // In case used outside AuthProvider context
-  }
-
-  // The official LearnDean logo everywhere is the flying bird carrying the open book of wisdom
   return (
-    <LearnDeanBirdEmblem
+    <LearnDeanLDEmblem
       className={className}
       active={active}
-      monochrome={monochrome}
       background={background}
     />
   );

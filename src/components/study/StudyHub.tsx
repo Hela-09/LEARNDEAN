@@ -690,7 +690,7 @@ export default function StudyHub({ setView }: StudyHubProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-900 overflow-y-auto relative">
+    <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-900 overflow-y-auto relative pb-28 sm:pb-32 md:pb-16">
       
       {/* Toast Notification */}
       {toastMessage && (
@@ -2125,6 +2125,12 @@ export default function StudyHub({ setView }: StudyHubProps) {
           </div>
         )}
 
+        {/* Guaranteed Permanent Bottom Space */}
+        <div
+          id="study-page-bottom-clearance"
+          className="w-full h-20 sm:h-24 shrink-0 pointer-events-none select-none"
+          aria-hidden="true"
+        />
       </div>
     </div>
   );

@@ -32,6 +32,7 @@ import {
   getHomepageQuickLinks,
   QuickLinkItem,
 } from '../services/homepagePreferencesService';
+import { getSemanticPaletteForFeature, renderThemedFeatureIcon } from '../utils/iconTokens';
 
 interface HomeProps {
   setView: (view: ViewType) => void;
@@ -216,7 +217,7 @@ export default function Home({ setView }: HomeProps) {
     .filter((f): f is QuickLinkItem => !!f);
 
   return (
-    <div className="w-full max-w-7xl mx-auto flex flex-col gap-5 sm:gap-7 pb-6 sm:pb-8 min-w-0">
+    <div className="w-full max-w-7xl mx-auto flex flex-col gap-5 sm:gap-7 pb-10 sm:pb-12 min-w-0">
       {/* Online Notification Banner */}
       {onlineNotification && (
         <div className="p-3.5 rounded-xl bg-emerald-600 text-white text-xs sm:text-sm font-semibold flex items-center justify-between shadow-xs">
@@ -351,21 +352,26 @@ export default function Home({ setView }: HomeProps) {
               : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5'
           }`}
         >
-          {activeFeatures.map((feat) => (
-            <button
-              key={feat.id}
-              id={`quick-action-${feat.id}`}
-              onClick={() => handleFeatureClick(feat)}
-              className="bg-white dark:bg-[#0a0a0a] p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-900/40 transition-all flex flex-col items-center justify-center text-center group cursor-pointer aspect-square min-w-0 shadow-2xs active:scale-[0.98]"
-            >
-              <div className="w-10 h-10 sm:w-11 sm:h-11 mb-2 bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                {renderFeatureIcon(feat.iconName)}
-              </div>
-              <h3 className="font-bold text-neutral-900 dark:text-white text-xs sm:text-sm line-clamp-2 leading-snug text-center max-w-full px-1">
-                {feat.label}
-              </h3>
-            </button>
-          ))}
+          {activeFeatures.map((feat) => {
+            const palette = getSemanticPaletteForFeature(feat.iconName);
+            return (
+              <button
+                key={feat.id}
+                id={`quick-action-${feat.id}`}
+                onClick={() => handleFeatureClick(feat)}
+                className="bg-white dark:bg-[#0a0a0a] p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 hover:bg-neutral-50/80 dark:hover:bg-neutral-900/50 transition-all flex flex-col items-center justify-center text-center group cursor-pointer aspect-square min-w-0 shadow-2xs active:scale-[0.98]"
+              >
+                <div
+                  className={`w-11 h-11 sm:w-12 sm:h-12 mb-2 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform shrink-0 border ${palette.bg} ${palette.border}`}
+                >
+                  {renderThemedFeatureIcon(feat.iconName, { size: 23 })}
+                </div>
+                <h3 className="font-bold text-neutral-900 dark:text-white text-xs sm:text-sm line-clamp-2 leading-snug text-center max-w-full px-1">
+                  {feat.label}
+                </h3>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -373,20 +379,20 @@ export default function Home({ setView }: HomeProps) {
       <div className="w-full min-w-0">
         <div className="bg-white dark:bg-[#0a0a0a] border border-neutral-200 dark:border-neutral-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 w-full min-w-0 shadow-2xs">
           <h3 className="font-bold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
-            <Clock size={18} className="text-neutral-500" /> Continue Study
+            <Clock size={18} className="text-blue-600 dark:text-blue-400" /> Continue Study
           </h3>
           {activeJourney && activeJourney.status === 'in_progress' ? (
             <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 transition-all">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <div className="p-1.5 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 rounded-lg">
-                    <Compass size={14} />
+                  <div className="p-1.5 bg-violet-50 text-violet-600 dark:bg-violet-950/60 dark:text-violet-400 border border-violet-200/50 dark:border-violet-800/50 rounded-lg">
+                    <Compass size={16} />
                   </div>
                   <span className="font-bold text-xs uppercase text-neutral-700 dark:text-neutral-300">
                     Study Journey
                   </span>
                 </div>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-neutral-200 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300 border border-violet-200 dark:border-violet-800">
                   Step {activeJourney.step} of 6
                 </span>
               </div>
@@ -412,7 +418,7 @@ export default function Home({ setView }: HomeProps) {
               className="group p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 cursor-pointer transition-colors"
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 rounded-lg">
+                <div className="p-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/50 rounded-lg">
                   <PenTool size={16} />
                 </div>
                 <span className="font-bold text-sm text-neutral-900 dark:text-white">
@@ -430,8 +436,8 @@ export default function Home({ setView }: HomeProps) {
               className="group p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-900/60 border border-neutral-200 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600 cursor-pointer transition-colors"
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200 rounded-lg">
-                  <GraduationCap size={16} />
+                <div className="p-1.5 bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/50 rounded-lg">
+                  <LearnDeanEmblem className="w-5 h-5" />
                 </div>
                 <span className="font-bold text-sm text-neutral-900 dark:text-white">AI Classroom</span>
               </div>
@@ -445,6 +451,13 @@ export default function Home({ setView }: HomeProps) {
           )}
         </div>
       </div>
+
+      {/* Guaranteed Permanent Bottom Space */}
+      <div
+        id="home-page-bottom-clearance"
+        className="w-full h-20 sm:h-24 shrink-0 pointer-events-none select-none"
+        aria-hidden="true"
+      />
 
       {/* Prepare for Offline Modal */}
       <PrepareForOfflineModal

@@ -101,7 +101,7 @@ export default function StudyFeaturesGrid({
       category: 'Learning',
       badge: 'Chalkboard',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 text-slate-800 dark:bg-slate-850 dark:text-slate-100 border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-center">
           <LearnDeanEmblem className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       ),
@@ -113,8 +113,8 @@ export default function StudyFeaturesGrid({
       subtitle: '6-Step Topic Mastery',
       category: 'Learning',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-          <Compass className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-950/60 dark:text-violet-400 border border-violet-200/50 dark:border-violet-800/50 flex items-center justify-center">
+          <Compass className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.95} />
         </div>
       ),
       action: () => handleNavigate('/study-journey', 'journey'),
@@ -125,8 +125,8 @@ export default function StudyFeaturesGrid({
       subtitle: 'Instant Answers & Solutions',
       category: 'Practice',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-          <PenTool className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/50 flex items-center justify-center">
+          <PenTool className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.95} />
         </div>
       ),
       action: () => handleNavigate('/practice', 'practice'),
@@ -137,8 +137,8 @@ export default function StudyFeaturesGrid({
       subtitle: 'Official Topics & Notes',
       category: 'Curriculum',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-          <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/50 flex items-center justify-center">
+          <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.95} />
         </div>
       ),
       action: () => handleNavigate('/subjects', 'subjects'),
@@ -149,8 +149,8 @@ export default function StudyFeaturesGrid({
       subtitle: 'Formula & Fact Cards',
       category: 'Practice',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-          <Layers className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950/60 dark:text-sky-400 border border-sky-200/50 dark:border-sky-800/50 flex items-center justify-center">
+          <Layers className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.95} />
         </div>
       ),
       action: () => handleNavigate('/flashcards', 'flashcards'),
@@ -161,8 +161,8 @@ export default function StudyFeaturesGrid({
       subtitle: 'AI Notes & Study Sheets',
       category: 'Tools',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-          <FileUp className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-teal-50 text-teal-600 dark:bg-teal-950/60 dark:text-teal-400 border border-teal-200/50 dark:border-teal-800/50 flex items-center justify-center">
+          <FileUp className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.95} />
         </div>
       ),
       action: () => handleNavigate('/upload-notes', 'upload_notes'),
@@ -173,8 +173,8 @@ export default function StudyFeaturesGrid({
       subtitle: 'Set Books & Questions',
       category: 'Curriculum',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-          <BookMarked className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-amber-50/90 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/50 flex items-center justify-center">
+          <BookMarked className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.95} />
         </div>
       ),
       action: () => handleNavigate('/novels', 'novels'),
@@ -185,8 +185,8 @@ export default function StudyFeaturesGrid({
       subtitle: 'Target Past Mistakes',
       category: 'Practice',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-          <Target className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/50 flex items-center justify-center">
+          <Target className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.95} />
         </div>
       ),
       action: () => handleNavigate('/weak-topics', 'weak_topics'),
@@ -197,8 +197,8 @@ export default function StudyFeaturesGrid({
       subtitle: 'Study Without Internet',
       category: 'Tools',
       customIcon: (
-        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-200 flex items-center justify-center">
-          <WifiOff className="w-5 h-5 sm:w-6 sm:h-6" />
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+          <WifiOff className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={1.95} />
         </div>
       ),
       action: () => {
